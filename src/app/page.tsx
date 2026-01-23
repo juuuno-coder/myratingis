@@ -93,20 +93,20 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="flex flex-col sm:flex-row items-center gap-6 w-full max-w-lg mx-auto"
+          className="flex flex-col items-center gap-4 w-full max-w-md mx-auto"
         >
           <Button
             onClick={() => router.push("/project/upload")}
-            className="w-full h-20 rounded-[2.5rem] bg-orange-600 hover:bg-orange-500 text-white text-2xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center gap-4"
+            className="w-full h-16 rounded-[2rem] bg-orange-600 hover:bg-orange-500 text-white text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
           >
-            <ChefHat className="w-8 h-8" />
+            <ChefHat className="w-6 h-6" />
             진단 의뢰하기
           </Button>
           <Button
             onClick={() => router.push("/projects")}
-            className="w-full h-20 rounded-[2.5rem] bg-white hover:bg-gray-100 text-gray-900 text-2xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center gap-4 justify-center"
+            className="w-full h-16 rounded-[2rem] bg-white hover:bg-gray-100 text-gray-900 text-xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
           >
-            <Star className="w-7 h-7" />
+            <Star className="w-6 h-6" />
             진단 참여하기
           </Button>
         </motion.div>

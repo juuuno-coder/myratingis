@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
         alt_description,
         thumbnail_url, 
         rendering_type: rendering_type || 'rich_text', 
-        custom_data: JSON.stringify(finalCustomData), // Updated custom_data with assets
+        custom_data: finalCustomData, // Send as object, not stringified
         allow_michelin_rating: allow_michelin_rating ?? true, 
         allow_stickers: allow_stickers ?? true, 
         allow_secret_comments: allow_secret_comments ?? true,
