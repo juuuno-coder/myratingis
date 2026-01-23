@@ -21,6 +21,7 @@ import { uploadImage } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHat, Sparkles, Rocket as RocketIcon, Clock } from "lucide-react";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 
 export default function ProjectUploadPage() {
   const router = useRouter();
@@ -162,7 +163,7 @@ export default function ProjectUploadPage() {
         <div className="grid grid-cols-3 gap-4">
           {['link', 'image', 'video'].map((t) => (
             <button key={t} onClick={() => setAuditType(t as any)} className={cn("py-4 rounded-2xl border-2 transition-all font-bold text-sm", auditType === t ? "bg-white text-black border-orange-500 shadow-xl" : "bg-white/5 border-white/5 text-gray-500 hover:bg-white/10")}>
-              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지 갤러리" : "유튜브/비메오"}
+              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지 갤러리" : "유튜브"}
             </button>
           ))}
         </div>
@@ -189,7 +190,32 @@ export default function ProjectUploadPage() {
               </label>
             </div>
           ) : (
-            <Input className="bg-white/5 border-white/10 h-14 text-white rounded-xl focus:border-orange-500 px-5" placeholder="URL을 입력하세요 (예: https://...)" value={typeof mediaData === 'string' ? mediaData : ''} onChange={e => setMediaData(e.target.value)} />
+            <div className="space-y-4">
+              <Input 
+                className="bg-white/10 border-white/20 h-14 text-white placeholder:text-gray-400 rounded-xl focus:border-orange-500 px-5" 
+                placeholder={auditType === 'link' ? "웹사이트 URL (예: https://example.com)" : "유튜브 URL (예: https://youtube.com/watch?v=...)"}
+                value={typeof mediaData === 'string' ? mediaData : ''} 
+                onChange={e => setMediaData(e.target.value)} 
+              />
+              {typeof mediaData === 'string' && mediaData && (
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                  <p className="text-xs text-gray-400 mb-2">미리보기</p>
+                  {auditType === 'video' && (mediaData.includes('youtube.com') || mediaData.includes('youtu.be')) ? (
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                      <iframe 
+                        src={`https://www.youtube.com/embed/${mediaData.includes('youtu.be') ? mediaData.split('youtu.be/')[1] : new URLSearchParams(new URL(mediaData).search).get('v')}`}
+                        className="w-full h-full"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-white/5 rounded-lg">
+                      <p className="text-sm text-white/80 truncate">{mediaData}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </section>
@@ -356,20 +382,15 @@ export default function ProjectUploadPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 h-16">
-        <button onClick={() => router.back()} className="text-gray-500 hover:text-black transition-colors flex items-center gap-2">
-          <FontAwesomeIcon icon={faArrowLeft} />
-          <span className="text-sm font-bold uppercase tracking-wider">Back</span>
-        </button>
-        <h1 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">제 평가는요? - 진단 의뢰</h1>
-        <div className="w-10" />
-      </header>
-      <main className="max-w-4xl mx-auto py-12 px-6">
-        <AnimatePresence mode="wait">
-          {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : renderStep3()}
-        </AnimatePresence>
-      </main>
-    </div>
+    <>
+      <MyRatingIsHeader />
+      <div className="min-h-screen bg-[#fafafa] pt-16">
+        <main className="max-w-4xl mx-auto py-12 px-6">
+          <AnimatePresence mode="wait">
+            {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : renderStep3()}
+          </AnimatePresence>
+        </main>
+      </div>
+    </>
   );
 }
