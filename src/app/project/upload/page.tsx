@@ -102,10 +102,15 @@ export default function ProjectUploadPage() {
     try {
       const projectData = {
         title,
-        summary,
+        summary: summary || title,
+        content_text: summary || title,
+        description: summary || title,
+        category_id: 1,
         visibility: 'unlisted',
         audit_deadline: auditDeadline,
+        is_growth_requested: true,
         custom_data: {
+          is_feedback_requested: true,
           audit_config: {
             type: auditType,
             mediaA: mediaData,
@@ -113,10 +118,10 @@ export default function ProjectUploadPage() {
             poll: { desc: pollDesc, options: pollOptions },
             questions: auditQuestions
           }
-        },
-        is_feedback_requested: true,
-        user_id: user?.id
+        }
       };
+
+      console.log('Submitting project:', projectData);
 
       const res = await fetch("/api/projects", {
         method: "POST",
@@ -124,14 +129,18 @@ export default function ProjectUploadPage() {
         body: JSON.stringify(projectData),
       });
 
-      if (!res.ok) throw new Error("등록 실패");
-      
       const data = await res.json();
+      
+      if (!res.ok) {
+        console.error('API Error:', data);
+        throw new Error(data.error || "등록 실패");
+      }
+      
       toast.success("평가 의뢰가 성공적으로 등록되었습니다!");
       router.push(`/project/share/${data.project.project_id}`);
-    } catch (error) {
-      console.error(error);
-      toast.error("등록 중 오류가 발생했습니다.");
+    } catch (error: any) {
+      console.error('Submit error:', error);
+      toast.error(error.message || "등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
