@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHat, Sparkles, Rocket as RocketIcon, Clock } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
+import { supabase } from "@/lib/supabase/client";
 
 export default function ProjectUploadPage() {
   const router = useRouter();
@@ -100,6 +101,17 @@ export default function ProjectUploadPage() {
 
     setIsSubmitting(true);
     try {
+      // 인증 확인
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        toast.error("로그인이 필요합니다.");
+        // 현재 작성 중인 내용은 유지되지 않으므로 경고 필요 (또는 로컬 스토리지 저장 등)
+        router.push("/login?returnTo=/project/upload");
+        return;
+      }
+
       const projectData = {
         title,
         summary: summary || title,
@@ -125,7 +137,10 @@ export default function ProjectUploadPage() {
 
       const res = await fetch("/api/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(projectData),
       });
 
