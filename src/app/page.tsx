@@ -11,6 +11,8 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 export default function Home() {
   const router = useRouter();
 
+  console.log("[Home Page] Rendering...");
+
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
       {/* Background Texture / Gradient */}

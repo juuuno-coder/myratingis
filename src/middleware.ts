@@ -2,6 +2,10 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // [Debug] Log incoming request
+  console.log(`[Middleware] Processing request: ${request.nextUrl.pathname}`);
+  console.log(`[Middleware] Env Check - URL: ${!!process.env.NEXT_PUBLIC_SUPABASE_URL}, Key: ${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`);
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -61,7 +65,7 @@ export async function middleware(request: NextRequest) {
   } catch (e) {
     // If Supabase client fails (e.g. env vars missing during build time for static generation),
     // don't block the request. Just proceed.
-    console.error("Middleware Supabase Error:", e);
+    console.error(`[Middleware] Supabase Error for ${request.nextUrl.pathname}:`, e);
   }
 
   // --- Optional: Domain Rewrite Logic (Keep if needed, simplify if risky) ---

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home } from "lucide-react";
 
 export default function NotFound() {
+  console.log("[NotFound Page] Rendering custom 404...");
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-4">
       <div className="space-y-6 max-w-lg">
