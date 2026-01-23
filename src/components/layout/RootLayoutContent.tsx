@@ -12,6 +12,11 @@ export function RootLayoutContent({
   children: React.ReactNode;
   isReviewServer?: boolean;
 }) {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith('/admin');
+  const isReviewPath = pathname?.includes('review');
+  const isReviewSubdomain = typeof window !== 'undefined' && (window.location.hostname.includes('review') || window.location.host.includes('review'));
+  
   const isHome = pathname === '/';
   const isReport = pathname?.startsWith('/report');
   const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport;
