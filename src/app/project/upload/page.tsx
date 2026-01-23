@@ -222,17 +222,22 @@ export default function ProjectUploadPage() {
                 placeholder={auditType === 'link' ? "웹사이트 URL (예: https://example.com)" : "유튜브 URL (예: https://youtube.com/watch?v=...)"}
                 value={typeof mediaData === 'string' ? mediaData : ''} 
                 onChange={async (e) => {
-                  const url = e.target.value;
-                  setMediaData(url);
+                  const val = e.target.value;
+                  setMediaData(val);
                   
                   // Open Graph 미리보기 가져오기 (링크 타입일 때만)
-                  if (auditType === 'link' && url && url.startsWith('http')) {
+                  if (auditType === 'link' && val && val.includes('.')) {
+                    // 프로토콜이 없으면 https:// 붙여서 시도
+                    const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
+                    
                     setIsLoadingPreview(true);
                     try {
-                      const response = await fetch(`/api/og-preview?url=${encodeURIComponent(url)}`);
+                      const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
                       if (response.ok) {
                         const data = await response.json();
-                        setLinkPreview(data);
+                        if (data.title || data.image) {
+                          setLinkPreview(data);
+                        }
                       }
                     } catch (error) {
                       console.error('Failed to fetch preview:', error);
