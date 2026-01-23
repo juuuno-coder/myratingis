@@ -1,0 +1,424 @@
+[
+  {
+    "id": "TC001",
+    "title": "Main Landing Page Load and Display",
+    "description": "Verify that the main landing page loads correctly with all UI components including banners, category filters, and project cards visible and functional.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the main landing page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the main banner is displayed with expected images and text"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the category filters are displayed and selectable"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that a list of project cards is shown with project title, summary, and thumbnail"
+      },
+      {
+        "type": "action",
+        "description": "Select each category filter one by one"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure project cards update accordingly to selected category"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Project Detail Page Display and Interaction",
+    "description": "Verify correct display of project detail information and interaction features including likes, comments, sharing, and viewing images.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "From the main landing page, select a project card to open the project detail view"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project details display correct description, technologies used, creator info, likes count, and comments list"
+      },
+      {
+        "type": "action",
+        "description": "Click the like button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify likes count increments and like status is updated"
+      },
+      {
+        "type": "action",
+        "description": "Submit a new comment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify comment appears immediately in the comments section"
+      },
+      {
+        "type": "action",
+        "description": "Click the share button and select a sharing method"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sharing modal/dialog appears and share action completes"
+      },
+      {
+        "type": "action",
+        "description": "Click on project images to open ImageDialog"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ImageDialog shows image details with navigation and close options"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Registration with Validation",
+    "description": "Ensure users can register with valid input fields including nickname, category preferences, and email, and that validations properly handle invalid inputs.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to registration page"
+      },
+      {
+        "type": "action",
+        "description": "Enter valid and unique nickname, email, password and select valid category preferences"
+      },
+      {
+        "type": "action",
+        "description": "Submit registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration succeeds and user account is created"
+      },
+      {
+        "type": "action",
+        "description": "Attempt registration with empty or invalid nickname/email/password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate validation error messages are displayed"
+      },
+      {
+        "type": "action",
+        "description": "Attempt registration with duplicate nickname or email"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message for duplicate user data is shown"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "User Login and Authentication",
+    "description": "Validate that email/password login and Google social login authenticate users correctly with proper error handling for invalid credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter valid email and password credentials"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is authenticated and redirected to My Page/dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Log out user"
+      },
+      {
+        "type": "action",
+        "description": "Attempt login with invalid email or password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate error message is displayed and user is not logged in"
+      },
+      {
+        "type": "action",
+        "description": "Click Google social login button and complete OAuth flow with valid account"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is authenticated via Google and redirected to My Page/dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Attempt Google social login and cancel the OAuth flow"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is not authenticated and appropriate message or no action occurs"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "My Page Dashboard Functionality",
+    "description": "Confirm full management capabilities on My Page including project management, wishlist, comments, 1:1 inquiries, and profile settings with real-time updates.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to My Page/dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify display of user projects, wishlist, comments, 1:1 inquiries, and profile information"
+      },
+      {
+        "type": "action",
+        "description": "Add a new project with valid details and submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project appears in project list and portfolio"
+      },
+      {
+        "type": "action",
+        "description": "Edit an existing project and save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify changes are reflected in the project detail and lists"
+      },
+      {
+        "type": "action",
+        "description": "Remove a project and confirm deletion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project is removed from user portfolio and listings"
+      },
+      {
+        "type": "action",
+        "description": "Add and remove items in wishlist"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify wishlist updates accordingly"
+      },
+      {
+        "type": "action",
+        "description": "Respond to or create new 1:1 inquiries"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify inquiries list updates and responses are stored correctly"
+      },
+      {
+        "type": "action",
+        "description": "Modify profile settings including nickname and category preferences"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile updates are saved and displayed consistently"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Connection Marketplace Job Postings and Proposals",
+    "description": "Test job and outsourcing listings display correctly and proposal submission works, including validation and confirmation dialogs.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the connection marketplace section"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify job and outsourcing listings are displayed with details such as project descriptions"
+      },
+      {
+        "type": "action",
+        "description": "Select a job posting and view detailed job description"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify detailed job information including contact and proposal submission options is visible"
+      },
+      {
+        "type": "action",
+        "description": "Submit a proposal with valid required information"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify proposal is accepted and confirmation message is shown"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit proposal with missing required fields"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors prevent submission and show explanatory messages"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Profile Page Display and Data Accuracy",
+    "description": "Ensure profile pages accurately display user info, projects, likes, following and follower counts with consistency and completeness.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to a user’s public profile page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile information including nickname, category preferences, and profile photo are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify projects uploaded by user are listed with correct titles and preview info"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify counts for number of likes received, followers and following are correct"
+      },
+      {
+        "type": "action",
+        "description": "Click on follower and following counts"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify lists of followers and following users appear correctly"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Error Handling on Invalid URL and Network Failures",
+    "description": "Check the system handles invalid routes and network failures gracefully with user-friendly error messages and retry options.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to an invalid or non-existent URL within the app"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an appropriate 404 error page or message is displayed with navigation options"
+      },
+      {
+        "type": "action",
+        "description": "Simulate network failure during page load or API calls (e.g. project list, profile data)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message is shown indicating failure to load data"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to retry loading the data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify retry attempts succeed or continue to show error as applicable"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Responsive UI Components Verification",
+    "description": "Verify header, footer, banner, card layouts, and dialogs render correctly and are usable on desktop, tablet, and mobile devices.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the application on desktop screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify header, footer, main banner, project cards, dialogs display correctly and are aligned"
+      },
+      {
+        "type": "action",
+        "description": "Resize or open the app on tablet screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI components rearrange or scale properly maintaining usability and readability"
+      },
+      {
+        "type": "action",
+        "description": "Open the app on a mobile device or emulator"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify header switches to mobile navigation, footers scale properly, content is scrollable and dialogs fit screen"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Security Tests for Authorization and Access Control",
+    "description": "Ensure user data and privileged actions are protected; unauthorized users cannot access or modify restricted content.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access My Page or submission forms without login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and user is redirected to login or view-only pages"
+      },
+      {
+        "type": "action",
+        "description": "Login as a user and attempt to edit or delete another user’s project or profile data by navigating URLs directly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify unauthorized modifications are blocked and proper error message returned"
+      },
+      {
+        "type": "action",
+        "description": "Submit like, comment, or proposal actions without authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system blocks actions and prompts for login"
+      },
+      {
+        "type": "action",
+        "description": "Verify secure logout clears session and tokens"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify protected routes are inaccessible after logout"
+      }
+    ]
+  }
+]

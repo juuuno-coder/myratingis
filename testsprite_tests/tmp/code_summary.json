@@ -1,0 +1,58 @@
+{
+    "tech_stack": [
+        "TypeScript",
+        "Next.js",
+        "Tailwind CSS",
+        "Shadcn UI"
+    ],
+    "features": [
+        {
+            "name": "Main Landing Page",
+            "description": "Landing page with sticky menu, carousel banner, and image gallery dialogs.",
+            "files": [
+                "src/app/page.tsx",
+                "src/components/MainBanner.tsx",
+                "src/components/StickyMenu.tsx",
+                "src/components/ImageDialog.tsx",
+                "src/components/ImageCard.tsx"
+            ]
+        },
+        {
+            "name": "Authentication",
+            "description": "Login and Signup pages.",
+            "files": [
+                "src/app/login/page.tsx",
+                "src/app/signup/page.tsx"
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "description": "MyPage for user dashboard.",
+            "files": [
+                "src/app/mypage/page.tsx"
+            ]
+        },
+        {
+            "name": "Marketplace",
+            "description": "Recruit/Marketplace page.",
+            "files": [
+                "src/app/recruit/page.tsx"
+            ]
+        },
+        {
+            "name": "Submission",
+            "description": "Project submission page.",
+            "files": [
+                "src/app/submission/page.tsx"
+            ]
+        },
+        {
+            "name": "Navigation",
+            "description": "Header and Footer components.",
+            "files": [
+                "src/components/Header.tsx",
+                "src/components/Footer.tsx"
+            ]
+        }
+    ]
+}

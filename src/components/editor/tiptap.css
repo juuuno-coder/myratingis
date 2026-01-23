@@ -1,0 +1,460 @@
+/* Tiptap Editor Styles */
+
+.ProseMirror {
+  outline: none;
+  min-height: 100%;
+  height: 100%;
+  caret-color: #000; /* 기본 커서 색상 */
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: normal !important;
+}
+
+.ProseMirror p, .ProseMirror div, .ProseMirror span {
+  font-style: normal;
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #1a202c;
+}
+
+.ProseMirror h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #2d3748;
+}
+
+.ProseMirror h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+}
+
+.ProseMirror p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+  color: #4a5568;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.ProseMirror ul li,
+.ProseMirror ol li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #10b981;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: normal;
+  color: #6b7280;
+  background: #f9fafb; /* 선택적: 배경색 추가하여 구획 명확히 */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.ProseMirror code {
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.ProseMirror pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.ProseMirror a {
+  color: #10b981;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #059669;
+}
+
+/* YouTube embed */
+.ProseMirror iframe {
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  max-width: 100%;
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  background-color: #d1fae5;
+}
+
+/* Focus state */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Custom Image Container */
+.custom-image-container {
+  margin: 1.5rem 0;
+  position: relative;
+  display: block;
+  max-width: 100%;
+}
+
+.custom-image-wrapper {
+  position: relative; /* 이 부분이 중요! 자식 absolute 요소의 기준점 */
+  display: inline-block;
+  max-width: 100%;
+  border-radius: 0.75rem;
+  overflow: visible; /* hidden에서 visible로 변경하여 메뉴가 잘리지 않도록 */
+  transition: all 0.2s ease;
+}
+
+.custom-image-wrapper:hover {
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.custom-image-wrapper.selected {
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.custom-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.image-edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.custom-image-wrapper:hover .image-edit-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image-edit-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.95);
+  border: 2px solid white;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.image-edit-button:hover {
+  background: rgba(5, 150, 105, 0.95);
+  transform: scale(1.1);
+}
+
+.image-edit-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 220px;
+  z-index: 10;
+}
+
+.image-edit-menu .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.image-edit-menu .menu-item:hover {
+  background: #f3f4f6;
+}
+
+.image-edit-menu .menu-item span {
+  font-size: 18px;
+}
+
+.image-edit-menu .menu-item:last-child {
+  color: #dc2626;
+}
+
+.image-edit-menu .menu-item:last-child:hover {
+  background: #fee2e2;
+}
+
+/* Image Layout Toolbar (top-right corner) */
+.image-layout-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.custom-image-wrapper:hover .image-layout-toolbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.layout-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.layout-btn:hover {
+  background: white;
+  border-color: #10b981;
+  color: #10b981;
+  transform: scale(1.05);
+}
+
+.layout-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Layout Variants */
+.custom-image-wrapper.layout-normal {
+  max-width: 100%;
+}
+
+.custom-image-wrapper.layout-normal .custom-image {
+  border-radius: 0.75rem;
+}
+
+.custom-image-wrapper.layout-full-width {
+  width: 100%;
+  max-width: 100%;
+}
+
+.custom-image-wrapper.layout-full-width .custom-image {
+  width: 100%;
+  border-radius: 0.75rem;
+}
+
+.custom-image-wrapper.layout-padded {
+  padding: 24px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+
+.custom-image-wrapper.layout-padded .custom-image {
+  border-radius: 0.5rem;
+}
+
+/* Block hover indicator for text blocks */
+.ProseMirror .block-indicator {
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.ProseMirror .block-indicator:hover {
+  /* 호버 효과 제거 (사용자 요청) */
+  background: transparent;
+}
+
+/* Text block delete hint on hover */
+/* Text block delete hint removed */
+
+/* Focused block indicator */
+.ProseMirror .has-focus {
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 4px;
+}
+
+/* Code block and quote specific styles */
+.ProseMirror .block-code {
+  position: relative;
+}
+
+.ProseMirror .block-quote {
+  position: relative;
+}
+
+/* ===== Photo Grid Styles ===== */
+.ProseMirror .photo-grid {
+  display: grid;
+  gap: 8px;
+  margin: 1.5rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ProseMirror .photo-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.ProseMirror .photo-grid img:hover {
+  transform: scale(1.02);
+}
+
+/* 2열 그리드 */
+.ProseMirror .photo-grid.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.ProseMirror .photo-grid.grid-2 img {
+  aspect-ratio: 1;
+}
+
+/* 3열 그리드 */
+.ProseMirror .photo-grid.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.ProseMirror .photo-grid.grid-3 img {
+  aspect-ratio: 1;
+}
+
+/* 1+2 레이아웃 (큰 이미지 1개 + 작은 2개) */
+.ProseMirror .photo-grid.grid-1-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ProseMirror .photo-grid.grid-1-2 .grid-item-large {
+  width: 100%;
+}
+
+.ProseMirror .photo-grid.grid-1-2 .grid-item-large img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 12px;
+}
+
+.ProseMirror .photo-grid.grid-1-2 .grid-item-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.ProseMirror .photo-grid.grid-1-2 .grid-item-row img {
+  aspect-ratio: 1;
+  border-radius: 8px;
+}
+
+/* 2+1 레이아웃 (작은 2개 + 큰 이미지 1개) */
+.ProseMirror .photo-grid.grid-2-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ProseMirror .photo-grid.grid-2-1 .grid-item-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.ProseMirror .photo-grid.grid-2-1 .grid-item-row img {
+  aspect-ratio: 1;
+  border-radius: 8px;
+}
+
+.ProseMirror .photo-grid.grid-2-1 .grid-item-large {
+  width: 100%;
+}
+
+.ProseMirror .photo-grid.grid-2-1 .grid-item-large img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 12px;
+}
+
+/* Photo grid hover effect */
+.ProseMirror .photo-grid:hover {
+  box-shadow: 0 0 0 2px #10b981;
+  border-radius: 12px;
+}
+
+
