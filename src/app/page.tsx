@@ -17,7 +17,7 @@ export default function Home() {
     <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
       {/* Background Texture / Gradient */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('/review/review-bg.jpeg')] bg-cover bg-center opacity-20 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
       </div>
 
@@ -26,6 +26,20 @@ export default function Home() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse delay-1000" />
 
       <main className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center space-y-12">
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="pt-8"
+        >
+          <img 
+            src="/myratingis-logo.png" 
+            alt="제 평가는요?" 
+            className="h-16 md:h-20 w-auto object-contain"
+          />
+        </motion.div>
+
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
