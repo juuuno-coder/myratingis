@@ -30,6 +30,7 @@ export default function ReportPage() {
 
   const [project, setProject] = useState<any>(null);
   const [ratings, setRatings] = useState<any[]>([]);
+  const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function ReportPage() {
       try {
         setLoading(true);
         
-        // 1. Fetch Project
+        // 1. Fetch Project (Public Info)
         const { data: projectData, error: pError } = await supabase
           .from('Project')
           .select('*')
@@ -47,17 +48,28 @@ export default function ReportPage() {
         if (pError) throw pError;
         setProject(projectData);
 
-        // 2. Fetch All Ratings
-        const { data: ratingData } = await (supabase
-          .from('ProjectRating') as any)
-          .select('*')
-          .eq('project_id', Number(projectId));
+        // 2. Fetch Secure Report Data (API)
+        const { data: { session } } = await supabase.auth.getSession();
         
-        setRatings(ratingData || []);
+        const res = await fetch(`/api/projects/${projectId}/report`, {
+            headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            toast.error("프로젝트 소유자만 상세 리포트를 볼 수 있습니다.");
+            setRatings([]); 
+            return;
+        }
+
+        const data = await res.json();
+        
+        if (data.success && data.report) {
+             setReportData(data.report);
+             setRatings(data.report.feedbacks || []);
+        }
 
       } catch (err) {
         console.error("Fetch report error:", err);
-        toast.error("리포트 데이터를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -67,12 +79,39 @@ export default function ReportPage() {
   }, [projectId]);
 
   const reportStats = useMemo(() => {
-    if (!project || !ratings) return null;
+    if (!project) return null;
 
     const auditConfig = project.custom_data?.audit_config;
     const categories = auditConfig?.categories || [];
 
-    // Radar Data
+    // Use API Pre-calculated Data if available
+    if (reportData) {
+        // Radar
+        const radarData = categories.map((cat: any) => ({
+            subject: cat.label,
+            value: reportData.michelin?.averages[cat.id] || 0,
+            fullMark: 5
+        }));
+
+        // Polls
+        const stickerOptions = auditConfig?.poll?.options || [];
+        const polls = reportData.polls || {};
+        const barData = stickerOptions.map((opt: any) => ({
+             name: opt.label,
+             value: polls[opt.id] || 0,
+             color: opt.color || '#f59e0b'
+        }));
+
+        return {
+            radarData,
+            barData,
+            overallAvg: reportData.michelin?.totalAvg || "0.0",
+            participantCount: reportData.totalReviewers,
+            categories
+        };
+    }
+
+    // Fallback Client-side Calculation (Legacy or if API fails partially)
     const radarData = categories.map((cat: any) => {
       const sum = ratings.reduce((acc, curr) => acc + (curr[cat.id] || 0), 0);
       const avg = ratings.length > 0 ? (sum / ratings.length).toFixed(1) : 0;
@@ -83,10 +122,12 @@ export default function ReportPage() {
       };
     });
 
-    // Sticker Poll Aggregation
     const stickerOptions = auditConfig?.poll?.options || [];
     const polls: Record<string, number> = {};
     ratings.forEach(r => {
+      // Logic for legacy ratings that might have vote_type mixed in?
+      // Actually new flow separates them. If we rely on ratings only here, we miss polls.
+      // So this fallback is weak for polls.
       if (r.vote_type) {
         polls[r.vote_type] = (polls[r.vote_type] || 0) + 1;
       }
@@ -98,7 +139,6 @@ export default function ReportPage() {
       color: opt.color || '#f59e0b'
     }));
 
-    // Overall Avg
     const totalSum = radarData.reduce((acc: number, curr: any) => acc + curr.value, 0);
     const overallAvg = radarData.length > 0 ? (totalSum / radarData.length).toFixed(1) : "0.0";
 
@@ -109,7 +149,7 @@ export default function ReportPage() {
       participantCount: ratings.length,
       categories 
     };
-  }, [project, ratings]);
+  }, [project, ratings, reportData]);
 
   if (loading) {
     return (

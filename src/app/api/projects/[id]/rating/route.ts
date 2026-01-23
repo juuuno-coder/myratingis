@@ -9,11 +9,14 @@ const supabaseAdmin = createClient(
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const projectId = params.id;
+  const searchParams = req.nextUrl.searchParams;
+  const guestId = searchParams.get('guest_id');
+
   const authHeader = req.headers.get('Authorization');
   let userId = null;
 
   if (authHeader) {
-     const token = authHeader.replace('Bearer ', '');
+     const token = authHeader.replace(/^Bearer\s+/i, '');
      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
      if (user) userId = user.id;
   }
@@ -69,6 +72,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     let myRating = null;
     if (userId) {
       myRating = allRatings.find((r: any) => r.user_id === userId) || null;
+    } else if (guestId) {
+      myRating = allRatings.find((r: any) => r.guest_id === guestId) || null;
     }
 
     // 4. Check Visibility
@@ -89,8 +94,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({
       success: true,
       project, // 반환 데이터에 프로젝트 정보 포함
-      averages,
-      totalAvg,
+      // [Security] 작성자(isAuthorized)일 때만 통계 데이터 반환
+      // isAuthorized가 false면 null 또는 빈 값을 주어 클라이언트가 "비공개" 처리하도록 함
+      averages: isAuthorized ? averages : {}, 
+      totalAvg: isAuthorized ? totalAvg : 0,
       totalCount: count,
       myRating,
       isAuthorized
@@ -106,22 +113,31 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   
   try {
       const authHeader = req.headers.get('Authorization');
-      if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      let userId: string | null = null;
       
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-      
-      if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      if (authHeader) {
+          const token = authHeader.replace('Bearer ', '');
+          const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+          if (user && !authError) {
+              userId = user.id;
+          }
+      }
       
       const body = await req.json();
-      const { score, proposal, custom_answers, ...scores } = body;
+      const { score, proposal, custom_answers, guest_id, ...scores } = body;
+
+      // Guest Check: If no userId, require guest_id
+      if (!userId && !guest_id) {
+          return NextResponse.json({ error: 'Guest ID or Login required' }, { status: 400 });
+      }
 
       // 1. Upsert Rating
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
         .upsert({
           project_id: projectId,
-          user_id: user.id,
+          user_id: userId, // Can be null
+          guest_id: userId ? null : guest_id, // Store guest_id if no user
           score,
           score_1: scores.score_1 || 0,
           score_2: scores.score_2 || 0,
@@ -132,55 +148,56 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           proposal: proposal,
           custom_answers: custom_answers,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'project_id, user_id' });
+        }, { onConflict: userId ? 'project_id, user_id' : 'project_id, guest_id' }); // Conflict target depends on user type
 
       if (ratingError) throw ratingError;
 
       // 2. Check if first time rating? 
       // User asked for comment when feed back is left.
-      // Ideally check if comment already exists for this rating action to avoid duplicates on update?
-      // Logic: "피드백이 달렸을때 댓글에...".
-      // Let's Insert comment.
       
-      // Get User Nickname for masking
-      const nickname = user.user_metadata?.nickname || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-      const maskedName = nickname.length > 2 
-        ? nickname.substring(0, 2) + '*'.repeat(3) + '(가림처리)' 
-        : nickname.substring(0, 1) + '*'.repeat(3) + '(가림처리)';
+      const nickname = userId 
+          ? (await supabaseAdmin.from('profiles').select('nickname').eq('id', userId).single()).data?.nickname || 'User'
+          : 'Guest';
+          
+      const maskedName = userId 
+        ? (nickname.length > 2 
+            ? nickname.substring(0, 2) + '*'.repeat(3) + '(가림)' 
+            : nickname.substring(0, 1) + '*'.repeat(3) + '(가림)')
+        : '익명의 심사위원';
         
       const commentContent = `${maskedName}님이 정성스러운 피드백을 남겼어요`;
       
-      // Check if system comment already exists from this user for this project?
-      // To prevent spam on updates.
-      const { data: existingComments } = await supabaseAdmin
-        .from('Comment')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('user_id', user.id)
-        .eq('content', commentContent);
-        
-      if (!existingComments || existingComments.length === 0) {
-          // Insert Comment
-          await supabaseAdmin
+      // Check if system comment already exists (Only for logged in users to prevent spam)
+      if (userId) {
+          const { data: existingComments } = await supabaseAdmin
             .from('Comment')
-            .insert({
-                project_id: projectId,
-                user_id: user.id,
-                content: commentContent,
-                is_secret: false // Public comment
-            });
+            .select('id')
+            .eq('project_id', projectId)
+            .eq('user_id', userId)
+            .eq('content', commentContent);
             
-          // Notification logic should be here or handled by DB trigger on Comment
+          if (!existingComments || existingComments.length === 0) {
+              // Insert Comment
+              await supabaseAdmin
+                .from('Comment')
+                .insert({
+                    project_id: projectId,
+                    user_id: userId, 
+                    content: commentContent,
+                    is_secret: false // Public comment
+                });
+          }
       }
 
       // [New] 3. Notification for Project Owner
+      // Send only if userId exists (logged in user) or handle guest notification differently
       const { data: projectData } = await supabaseAdmin
         .from('Project')
         .select('user_id, title')
         .eq('project_id', projectId)
         .single();
         
-      if (projectData && projectData.user_id !== user.id) {
+      if (projectData && (userId ? projectData.user_id !== userId : true)) {
           await supabaseAdmin
             .from('notifications')
             .insert({
@@ -191,35 +208,38 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                 link: `/projects/${projectId}`,
                 action_label: '분석 리포트 보기',
                 action_url: `/projects/${projectId}#rating-section`,
-                sender_id: user.id
+                sender_id: userId // Can be null
             });
       }
 
       // [Point System] Reward for Evaluating (100 Points)
-      try {
-          // Check if this is the first time rating this project (upsert check)
-          // Actually, we can check if a point log for this project rating exists.
-          const { count } = await supabaseAdmin
-            .from('point_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('reason', `심사 평가 보상 (Project ${projectId})`);
-          
-          if ((count || 0) === 0) {
-              const REWARD = 100;
-              // 1. Add Points
-              const { data: profile } = await supabaseAdmin.from('profiles').select('points').eq('id', user.id).single();
-              await supabaseAdmin.from('profiles').update({ points: (profile?.points || 0) + REWARD }).eq('id', user.id);
-              // 2. Log
-              await supabaseAdmin.from('point_logs').insert({
-                  user_id: user.id,
-                  amount: REWARD,
-                  reason: `심사 평가 보상 (Project ${projectId})`
-              });
-              console.log(`[Point System] Awarded ${REWARD} points to user ${user.id} for rating.`);
+      // Only for logged-in users
+      if (userId) {
+          try {
+              // Check if this is the first time rating this project (upsert check)
+              // Actually, we can check if a point log for this project rating exists.
+              const { count } = await supabaseAdmin
+                .from('point_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .eq('reason', `심사 평가 보상 (Project ${projectId})`);
+              
+              if ((count || 0) === 0) {
+                  const REWARD = 100;
+                  // 1. Add Points
+                  const { data: profile } = await supabaseAdmin.from('profiles').select('points').eq('id', userId).single();
+                  await supabaseAdmin.from('profiles').update({ points: (profile?.points || 0) + REWARD }).eq('id', userId);
+                  // 2. Log
+                  await supabaseAdmin.from('point_logs').insert({
+                      user_id: userId,
+                      amount: REWARD,
+                      reason: `심사 평가 보상 (Project ${projectId})`
+                  });
+                  console.log(`[Point System] Awarded ${REWARD} points to user ${userId} for rating.`);
+              }
+          } catch (e) {
+              console.error('[Point System] Failed to reward rating points:', e);
           }
-      } catch (e) {
-          console.error('[Point System] Failed to reward rating points:', e);
       }
 
       return NextResponse.json({ success: true });

@@ -16,9 +16,10 @@ interface FeedbackPollProps {
   };
   userVote?: 'launch' | 'research' | 'more' | null;
   isDemo?: boolean; // [New] Demo Mode
+  guestId?: string; // [New] 게스트 식별자
 }
 
-export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = false }: FeedbackPollProps) {
+export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = false, guestId }: FeedbackPollProps) {
   const [selected, setSelected] = useState<string | null>(userVote || null);
   const [counts, setCounts] = useState<Record<string, number>>(initialCounts || { launch: 0, research: 0, more: 0 });
   const [isVoting, setIsVoting] = useState(false);
@@ -33,8 +34,12 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
             const { data: { session } } = await supabase.auth.getSession();
             const headers: Record<string, string> = {};
             if (session) headers['Authorization'] = `Bearer ${session.access_token}`;
+            
+            // Guest ID Support
+            let url = `/api/projects/${projectId}/vote`;
+            if (guestId) url += `?guest_id=${guestId}`;
 
-            const res = await fetch(`/api/projects/${projectId}/vote`, { headers });
+            const res = await fetch(url, { headers });
             if (res.ok) {
                 const data = await res.json();
                 if (data.counts) setCounts(data.counts);
@@ -46,7 +51,7 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
         }
     };
     fetchPoll();
-  }, [projectId, isDemo]);
+  }, [projectId, isDemo, guestId]);
 
   const handleVote = async (type: string) => {
     if (isVoting) return;
@@ -85,8 +90,15 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
     setIsVoting(true);
     try {
        const { data: { session } } = await supabase.auth.getSession();
-       if (!session) {
-           toast.success(newVoteType ? "[비회원] 의견 감사합니다! 🎉" : "투표를 취소했습니다.");
+       
+       // Guest check
+       const currentGuestId = guestId || localStorage.getItem('guest_id');
+       
+       if (!session && !currentGuestId) {
+           toast.error(newVoteType ? "[안내] 로그인이 필요합니다." : "취소 불가");
+           // Revert UI
+           setSelected(prevSelected);
+           setCounts(prevCounts);
            setIsVoting(false);
            return;
        }
@@ -95,9 +107,12 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
            method: 'POST',
            headers: { 
                'Content-Type': 'application/json',
-               'Authorization': `Bearer ${session.access_token}`
+               ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
            },
-           body: JSON.stringify({ voteType: newVoteType })
+           body: JSON.stringify({ 
+               voteType: newVoteType,
+               guest_id: !session ? currentGuestId : undefined
+           })
        });
        if (!res.ok) throw new Error('Vote Failed');
        

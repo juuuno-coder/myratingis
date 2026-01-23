@@ -6,9 +6,33 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const projectId = params.id;
+  const authHeader = req.headers.get('Authorization');
+  let userId: string | null = null;
+  
+  if (authHeader) {
+      const token = authHeader.replace(/^Bearer\s+/i, '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user) userId = user.id;
+  }
+
+  if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
-    // 1. Fetch Ratings
+    // 1. Verify Ownership
+    const { data: project } = await supabaseAdmin
+        .from('Project')
+        .select('user_id, custom_data')
+        .eq('project_id', projectId)
+        .single();
+    
+    if (!project || project.user_id !== userId) {
+        // Collaborator check logic could be added here
+        return NextResponse.json({ error: "Forbidden: You are not the owner." }, { status: 403 });
+    }
+
+    // 2. Fetch Ratings (Raw Data)
     const { data: ratings, error: ratingError } = await supabaseAdmin
       .from("ProjectRating")
       .select("*")
@@ -16,51 +40,59 @@ export async function GET(
 
     if (ratingError) throw ratingError;
 
-    // 2. Fetch Polls
+    // 3. Fetch Polls
     const { data: votes, error: voteError } = await supabaseAdmin
       .from("ProjectPoll")
       .select("*")
       .eq("project_id", projectId);
 
-    // 3. Fetch Secret Reviews (Proposals)
-    const { data: proposals, error: proposalError } = await supabaseAdmin
-      .from("Proposal")
-      .select("id, title, content, created_at, contact")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false });
-
-    // Aggregation Logic
+    // 4. Aggregation Logic
     const totalCount = ratings.length;
-    let averages = { score_1: 0, score_2: 0, score_3: 0, score_4: 0 };
+    
+    // Dynamic Categories from Project Config
+    const customConfig = project.custom_data?.audit_config || project.custom_data?.custom_categories;
+    const catIds = customConfig?.categories?.map((c: any) => c.id) || ['score_1', 'score_2', 'score_3', 'score_4'];
+    
+    let averages: Record<string, number> = {};
     let totalAvg = 0;
 
     if (totalCount > 0) {
-      const sums = ratings.reduce(
-        (acc: any, curr: any) => ({
-          score_1: acc.score_1 + (Number(curr.score_1) || 0),
-          score_2: acc.score_2 + (Number(curr.score_2) || 0),
-          score_3: acc.score_3 + (Number(curr.score_3) || 0),
-          score_4: acc.score_4 + (Number(curr.score_4) || 0),
-        }),
-        { score_1: 0, score_2: 0, score_3: 0, score_4: 0 }
-      );
+      const sums: Record<string, number> = {};
+      catIds.forEach((id: string) => sums[id] = 0);
 
-      averages = {
-        score_1: Number((sums.score_1 / totalCount).toFixed(1)),
-        score_2: Number((sums.score_2 / totalCount).toFixed(1)),
-        score_3: Number((sums.score_3 / totalCount).toFixed(1)),
-        score_4: Number((sums.score_4 / totalCount).toFixed(1)),
-      };
+      ratings.forEach((curr: any) => {
+          catIds.forEach((id: string) => {
+              sums[id] += (Number(curr[id]) || 0);
+          });
+      });
+
+      catIds.forEach((id: string) => {
+          averages[id] = Number((sums[id] / totalCount).toFixed(1));
+      });
       
       const sumAvgs = Object.values(averages).reduce((a, b) => a + b, 0);
-      totalAvg = Number((sumAvgs / 4).toFixed(1));
+      totalAvg = Number((sumAvgs / catIds.length).toFixed(1));
     }
 
-    const voteCounts = {
-      launch: votes?.filter(v => v.vote_type === 'launch').length || 0,
-      more: votes?.filter(v => v.vote_type === 'more').length || 0,
-      research: votes?.filter(v => v.vote_type === 'research').length || 0,
-    };
+    // Poll Aggregation
+    const voteCounts: Record<string, number> = {};
+    if (votes) {
+        votes.forEach((v: any) => {
+            voteCounts[v.vote_type] = (voteCounts[v.vote_type] || 0) + 1;
+        });
+    }
+
+    // Feedback Comments (Proposal & Custom Answers)
+    // Filter out empty ones or format them nicely
+    const feedbacks = ratings.map((r: any) => ({
+        id: r.id,
+        user_id: r.user_id, // can be null
+        guest_id: r.guest_id,
+        score: r.score,
+        proposal: r.proposal,
+        custom_answers: r.custom_answers,
+        created_at: r.created_at
+    })).filter((f: any) => f.proposal || (f.custom_answers && Object.keys(f.custom_answers).length > 0));
 
     return NextResponse.json({
       success: true,
@@ -71,8 +103,8 @@ export async function GET(
           totalAvg,
           count: totalCount
         },
-        polls: voteCounts,
-        secretReviews: proposals || []
+        polls: voteCounts, // Dynamic keys based on vote types
+        feedbacks: feedbacks
       }
     });
 

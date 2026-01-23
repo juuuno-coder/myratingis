@@ -7,10 +7,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const projectId = params.id;
+  const searchParams = req.nextUrl.searchParams;
+  const guestId = searchParams.get('guest_id');
+
   const authHeader = req.headers.get('authorization');
   let currentUserId: string | null = null;
   
-  // Try to extract user from token if present (Optional for GET)
+  // Try to extract user from token if present
   if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
       const { data: { user } } = await supabaseAdmin.auth.getUser(token);
@@ -31,16 +34,17 @@ export async function GET(
         counts[item.vote_type] = (counts[item.vote_type] || 0) + 1;
     });
 
-    // 2. Get Project Data (for custom poll configuration)
+    // 2. Get Project Data
     const { data: project } = await supabaseAdmin
       .from('Project')
       .select('custom_data')
       .eq('project_id', parseInt(projectId))
       .single();
 
-    // 3. Get My Vote (if logged in)
+    // 3. Get My Vote (User or Guest)
     let myVote = null;
     
+    // Condition: User ID OR Guest ID
     if (currentUserId) {
         const { data: myData } = await supabaseAdmin
             .from('ProjectPoll')
@@ -48,10 +52,15 @@ export async function GET(
             .eq('project_id', parseInt(projectId))
             .eq('user_id', currentUserId)
             .single();
-        
-        if (myData) {
-            myVote = myData.vote_type;
-        }
+        if (myData) myVote = myData.vote_type;
+    } else if (guestId) {
+        const { data: myData } = await supabaseAdmin
+            .from('ProjectPoll')
+            .select('vote_type')
+            .eq('project_id', parseInt(projectId))
+            .eq('guest_id', guestId)
+            .single();
+        if (myData) myVote = myData.vote_type;
     }
 
     return NextResponse.json({ counts, myVote, project });
@@ -69,64 +78,86 @@ export async function POST(
 ) {
   const projectId = params.id;
   
-  // Auth Check
+  // Auth Check (Optional now)
   const authHeader = req.headers.get('authorization');
-  if (!authHeader) {
-    return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
-  }
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  let userId: string | null = null;
 
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user) userId = user.id;
   }
 
   try {
-    const { voteType } = await req.json(); // voteType: 'launch' | 'more' | 'research' | null (cancel)
-    const userId = user.id;
+    const { voteType, guest_id } = await req.json(); // voteType: 'launch' | 'more' | 'research' | null
+    const targetUserId = userId; // Logged in user
+    const targetGuestId = !userId ? guest_id : null; // Guest only if not logged in
+
+    if (!targetUserId && !targetGuestId) {
+         return NextResponse.json({ error: '로그인 또는 게스트 식별이 필요합니다.' }, { status: 400 });
+    }
 
     if (!voteType) {
         // Cancel Vote (Delete)
-        const { error } = await supabaseAdmin
+        let query = supabaseAdmin
             .from('ProjectPoll')
             .delete()
-            .eq('project_id', parseInt(projectId))
-            .eq('user_id', userId);
-        
+            .eq('project_id', parseInt(projectId));
+            
+        if (targetUserId) query = query.eq('user_id', targetUserId);
+        else query = query.eq('guest_id', targetGuestId);
+
+        const { error } = await query;
         if (error) throw error;
         return NextResponse.json({ success: true, action: 'deleted' });
     } else {
         // Upsert Vote
+        const upsertData: any = {
+            project_id: parseInt(projectId),
+            vote_type: voteType,
+            updated_at: new Date().toISOString()
+        };
+
+        let conflictTarget = '';
+
+        if (targetUserId) {
+            upsertData.user_id = targetUserId;
+            upsertData.guest_id = null; // Clear guest id if somehow present
+            conflictTarget = 'project_id, user_id';
+        } else {
+            upsertData.user_id = null;
+            upsertData.guest_id = targetGuestId;
+            conflictTarget = 'project_id, guest_id';
+        }
+
         const { error } = await supabaseAdmin
             .from('ProjectPoll')
-            .upsert({
-                project_id: parseInt(projectId),
-                user_id: userId,
-                vote_type: voteType
-            }, { onConflict: 'project_id, user_id' });
+            .upsert(upsertData, { onConflict: conflictTarget });
 
         if (error) throw error;
 
-        // [Point System] Reward for Voting (50 Points)
-        try {
-            const { count } = await supabaseAdmin
-              .from('point_logs')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .eq('reason', `스티커 투표 보상 (Project ${projectId})`);
-            
-            if ((count || 0) === 0) {
-                const REWARD = 50;
-                const { data: profile } = await supabaseAdmin.from('profiles').select('points').eq('id', userId).single();
-                await supabaseAdmin.from('profiles').update({ points: (profile?.points || 0) + REWARD }).eq('id', userId);
-                await supabaseAdmin.from('point_logs').insert({
-                    user_id: userId,
-                    amount: REWARD,
-                    reason: `스티커 투표 보상 (Project ${projectId})`
-                });
+        // [Point System] Reward for Voting (Users Only)
+        if (targetUserId) {
+            try {
+                const { count } = await supabaseAdmin
+                  .from('point_logs')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('user_id', targetUserId)
+                  .eq('reason', `스티커 투표 보상 (Project ${projectId})`);
+                
+                if ((count || 0) === 0) {
+                    const REWARD = 50;
+                    const { data: profile } = await supabaseAdmin.from('profiles').select('points').eq('id', targetUserId).single();
+                    await supabaseAdmin.from('profiles').update({ points: (profile?.points || 0) + REWARD }).eq('id', targetUserId);
+                    await supabaseAdmin.from('point_logs').insert({
+                        user_id: targetUserId,
+                        amount: REWARD,
+                        reason: `스티커 투표 보상 (Project ${projectId})`
+                    });
+                }
+            } catch (e) {
+                console.error('[Point System] Failed to reward vote points:', e);
             }
-        } catch (e) {
-            console.error('[Point System] Failed to reward vote points:', e);
         }
 
         return NextResponse.json({ success: true, action: 'upserted' });

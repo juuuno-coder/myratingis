@@ -21,6 +21,7 @@ interface MichelinRatingProps {
   ratingId?: string; 
   isDemo?: boolean; 
   activeCategoryIndex?: number; // [New] 단계별 노출을 위한 인덱스
+  guestId?: string; // [New] 게스트 식별자
 }
 
 const DEFAULT_CATEGORIES = [
@@ -34,7 +35,7 @@ const ICON_MAP: Record<string, any> = {
   Lightbulb, Zap, Target, TrendingUp, Star, Info, Sparkles, MessageSquareQuote
 };
 
-export function MichelinRating({ projectId, ratingId, isDemo = false, activeCategoryIndex }: MichelinRatingProps) {
+export function MichelinRating({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId }: MichelinRatingProps) {
   const [projectData, setProjectData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -76,8 +77,12 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       const { data: { session } } = await supabase.auth.getSession();
       const headers: any = {};
       if (session) headers['Authorization'] = `Bearer ${session.access_token}`;
+      
+      // Guest ID 쿼리 파라미터 추가
+      let url = `/api/projects/${projectId}/rating`;
+      if (guestId) url += `?guest_id=${guestId}`;
 
-      const res = await fetch(`/api/projects/${projectId}/rating`, { headers });
+      const res = await fetch(url, { headers });
       const data = await res.json();
 
       if (data.success) {
@@ -153,7 +158,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
         DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
         setScores(initial);
     }
-  }, [projectId]);
+  }, [projectId, guestId]); // guestId 변경 시에도 다시 로드
 
   useEffect(() => {
     const hasValues = Object.values(scores).some(v => v > 0);
@@ -175,36 +180,35 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
     }
     const { data: { session } } = await supabase.auth.getSession();
     
+    // [Guest ID Logic] - Use prop if available, otherwise local storage fallback (legacy)
+    let currentGuestId = guestId;
+    if (!currentGuestId) {
+        currentGuestId = localStorage.getItem('guest_id') || undefined;
+    }
+    
     setIsSubmitting(true);
     try {
-      if (!session) {
-          // [Guest Mode]
-          toast.success(`[비회원] 평가가 반영되었습니다! (평균 ${currentTotalAvg}점)`);
-          setIsEditing(false);
-          // fetchAIAnalysis(scores);
-          return;
-      }
+      // Guest logic merged into main flow
       const res = await fetch(`/api/projects/${projectId}/rating`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
         },
         body: JSON.stringify({
           ...scores,
           score: currentTotalAvg,
-          rating_id: ratingId ? Number(ratingId) : undefined // 수정 시 ID 포함
+          rating_id: ratingId ? Number(ratingId) : undefined,
+          guest_id: !session ? currentGuestId : undefined // 게스트일 때만 전송
         })
       });
 
       if (!res.ok) throw new Error('Failed to submit rating');
       
       setIsEditing(false);
-      toast.success(ratingId ? "평가가 수정되었습니다!" : "전문 평가가 등록되었습니다!");
-      fetchRatingData();
+      toast.success(ratingId ? "평가가 수정되었습니다!" : "평가가 등록되었습니다!");
+      fetchRatingData(); // Re-fetch to update averages
       
-      // 내 점수 기반으로 분석 갱신
-      // fetchAIAnalysis(scores);
     } catch (e) {
       console.error(e);
       toast.error("평가 등록에 실패했습니다.");

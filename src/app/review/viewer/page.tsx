@@ -43,8 +43,19 @@ function ViewerContent() {
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [proposalContent, setProposalContent] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [guestId, setGuestId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Guest ID Check
+    if (typeof window !== 'undefined') {
+        let gid = localStorage.getItem('guest_id');
+        if (!gid) {
+            gid = crypto.randomUUID();
+            localStorage.setItem('guest_id', gid);
+        }
+        setGuestId(gid);
+    }
+
     if (!projectId) {
       router.push('/');
       return;
@@ -59,11 +70,25 @@ function ViewerContent() {
           .single();
 
         if (error) throw error;
-        setProject(data);
+        
+        // Handle custom_data parsing
+        let customData: any = data.custom_data;
+        if (typeof customData === 'string') {
+            try {
+                customData = JSON.parse(customData);
+            } catch (e) {
+                console.error("Failed to parse custom_data", e);
+                customData = {};
+            }
+        }
+        
+        // Merge parsed data back effectively for state
+        const projectWithParsedData = { ...data, custom_data: customData };
+        setProject(projectWithParsedData);
         
         // Generate Steps
         const newSteps: string[] = [];
-        const auditConfig = data.custom_data?.audit_config;
+        const auditConfig = customData?.audit_config;
         
         // 1. Michelin Ratings
         const categories = auditConfig?.categories || [];
@@ -134,15 +159,18 @@ function ViewerContent() {
   const handleFinalSubmit = async () => {
     try {
       // For MyRatingIs, we can allow guest submissions or require login
-      // Let's implement a simple submission for now
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const res = await fetch(`/api/projects/${projectId}/rating`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+        },
         body: JSON.stringify({
           proposal: proposalContent,
           custom_answers: customAnswers,
-          // Individual scores are handled by MichelinRating component via auto-save usually,
-          // but here we might want to consolidate. For now, following current pattern.
+          guest_id: !session ? guestId : undefined
         })
       });
 
@@ -171,7 +199,7 @@ function ViewerContent() {
     
     if (stepType?.startsWith('rating_')) {
       const idx = parseInt(stepType.split('_')[1]);
-      return <MichelinRating projectId={projectId!} activeCategoryIndex={idx} />;
+      return <MichelinRating projectId={projectId!} activeCategoryIndex={idx} guestId={guestId || undefined} />;
     }
 
     if (stepType === 'voting') {
@@ -181,7 +209,7 @@ function ViewerContent() {
             <h3 className="text-2xl font-black text-white">최종 판정</h3>
             <p className="text-sm text-white/40 font-medium">{project?.custom_data?.audit_config?.poll?.desc || "당신의 선택은 무엇입니까?"}</p>
           </div>
-          <FeedbackPoll projectId={projectId!} />
+          <FeedbackPoll projectId={projectId!} guestId={guestId || undefined} />
         </div>
       );
     }

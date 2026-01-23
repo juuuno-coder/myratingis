@@ -123,8 +123,9 @@ export default function ProjectUploadPage() {
 
       if (!res.ok) throw new Error("등록 실패");
       
+      const data = await res.json();
       toast.success("평가 의뢰가 성공적으로 등록되었습니다!");
-      router.push("/");
+      router.push(`/project/share/${data.project.project_id}`);
     } catch (error) {
       console.error(error);
       toast.error("등록 중 오류가 발생했습니다.");
