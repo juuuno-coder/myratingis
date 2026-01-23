@@ -44,6 +44,8 @@ export default function ProjectUploadPage() {
   });
   const [auditType, setAuditType] = useState<'link' | 'image' | 'video'>('link');
   const [mediaData, setMediaData] = useState<string | string[]>(auditType === 'image' ? [] : "");
+  const [linkPreview, setLinkPreview] = useState<{title?: string, description?: string, image?: string} | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   
   // 미슐랭 평가 항목 (최초 5개, 최소 3개, 최대 6개)
   const [customCategories, setCustomCategories] = useState<any[]>([
@@ -192,10 +194,31 @@ export default function ProjectUploadPage() {
           ) : (
             <div className="space-y-4">
               <Input 
-                className="bg-white/10 border-white/20 h-14 text-white placeholder:text-gray-400 rounded-xl focus:border-orange-500 px-5" 
+                className="bg-white border-gray-300 h-14 text-black placeholder:text-gray-500 rounded-xl focus:border-orange-500 px-5" 
                 placeholder={auditType === 'link' ? "웹사이트 URL (예: https://example.com)" : "유튜브 URL (예: https://youtube.com/watch?v=...)"}
                 value={typeof mediaData === 'string' ? mediaData : ''} 
-                onChange={e => setMediaData(e.target.value)} 
+                onChange={async (e) => {
+                  const url = e.target.value;
+                  setMediaData(url);
+                  
+                  // Open Graph 미리보기 가져오기 (링크 타입일 때만)
+                  if (auditType === 'link' && url && url.startsWith('http')) {
+                    setIsLoadingPreview(true);
+                    try {
+                      const response = await fetch(`/api/og-preview?url=${encodeURIComponent(url)}`);
+                      if (response.ok) {
+                        const data = await response.json();
+                        setLinkPreview(data);
+                      }
+                    } catch (error) {
+                      console.error('Failed to fetch preview:', error);
+                    } finally {
+                      setIsLoadingPreview(false);
+                    }
+                  } else {
+                    setLinkPreview(null);
+                  }
+                }}
               />
               {typeof mediaData === 'string' && mediaData && (
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10">
@@ -207,6 +230,25 @@ export default function ProjectUploadPage() {
                         className="w-full h-full"
                         allowFullScreen
                       />
+                    </div>
+                  ) : auditType === 'link' && linkPreview ? (
+                    <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                      {linkPreview.image && (
+                        <img src={linkPreview.image} alt="Preview" className="w-full h-48 object-cover" />
+                      )}
+                      <div className="p-4">
+                        {linkPreview.title && (
+                          <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{linkPreview.title}</h3>
+                        )}
+                        {linkPreview.description && (
+                          <p className="text-sm text-gray-600 line-clamp-2">{linkPreview.description}</p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-2 truncate">{mediaData}</p>
+                      </div>
+                    </div>
+                  ) : isLoadingPreview ? (
+                    <div className="p-3 bg-white/5 rounded-lg flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
                     </div>
                   ) : (
                     <div className="p-3 bg-white/5 rounded-lg">
