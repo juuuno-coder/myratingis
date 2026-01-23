@@ -235,7 +235,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
         verticalAnchor="middle"
         y={y + (y > cy ? 10 : -10)}
         x={x + (x > cx ? 10 : -10)}
-        className="text-[12px] font-black fill-slate-900 uppercase tracking-tighter"
+        className="text-[10px] sm:text-[12px] font-black fill-chef-text uppercase tracking-tighter opacity-70"
       >
         {payload.value}
       </Text>
@@ -250,35 +250,35 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       <div className="w-full space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="flex flex-col items-center gap-6">
            <div className="relative group">
-              <div className="w-32 h-32 rounded-[2.5rem] bg-slate-900 flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 duration-500">
+              <div className="w-32 h-32 rounded-[2.5rem] bg-chef-text text-chef-bg flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 duration-500">
                  {activeCategory.sticker ? (
                    <Image src={activeCategory.sticker} alt={activeCategory.label} width={80} height={80} className="object-contain" />
                  ) : (
-                   React.createElement(activeCategory.icon || Target, { className: "w-12 h-12 text-white" })
+                   React.createElement(activeCategory.icon || Target, { className: "w-12 h-12" })
                  )}
               </div>
-              <div className="absolute -top-2 -right-2 w-10 h-10 bg-white rounded-full shadow-lg border border-slate-100 flex items-center justify-center font-black text-slate-900">
+              <div className="absolute -top-2 -right-2 w-10 h-10 bg-chef-card rounded-full shadow-lg border border-chef-border flex items-center justify-center font-black text-chef-text">
                 {activeCategoryIndex! + 1}
               </div>
            </div>
            <div className="text-center">
-              <h4 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">{activeCategory.label}</h4>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{activeCategory.desc}</p>
+              <h4 className="text-3xl font-black text-chef-text uppercase tracking-tighter mb-2">{activeCategory.label}</h4>
+              <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-xs">{activeCategory.desc}</p>
            </div>
         </div>
 
-        <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl space-y-8">
+        <div className="bg-chef-card rounded-[3rem] p-10 border border-chef-border shadow-xl space-y-8">
            <div className="flex justify-between items-end">
               <div className="flex gap-2">
                  {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} className={cn("w-6 h-6", (scores[activeCategory.id] || 0) >= i ? "text-amber-400 fill-current" : "text-slate-100")} />
+                    <Star key={i} className={cn("w-6 h-6", (scores[activeCategory.id] || 0) >= i ? "text-amber-400 fill-current" : "text-chef-text opacity-5")} />
                  ))}
               </div>
               <div className="text-right">
                  <span className="text-6xl font-black tabular-nums tracking-tighter" style={{ color: activeCategory.color || '#f59e0b' }}>
                     {(scores[activeCategory.id] || 0).toFixed(1)}
                  </span>
-                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Score / 5.0</p>
+                 <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest">Score / 5.0</p>
               </div>
            </div>
 
@@ -306,7 +306,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
            </div>
         </div>
 
-        <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-400 text-sm text-center font-medium">
+        <div className="p-6 bg-chef-panel rounded-2xl border border-chef-border italic text-chef-text opacity-40 text-sm text-center font-medium">
            "이 항목은 프로젝트의 {activeCategory.label}을(를) 중점적으로 평가합니다."
         </div>
       </div>
@@ -338,10 +338,11 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                   <Radar
                     name="Community"
                     dataKey="B"
-                    stroke="#cbd5e1"
+                    stroke="currentColor"
+                    className="text-chef-text opacity-10"
                     strokeWidth={1}
-                    fill="#f1f5f9"
-                    fillOpacity={0.4}
+                    fill="currentColor"
+                    fillOpacity={0.1}
                   />
                 )}
                 
@@ -351,7 +352,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                   dataKey="A"
                   stroke={activeCategoryIndex !== undefined ? categories[activeCategoryIndex]?.color || "#f59e0b" : "#f59e0b"}
                   strokeWidth={4}
-                  fill="#f59e0b"
+                  fill={activeCategoryIndex !== undefined ? categories[activeCategoryIndex]?.color || "#f59e0b" : "#f59e0b"}
                   fillOpacity={0.15}
                   animationBegin={0}
                   animationDuration={500}
@@ -361,11 +362,11 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
            
            {/* Center Score Badge */}
            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none scale-110">
-              <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-white/50 flex flex-col items-center">
-                <span className="text-4xl font-black text-gray-900 tabular-nums leading-none mb-1">{currentTotalAvg.toFixed(1)}</span>
+              <div className="bg-chef-card/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-chef-border flex flex-col items-center">
+                <span className="text-4xl font-black text-chef-text tabular-nums leading-none mb-1">{currentTotalAvg.toFixed(1)}</span>
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className={`w-3 h-3 ${currentTotalAvg >= i ? 'text-amber-400 fill-current' : 'text-gray-200'}`} />
+                    <Star key={i} className={`w-3 h-3 ${currentTotalAvg >= i ? 'text-amber-400 fill-current' : 'text-chef-text opacity-10'}`} />
                   ))}
                 </div>
               </div>
@@ -378,23 +379,28 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
               <div key={cat.id} className="space-y-3 group/item">
                 <div className="flex justify-between items-end px-1">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg transition-transform group-hover/item:scale-110">
+                    <div className="w-12 h-12 rounded-xl bg-chef-text text-chef-bg flex items-center justify-center shadow-lg transition-transform group-hover/item:scale-110">
                       {React.createElement(cat.icon || Target, { className: "w-6 h-6" })}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{cat.label}</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">{cat.desc}</p>
+                      <p className="text-sm font-black text-chef-text uppercase tracking-tight">{cat.label}</p>
+                      <p className="text-[10px] text-chef-text opacity-40 font-bold uppercase">{cat.desc}</p>
                     </div>
                   </div>
                   <div className="text-center">
                     <span className="text-3xl font-black tabular-nums tracking-tighter" style={{ color: cat.color || '#f59e0b' }}>
                       {(scores[cat.id] || 0) > 0 ? (scores[cat.id] || 0).toFixed(1) : "0.0"}
                     </span>
-                    <p className="text-[8px] font-black text-slate-300 uppercase">Score</p>
+                    <p className="text-[8px] font-black text-chef-text opacity-20 uppercase tracking-widest">Score</p>
                   </div>
                 </div>
                 
                 <div className="relative h-6 flex items-center">
+                   <div className="absolute inset-0 flex justify-between px-1 pointer-events-none">
+                     {[0, 1, 2, 3, 4, 5].map(v => (
+                       <div key={v} className="w-0.5 h-1 bg-chef-text opacity-10 mt-5" />
+                     ))}
+                   </div>
                    <input 
                      type="range" 
                      min="0" 
@@ -405,13 +411,8 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                        setScores(prev => ({ ...prev, [cat.id]: parseFloat(e.target.value) })); 
                        setIsEditing(true); 
                      }} 
-                     className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-amber-500 hover:accent-amber-600 transition-all z-10" 
+                     className="w-full h-2 bg-chef-panel rounded-full appearance-none cursor-pointer accent-amber-500 hover:accent-amber-600 transition-all z-10" 
                    />
-                   <div className="absolute inset-0 flex justify-between px-1 pointer-events-none">
-                     {[0, 1, 2, 3, 4, 5].map(v => (
-                       <div key={v} className="w-0.5 h-1 bg-slate-200 mt-5" />
-                     ))}
-                   </div>
                 </div>
               </div>
             ))}

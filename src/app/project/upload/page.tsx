@@ -158,7 +158,7 @@ export default function ProjectUploadPage() {
               placeholder="진단받을 제목 (예: 커피 배달 매칭 MVP)" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              className="w-full h-16 bg-white/5 border-none text-xl font-black text-white px-8 placeholder:text-white/10 outline-none chef-input-high-v"
+              className="w-full h-16 bg-chef-panel border-none text-xl font-black text-chef-text px-8 placeholder:text-chef-text/20 outline-none chef-input-high-v"
             />
           </div>
           <div className="chef-black-panel p-1 rounded-sm">
@@ -166,7 +166,7 @@ export default function ProjectUploadPage() {
               placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" 
               value={summary} 
               onChange={e => setSummary(e.target.value)} 
-              className="w-full h-12 bg-white/5 border-none text-sm font-bold text-white/80 px-8 placeholder:text-white/10 outline-none chef-input-high-v"
+              className="w-full h-12 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-8 placeholder:text-chef-text/20 outline-none chef-input-high-v"
             />
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function ProjectUploadPage() {
 
         <div className="space-y-4">
           {auditType === 'image' ? (
-             <div className="flex flex-wrap gap-4 p-6 bg-white/5 bevel-section border border-white/5 min-h-[160px]">
+             <div className="flex flex-wrap gap-4 p-6 bg-chef-panel bevel-section border border-chef-border min-h-[160px]">
                {Array.isArray(mediaData) && mediaData.map((img, i) => (
                  <div key={i} className="w-24 h-24 bevel-sm overflow-hidden relative group">
                    <img src={img} className="w-full h-full object-cover" />
@@ -212,7 +212,7 @@ export default function ProjectUploadPage() {
                    </button>
                  </div>
                ))}
-               <label className="w-24 h-24 bevel-sm border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:bg-white/10 transition-colors text-white/20 hover:text-white/60">
+               <label className="w-24 h-24 bevel-sm border-2 border-dashed border-chef-border flex flex-col items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-chef-text opacity-20 hover:opacity-100">
                  <FontAwesomeIcon icon={faPlus} className="mb-2" />
                  <span className="text-[8px] font-black uppercase">Add Photo</span>
                  <input type="file" multiple className="hidden" onChange={async e => {
@@ -243,16 +243,16 @@ export default function ProjectUploadPage() {
                   } else { setLinkPreview(null); }
                 }} 
                 placeholder={auditType === 'link' ? "wayo.co.kr" : "YouTube 영상 주소..."} 
-                className="w-full h-16 bg-white/5 border border-white/10 text-white font-bold px-8 text-lg bevel-sm placeholder:text-white/10 focus:border-orange-500 transition-colors outline-none"
+                className="w-full h-16 bg-chef-panel border border-chef-border text-chef-text font-black px-8 text-lg bevel-sm placeholder:text-chef-text/10 focus:border-orange-500 transition-colors outline-none"
               />
               
               {linkPreview && (
-                 <div className="chef-black-panel bevel-section p-6 border border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2">
+                 <div className="chef-black-panel bevel-section p-6 border border-chef-border space-y-4 animate-in fade-in slide-in-from-top-2">
                    <div className="flex gap-6 items-center">
-                     {linkPreview.image && <img src={linkPreview.image} className="w-24 h-24 object-cover bevel-sm shrink-0 border border-white/10" />}
+                     {linkPreview.image && <img src={linkPreview.image} className="w-24 h-24 object-cover bevel-sm shrink-0 border border-chef-border" />}
                      <div className="space-y-1">
-                        <h5 className="text-xl font-black text-white leading-tight">{linkPreview.title || "링크 미리보기"}</h5>
-                        <p className="text-xs font-medium text-white/40 line-clamp-2">{linkPreview.description || "설명이 없습니다."}</p>
+                        <h5 className="text-xl font-black text-chef-text leading-tight">{linkPreview.title || "링크 미리보기"}</h5>
+                        <p className="text-xs font-black text-chef-text opacity-40 line-clamp-2 uppercase tracking-wide">{linkPreview.description || "설명이 없습니다."}</p>
                      </div>
                    </div>
                  </div>
@@ -276,17 +276,17 @@ export default function ProjectUploadPage() {
   const renderStep2 = () => (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
       <section className="space-y-8">
-        <div className="flex items-center justify-between border-b border-white/5 pb-6">
+        <div className="flex items-center justify-between border-b border-chef-border pb-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-orange-500 text-white flex items-center justify-center text-2xl bevel-section">🎯</div>
             <div>
-              <h3 className="text-2xl font-black text-white tracking-tighter">1. 미슐랭 평가 설정</h3>
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mt-0.5">EVALUATION METRICS</p>
+              <h3 className="text-2xl font-black text-chef-text tracking-tighter uppercase italic">1. 미슐랭 평가 설정</h3>
+              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">EVALUATION METRICS</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-black text-white/20">{customCategories.length}/6</span>
-            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 6} className="bevel-sm border-white/10 h-10 font-black text-white bg-transparent hover:bg-white/5 text-[10px] tracking-widest px-4 uppercase">
+            <span className="text-xs font-black text-chef-text opacity-20">{customCategories.length}/6</span>
+            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 6} className="bevel-sm border-chef-border h-10 font-black text-chef-text bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[10px] tracking-widest px-4 uppercase transition-all">
               <FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가
             </Button>
           </div>
@@ -294,9 +294,9 @@ export default function ProjectUploadPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {customCategories.map((cat, idx) => (
-            <div key={idx} className="chef-black-panel bevel-section p-8 border border-white/5 relative group hover:border-orange-500/50 transition-all">
+            <div key={idx} className="chef-black-panel bevel-section p-8 border border-chef-border relative group hover:border-orange-500/50 transition-all bg-chef-card">
               <div className="flex items-center gap-6">
-                <div className="w-12 h-12 bg-white/5 text-white/20 flex items-center justify-center bevel-sm shrink-0 font-black text-xs">
+                <div className="w-12 h-12 bg-chef-panel text-chef-text opacity-20 flex items-center justify-center bevel-sm shrink-0 font-black text-xs">
                    0{idx+1}
                 </div>
                 <div className="flex-1 space-y-1">
@@ -304,16 +304,16 @@ export default function ProjectUploadPage() {
                     const next = [...customCategories];
                     next[idx].label = e.target.value;
                     setCustomCategories(next);
-                  }} className="font-black text-white outline-none w-full bg-transparent text-xl placeholder:text-white/10 chef-input-high-v" placeholder="평가 항목명" />
+                  }} className="font-black text-chef-text outline-none w-full bg-transparent text-xl placeholder:text-chef-text/10 chef-input-high-v" placeholder="평가 항목명" />
                   <input value={cat.desc} onChange={e => {
                     const next = [...customCategories];
                     next[idx].desc = e.target.value;
                     setCustomCategories(next);
-                  }} className="text-[10px] text-white/40 outline-none w-full bg-transparent font-black uppercase tracking-widest chef-input-high-v placeholder:text-white/5" placeholder="가이드라인 입력..." />
+                  }} className="text-[10px] text-chef-text opacity-40 outline-none w-full bg-transparent font-black uppercase tracking-widest chef-input-high-v placeholder:text-chef-text/5" placeholder="가이드라인 입력..." />
                 </div>
               </div>
               {customCategories.length > 3 && (
-                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-white/10 hover:text-red-500 transition-all">
+                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-chef-text opacity-10 hover:text-red-500 transition-all">
                   <FontAwesomeIcon icon={faTrash} size="xs" />
                 </button>
               )}
@@ -323,8 +323,8 @@ export default function ProjectUploadPage() {
       </section>
 
       <div className="flex justify-between items-center pt-8">
-        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-white/70 hover:text-white uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-white text-black hover:bg-white/90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl">스티커 투표 설정 <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
+        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
+        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">NEXT: STICKER POLL <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
       </div>
     </motion.div>
   );
@@ -332,23 +332,23 @@ export default function ProjectUploadPage() {
   const renderStep3 = () => (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-16">
       <section className="space-y-8">
-        <div className="flex items-center justify-between border-b border-white/5 pb-8">
+        <div className="flex items-center justify-between border-b border-chef-border pb-8">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-indigo-600 text-white flex items-center justify-center text-2xl bevel-section">📊</div>
             <div>
-              <h3 className="text-2xl font-black text-white tracking-tighter">2. 스티커 투표 설정</h3>
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mt-0.5">STICKER POLL OPTIONS</p>
+              <h3 className="text-2xl font-black text-chef-text tracking-tighter uppercase italic">2. 스티커 투표 설정</h3>
+              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">STICKER POLL OPTIONS</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-3">
-            <div className="flex bg-white/5 p-1 bevel-sm gap-1">
+            <div className="flex bg-chef-panel p-1 bevel-sm gap-1">
               {(['professional', 'michelin', 'mz'] as const).map(p => (
-                <button key={p} onClick={() => handlePresetChange(p)} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === p ? "bg-white text-black" : "text-white/20 hover:text-white")}>{p}</button>
+                <button key={p} onClick={() => handlePresetChange(p)} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === p ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-20 hover:opacity-100")}>{p}</button>
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs font-black text-white/20">{pollOptions.length}/6</span>
-              <Button onClick={() => setPollOptions([...pollOptions, { id: `p-${Date.now()}`, label: "", desc: "", image_url: "" }])} disabled={pollOptions.length >= 6} className="bevel-sm h-10 bg-white/10 text-white hover:bg-white/20 font-black text-[10px] uppercase tracking-widest opacity-80 hover:opacity-100"><FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가</Button>
+              <span className="text-xs font-black text-chef-text opacity-20">{pollOptions.length}/6</span>
+              <Button onClick={() => setPollOptions([...pollOptions, { id: `p-${Date.now()}`, label: "", desc: "", image_url: "" }])} disabled={pollOptions.length >= 6} className="bevel-sm h-10 bg-chef-panel text-chef-text border border-chef-border hover:bg-black/5 dark:hover:bg-white/5 font-black text-[10px] uppercase tracking-widest transition-all"><FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가</Button>
             </div>
           </div>
         </div>
@@ -359,14 +359,14 @@ export default function ProjectUploadPage() {
             {pollOptions.map((opt, idx) => (
               <div key={idx} className="chef-menu-card group">
                 {/* 상단 이미지 영역 */}
-                <label className="w-full aspect-[4/3] bg-white/5 flex items-center justify-center cursor-pointer overflow-hidden relative group/img">
+                <label className="w-full aspect-[4/3] bg-chef-panel border-b border-chef-border flex items-center justify-center cursor-pointer overflow-hidden relative group/img">
                   {opt.image_url ? (
                     <img src={opt.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
                   ) : (
-                    <FontAwesomeIcon icon={faCamera} className="text-white/10 text-3xl" />
+                    <FontAwesomeIcon icon={faCamera} className="text-chef-text opacity-10 text-3xl" />
                   )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
-                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">Select Media</span>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
+                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">Select Image</span>
                   </div>
                   <input type="file" className="hidden" onChange={async e => {
                     const file = e.target.files?.[0];
@@ -408,7 +408,7 @@ export default function ProjectUploadPage() {
 
                 {/* 삭제 버튼 */}
                 {pollOptions.length > 2 && (
-                  <button onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="absolute top-2 right-2 w-8 h-8 bg-black/80 text-white/20 hover:text-red-500 transition-all flex items-center justify-center border border-white/10 opacity-0 group-hover:opacity-100">
+                  <button onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center border border-white/10">
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 )}
@@ -419,8 +419,8 @@ export default function ProjectUploadPage() {
       </section>
 
       <div className="flex justify-between items-center pt-10 border-t border-chef-border">
-        <Button variant="ghost" onClick={() => setAuditStep(2)} className="h-14 px-8 font-black text-chef-text opacity-70 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={() => setAuditStep(4)} className="h-16 px-16 bg-white text-black hover:bg-white/90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl">질문지 작성하러 가기 <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
+        <Button variant="ghost" onClick={() => setAuditStep(2)} className="h-14 px-8 font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
+        <Button onClick={() => setAuditStep(4)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">NEXT: QUESTIONNAIRE <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
       </div>
     </motion.div>
   );
@@ -429,7 +429,7 @@ export default function ProjectUploadPage() {
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-16">
       <section className="space-y-10">
         <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-4">
-           <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">3. 종합 의견 (심층 질문)</h3>
+           <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">3. 심층 질문지 구성</h3>
         </div>
         <p className="text-sm text-chef-text opacity-40 font-bold max-w-2xl">
           평가자들에게 더 자세히 묻고 싶은 질문을 던지세요. 
@@ -453,7 +453,7 @@ export default function ProjectUploadPage() {
               </div>
             </div>
           ))}
-          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-16 bevel-cta border border-dashed border-chef-border text-chef-text opacity-20 hover:opacity-100 hover:bg-white/5 font-black uppercase tracking-widest transition-all">
+          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-16 bevel-cta border border-dashed border-chef-border text-chef-text opacity-20 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 font-black uppercase tracking-widest transition-all">
             <FontAwesomeIcon icon={faPlus} className="mr-3" /> 새 질문 추가하기 (최대 3개)
           </Button>
         </div>

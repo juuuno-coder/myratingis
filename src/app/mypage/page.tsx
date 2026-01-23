@@ -446,8 +446,8 @@ export default function MyPage() {
   // 초기 로딩 화면
   if (!initialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600"></div>
       </div>
     );
   }
@@ -463,12 +463,11 @@ export default function MyPage() {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 pt-20 pb-12">
+    <div className="w-full min-h-screen bg-background pt-20 pb-12 transition-colors duration-300">
       <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8">
         
         {/* 프로필 섹션 */}
-        {/* 프로필 섹션 */}
-        <div className="bg-white rounded-xl mb-6 border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-chef-card rounded-xl mb-6 border border-chef-border shadow-sm overflow-hidden transition-colors">
           {/* 커버 이미지 (hover 시 변경 버튼 노출) */}
           <div className="h-40 md:h-56 bg-gradient-to-r from-green-500 to-green-600 relative group">
             {userProfile?.cover_image_url && (
@@ -498,7 +497,7 @@ export default function MyPage() {
           <div className="px-6 pb-6 md:px-8 md:pb-8">
             <div className="flex flex-col md:flex-row md:items-end -mt-12 md:-mt-16 mb-4 gap-4 md:gap-6">
               <div className="relative z-10 shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-white">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-chef-card shadow-lg bg-chef-card">
                   <img 
                     src={userProfile?.profile_image_url || '/globe.svg'} 
                     alt="Profile" 
@@ -509,21 +508,21 @@ export default function MyPage() {
               </div>
               {/* 패딩 추가 */}
               <div className="flex-1 md:pb-2 pt-16 md:pt-20 md:pl-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{userProfile?.username || '사용자'}</h1>
-                <p className="text-gray-500 text-sm md:text-base mt-1">{userProfile?.email}</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-chef-text">{userProfile?.username || '사용자'}</h1>
+                <p className="text-chef-text opacity-50 text-sm md:text-base mt-1">{userProfile?.email}</p>
               </div>
               <div className="md:pb-2 flex gap-2">
                 {userProfile?.id && (
-                  <Button onClick={() => setActiveTab('settings')} variant="outline" size="sm" className="gap-2 rounded-full border-gray-200">
+                  <Button onClick={() => setActiveTab('settings')} variant="outline" size="sm" className="gap-2 rounded-full border-chef-border text-chef-text hover:bg-chef-panel transition-colors">
                     <Settings className="w-4 h-4" /> 설정
                   </Button>
                 )}
               </div>
             </div>
             
-            {userProfile?.bio && <p className="text-gray-700 text-sm md:text-base max-w-3xl mb-6">{userProfile.bio}</p>}
+            {userProfile?.bio && <p className="text-chef-text opacity-80 text-sm md:text-base max-w-3xl mb-6">{userProfile.bio}</p>}
             
-            <div className="flex gap-6 md:gap-10 pt-4 border-t border-gray-100">
+            <div className="flex gap-6 md:gap-10 pt-4 border-t border-chef-border">
               {[
                 { label: 'Projects', value: stats.projects },
                 { label: 'Likes', value: stats.likes },
@@ -532,8 +531,8 @@ export default function MyPage() {
                 { label: 'Following', value: stats.following }
               ].map((s) => (
                 <div key={s.label} className="text-center md:text-left">
-                  <div className="text-lg md:text-xl font-bold text-gray-900">{s.value}</div>
-                  <div className="text-xs md:text-sm text-gray-500">{s.label}</div>
+                  <div className="text-lg md:text-xl font-bold text-chef-text">{s.value}</div>
+                  <div className="text-xs md:text-sm text-chef-text opacity-50">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -541,7 +540,7 @@ export default function MyPage() {
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
+        <div className="flex border-b border-chef-border mb-6 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -549,11 +548,11 @@ export default function MyPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors relative whitespace-nowrap ${isActive ? tab.color : 'text-gray-500 hover:text-gray-900'}`}
+                className={`flex items-center gap-2 px-4 py-4 font-black transition-all relative whitespace-nowrap ${isActive ? tab.color : 'text-chef-text opacity-40 hover:opacity-100'}`}
               >
                 <Icon size={18} fill={tab.id === 'likes' && isActive ? 'currentColor' : 'none'} />
-                {tab.label}
-                {isActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 ${tab.bgColor}`} />}
+                <span className="text-xs uppercase tracking-widest">{tab.label}</span>
+                {isActive && <div className={`absolute bottom-0 left-0 w-full h-1 ${tab.bgColor}`} />}
               </button>
             );
           })}
@@ -566,10 +565,10 @@ export default function MyPage() {
               <button
                 key={col.collection_id}
                 onClick={() => handleCollectionChange(col.collection_id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   activeCollectionId === col.collection_id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-chef-panel border border-chef-border text-chef-text opacity-60 hover:opacity-100'
                 }`}
               >
                 {col.name}
@@ -581,7 +580,7 @@ export default function MyPage() {
         {/* 콘텐츠 영역 */}
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           </div>
         ) : (
           <>
@@ -591,8 +590,8 @@ export default function MyPage() {
                 {/* [New] Project Sub-filters */}
                 {activeTab === 'projects' && (
                   <div className="flex gap-2">
-                    <button onClick={() => setProjectFilter('all')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'all' ? "bg-slate-900 text-white" : "bg-white border border-gray-200 text-slate-500")}>전체</button>
-                    <button onClick={() => setProjectFilter('active')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'active' ? "bg-green-600 text-white" : "bg-white border border-gray-200 text-green-600")}>발행 중</button>
+                    <button onClick={() => setProjectFilter('all')} className={cn("px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", projectFilter === 'all' ? "bg-chef-text text-chef-bg shadow-xl" : "bg-chef-panel border border-chef-border text-chef-text opacity-40 hover:opacity-100")}>ALL</button>
+                    <button onClick={() => setProjectFilter('active')} className={cn("px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", projectFilter === 'active' ? "bg-orange-600 text-white shadow-xl" : "bg-chef-panel border border-chef-border text-chef-text opacity-40 hover:opacity-100")}>PUBLISHED</button>
                   </div>
                 )}
 
@@ -601,12 +600,12 @@ export default function MyPage() {
                      {activeTab === 'projects' && (
                         <div 
                           onClick={() => router.push('/project/upload')}
-                          className="bg-white rounded-[2rem] border-2 border-dashed border-gray-100 hover:border-green-400 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] bg-gray-50/30"
+                          className="bg-chef-panel rounded-[2rem] border-2 border-dashed border-chef-border hover:border-orange-500/50 overflow-hidden hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px]"
                         >
-                          <div className="w-16 h-16 rounded-3xl bg-white group-hover:bg-green-50 flex items-center justify-center mb-4 transition-all shadow-sm group-hover:shadow-md">
-                            <Plus className="w-8 h-8 text-gray-300 group-hover:text-green-500 transition-colors" />
+                          <div className="w-16 h-16 rounded-3xl bg-chef-card flex items-center justify-center mb-4 transition-all shadow-sm group-hover:shadow-2xl group-hover:bg-orange-600">
+                            <Plus className="w-8 h-8 text-chef-text opacity-20 group-hover:text-white group-hover:opacity-100 transition-all" />
                           </div>
-                          <p className="text-gray-400 group-hover:text-green-600 font-bold transition-colors">새 프로젝트 등록</p>
+                          <p className="text-chef-text opacity-20 group-hover:opacity-100 font-black text-xs uppercase tracking-widest transition-all">POST NEW PROJECT</p>
                         </div>
                      )}
                     
@@ -614,7 +613,7 @@ export default function MyPage() {
                       if (activeTab === 'projects' && projectFilter === 'active') return p.visibility === 'public';
                       return true;
                     }).map((project) => (
-                      <div key={project.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all group relative">
+                      <div key={project.id} className="bg-chef-card rounded-[2rem] border border-chef-border overflow-hidden hover:shadow-2xl transition-all group relative">
                         {/* [New] V-Audit Status Badge */}
                         {(project.custom_data?.audit_config || project.audit_deadline) && (
                           <div className="absolute top-4 left-4 z-10">
@@ -628,20 +627,20 @@ export default function MyPage() {
                         <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                            <img src={project.thumbnail_url || '/placeholder.jpg'} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                            <div className="absolute inset-x-4 bottom-4 z-10 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 flex gap-2">
-                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} className="flex-1 bg-white text-slate-900 rounded-xl font-bold text-[11px] h-11 hover:bg-orange-600 hover:text-white transition-all shadow-xl">
-                                  <Settings className="w-3.5 h-3.5 mr-2" /> 수정
+                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} className="flex-1 bg-chef-card text-chef-text border border-chef-border rounded-xl font-black text-[10px] uppercase tracking-widest h-11 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-2xl">
+                                  <Settings className="w-3.5 h-3.5 mr-2" /> EDIT
                                 </Button>
-                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/review/viewer?projectId=${project.id}`); }} className="flex-1 bg-slate-900 text-white rounded-xl font-bold text-[11px] h-11 transition-all shadow-xl">
-                                  <Eye className="w-3.5 h-3.5 mr-2" /> 진단 결과
+                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/review/viewer?projectId=${project.id}`); }} className="flex-1 bg-chef-text text-chef-bg rounded-xl font-black text-[10px] uppercase tracking-widest h-11 transition-all shadow-2xl">
+                                  <Eye className="w-3.5 h-3.5 mr-2" /> AUDIT RESULT
                                 </Button>
                            </div>
                         </div>
                         <div className="p-5 space-y-3">
-                           <h3 className="font-bold text-gray-900 line-clamp-1">{project.title}</h3>
+                           <h3 className="font-black text-chef-text uppercase tracking-tight text-sm line-clamp-1">{project.title}</h3>
                            {project.audit_deadline && (
-                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 p-2 rounded-xl">
+                             <div className="flex items-center gap-2 text-[10px] font-black text-chef-text opacity-40 bg-chef-panel p-2 rounded-xl">
                                 <Clock size={14} className="text-orange-500" />
-                                진단 마감일: <span className="text-orange-600">{new Date(project.audit_deadline).toLocaleDateString()}</span>
+                                DEADLINE: <span className="text-orange-600">{new Date(project.audit_deadline).toLocaleDateString()}</span>
                              </div>
                            )}
                         </div>
@@ -649,10 +648,10 @@ export default function MyPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
-                    <ChefHat className="w-16 h-16 text-gray-300 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{activeTab === 'audit_requests' ? '등록된 평가 의뢰가 없습니다' : '프로젝트가 없습니다'}</h3>
-                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-4">의뢰하기</Button>
+                  <div className="flex flex-col items-center justify-center py-24 bg-chef-card rounded-[2.5rem] border border-dashed border-chef-border">
+                    <ChefHat className="w-16 h-16 text-chef-text opacity-10 mb-4" />
+                    <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">{activeTab === 'audit_requests' ? 'NO AUDIT REQUESTS' : 'NO PROJECTS'}</h3>
+                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-6 font-black uppercase tracking-widest text-xs">GO AUDIT</Button>
                   </div>
                 )}
               </div>

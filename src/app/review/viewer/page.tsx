@@ -185,8 +185,8 @@ function ViewerContent() {
   };
 
   if (loading) return (
-    <div className="h-screen bg-[#050505] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    <div className="h-screen bg-background flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -206,8 +206,8 @@ function ViewerContent() {
       return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black text-white">최종 판정</h3>
-            <p className="text-sm text-white/40 font-medium">{project?.custom_data?.audit_config?.poll?.desc || "당신의 선택은 무엇입니까?"}</p>
+            <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">최종 판정</h3>
+            <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">{project?.custom_data?.audit_config?.poll?.desc || "당신의 선택은 무엇입니까?"}</p>
           </div>
           <FeedbackPoll projectId={projectId!} guestId={guestId || undefined} />
         </div>
@@ -219,20 +219,20 @@ function ViewerContent() {
       return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black text-white">심층 질문</h3>
-            <p className="text-sm text-white/40 font-medium">프로젝트에 대한 당신의 세심한 의견을 남겨주세요.</p>
+            <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">심층 질문</h3>
+            <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">프로젝트에 대한 당신의 세심한 의견을 남겨주세요.</p>
           </div>
           <div className="space-y-8">
             {questions.map((q: string, i: number) => (
               <div key={i} className="space-y-3">
                 <div className="flex gap-3">
                   <span className="text-orange-500 font-black">Q{i+1}</span>
-                  <label className="text-white font-bold">{q}</label>
+                  <label className="text-chef-text font-black uppercase tracking-tight">{q}</label>
                 </div>
                 <textarea 
                   value={customAnswers[q] || ""}
                   onChange={e => setCustomAnswers({ ...customAnswers, [q]: e.target.value })}
-                  className="w-full h-32 bg-white/5 border border-white/10 rounded-[1.5rem] p-5 text-white focus:border-orange-500 outline-none resize-none transition-all"
+                  className="w-full h-32 bg-chef-panel border border-chef-border rounded-[1.5rem] p-5 text-chef-text focus:border-orange-500 outline-none resize-none transition-all placeholder:text-chef-text/10"
                   placeholder="의견을 입력해 주세요..."
                 />
               </div>
@@ -249,17 +249,17 @@ function ViewerContent() {
             <CheckCircle2 size={48} />
           </div>
           <div className="space-y-2">
-            <h3 className="text-3xl font-black text-white">평가 완료</h3>
-            <p className="text-white/40 font-medium">모든 진단 항목을 확인했습니다.<br />지금 제출하여 창작자에게 의견을 전달하시겠습니까?</p>
+            <h3 className="text-3xl font-black text-chef-text uppercase tracking-tighter italic">평가 완료</h3>
+            <p className="text-chef-text opacity-40 font-black tracking-widest uppercase text-xs">모든 진단 항목을 확인했습니다.<br />지금 제출하여 창작자에게 의견을 전달하시겠습니까?</p>
           </div>
-          <div className="w-full p-6 bg-white/5 rounded-2xl border border-white/5 space-y-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-white/40 font-black uppercase">평가 항목</span>
-              <span className="text-orange-500 font-black">완료</span>
+          <div className="w-full p-6 bg-chef-panel rounded-2xl border border-chef-border space-y-3">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+              <span className="text-chef-text opacity-40">평가 항목</span>
+              <span className="text-orange-600">완료</span>
             </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-white/40 font-black uppercase">스티커 판정</span>
-              <span className="text-orange-500 font-black">완료</span>
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+              <span className="text-chef-text opacity-40">스티커 판정</span>
+              <span className="text-orange-600">완료</span>
             </div>
           </div>
         </div>
@@ -270,33 +270,33 @@ function ViewerContent() {
   };
 
   return (
-    <main className="h-screen w-full bg-[#050505] flex flex-col md:flex-row overflow-hidden">
+    <main className="h-screen w-full bg-background flex flex-col md:flex-row overflow-hidden transition-colors duration-500">
       {/* Left Area: Project Preview */}
-      <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-white/5">
+      <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border">
         {/* Top Header for Control */}
-        <div className="h-14 bg-[#0a0a0a] border-b border-white/5 px-6 flex items-center justify-between shrink-0">
+        <div className="h-14 bg-chef-card border-b border-chef-border px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
              <div className="flex gap-1.5 opacity-40">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
              </div>
-             <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">Live Diagnostic Preview</span>
+             <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-2">Live Diagnostic Preview</span>
           </div>
           <div className="flex items-center gap-2">
-             <div className="flex bg-white/5 p-0.5 rounded-lg border border-white/5">
-                <button onClick={() => setViewerMode('desktop')} className={cn("p-2 rounded-md transition-all", viewerMode === 'desktop' ? "bg-white/10 text-white" : "text-white/20")}><Monitor size={14} /></button>
-                <button onClick={() => setViewerMode('mobile')} className={cn("p-2 rounded-md transition-all", viewerMode === 'mobile' ? "bg-white/10 text-white" : "text-white/20")}><Smartphone size={14} /></button>
+             <div className="flex bg-chef-panel p-0.5 rounded-lg border border-chef-border">
+                <button onClick={() => setViewerMode('desktop')} className={cn("p-2 rounded-md transition-all", viewerMode === 'desktop' ? "bg-chef-card text-chef-text shadow-sm" : "text-chef-text opacity-20")}><Monitor size={14} /></button>
+                <button onClick={() => setViewerMode('mobile')} className={cn("p-2 rounded-md transition-all", viewerMode === 'mobile' ? "bg-chef-card text-chef-text shadow-sm" : "text-chef-text opacity-20")}><Smartphone size={14} /></button>
              </div>
-             <Button variant="ghost" size="sm" className="h-8 px-3 text-white/40 hover:text-white rounded-lg gap-2 text-[10px] font-black" onClick={() => window.open(previewUrl || '', '_blank')}><Maximize2 size={12} /> OPEN IN NEW TAB</Button>
+             <Button variant="ghost" size="sm" className="h-8 px-3 text-chef-text opacity-40 hover:opacity-100 rounded-lg gap-2 text-[10px] font-black" onClick={() => window.open(previewUrl || '', '_blank')}><Maximize2 size={12} /> OPEN IN NEW TAB</Button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-[#050505] flex items-center justify-center p-4 md:p-8 overflow-hidden relative">
+        <div className="flex-1 bg-background flex items-center justify-center p-4 md:p-8 overflow-hidden relative transition-colors">
           <div className={cn(
-            "transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-[0_40px_100px_rgba(0,0,0,0.5)] bg-black relative",
-            viewerMode === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-[12px] border-white/10" : "w-full h-full rounded-2xl"
+            "transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-[0_40px_100px_rgba(0,0,0,0.3)] bg-chef-card relative",
+            viewerMode === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-[12px] border-chef-border" : "w-full h-full rounded-2xl"
           )}>
             <MediaPreview type={auditType as any} data={mediaData} />
           </div>
@@ -305,7 +305,7 @@ function ViewerContent() {
 
       {/* Right Area: Evaluation Panel */}
       <div 
-        className="fixed bottom-0 right-0 top-0 md:relative z-20 bg-[#0a0a0a] flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)] h-[60vh] md:h-full w-full"
+        className="fixed bottom-0 right-0 top-0 md:relative z-20 bg-chef-card flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.2)] dark:shadow-[-40px_0_80px_rgba(0,0,0,0.5)] h-[60vh] md:h-full w-full border-l border-chef-border transition-colors duration-500"
         style={{ width: (typeof window !== 'undefined' && window.innerWidth > 768) ? panelWidth : '100%' }}
       >
         {/* Resize Handle */}
@@ -313,16 +313,16 @@ function ViewerContent() {
           onMouseDown={() => setIsResizing(true)} 
           className="hidden md:flex absolute top-0 left-0 bottom-0 w-1 cursor-col-resize hover:bg-orange-500/50 transition-colors group items-center justify-center" 
         >
-          <div className="w-[1px] h-20 bg-white/10 group-hover:bg-orange-500 transition-colors" />
+          <div className="w-[1px] h-20 bg-chef-border group-hover:bg-orange-500 transition-colors" />
         </div>
 
         {/* Panel Header */}
-        <div className="p-6 md:p-8 border-b border-white/5 flex items-center justify-between shrink-0">
+        <div className="p-6 md:p-8 border-b border-chef-border flex items-center justify-between shrink-0">
           <div>
-            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-500/10 px-3 py-1 rounded-full mb-3 inline-block">Evaluation Step {currentStep + 1}</span>
-            <h3 className="text-xl md:text-2xl font-black text-white tracking-tighter">제 평가는요?</h3>
+            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full mb-3 inline-block">Evaluation Step {currentStep + 1}</span>
+            <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic">제 평가는요?</h3>
           </div>
-          <button onClick={() => router.back()} className="text-white/20 hover:text-white transition-colors"><X size={20} /></button>
+          <button onClick={() => router.back()} className="text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
         </div>
 
         {/* Panel Content */}
@@ -341,21 +341,21 @@ function ViewerContent() {
         </div>
 
         {/* Panel Footer */}
-        <div className="p-6 md:p-8 border-t border-white/5 flex gap-4 shrink-0 bg-[#0a0a0a]">
+        <div className="p-6 md:p-8 border-t border-chef-border flex gap-4 shrink-0 bg-chef-card">
           {currentStep > 0 && (
             <Button 
               variant="outline" 
               onClick={handlePrevStep} 
-              className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 text-white/60 hover:text-white transition-all font-bold"
+              className="h-14 px-6 rounded-2xl border-chef-border bg-chef-panel text-chef-text opacity-50 hover:opacity-100 transition-all font-black"
             >
               <ChevronLeft />
             </Button>
           )}
           <Button 
             onClick={handleNextStep}
-            className="flex-1 h-16 rounded-[1.5rem] bg-orange-600 hover:bg-orange-500 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl"
+            className="flex-1 h-16 rounded-[1.5rem] bg-orange-600 hover:bg-orange-500 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
           >
-            {currentStep < steps.length - 1 ? "다음 항목으로" : "진단 제출하기"}
+            {currentStep < steps.length - 1 ? "NEXT STEP" : "SUBMIT AUDIT"}
           </Button>
         </div>
       </div>
@@ -387,7 +387,7 @@ function ViewerContent() {
 
 export default function ViewerPage() {
   return (
-    <Suspense fallback={<div className="h-screen bg-[#050505] flex items-center justify-center text-orange-500 font-black animate-pulse uppercase tracking-[0.2em] text-sm">Initializing Viewer System...</div>}>
+    <Suspense fallback={<div className="h-screen bg-background flex flex-col items-center justify-center text-orange-600 font-black animate-pulse uppercase tracking-[0.3em] text-[10px]">Initializing Viewer System...</div>}>
       <ViewerContent />
     </Suspense>
   );
