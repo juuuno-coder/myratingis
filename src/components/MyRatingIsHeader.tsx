@@ -164,3 +164,5 @@ export function MyRatingIsHeader() {
     </header>
   );
 }
+
+export default MyRatingIsHeader;
