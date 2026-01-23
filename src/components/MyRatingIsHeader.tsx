@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { ChefHat, User, LogOut } from "lucide-react";
+import { ChefHat, User, LogOut, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/providers/ThemeProvider";
+import { cn } from "@/lib/utils";
 
 export function MyRatingIsHeader() {
   const router = useRouter();
   const { user, userProfile, signOut, isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -18,64 +21,75 @@ export function MyRatingIsHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 z-50 chef-header-dark shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <img 
             src="/myratingis-logo.png" 
             alt="제 평가는요?" 
-            className="h-8 w-auto object-contain"
+            className={cn(
+              "h-8 w-auto object-contain transition-all duration-300",
+              theme === "dark" ? "invert brightness-200" : "invert-0 brightness-0"
+            )}
           />
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
+          {/* Theme Toggle */}
+          <button 
+            onClick={toggleTheme}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-chef-text"
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5 text-gray-600" />}
+          </button>
+
           {isAuthenticated && user ? (
             <>
               <Button
                 onClick={() => router.push("/project/upload")}
-                className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-6 h-10 font-bold flex items-center gap-2"
+                className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-xs uppercase tracking-widest flex items-center gap-2"
               >
                 <ChefHat className="w-4 h-4" />
-                진단 의뢰
+                Audit Request
               </Button>
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/5 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                    <span className="text-orange-600 font-bold text-sm">
+                  <div className="w-8 h-8 bevel-sm bg-white/10 flex items-center justify-center">
+                    <span className="text-white font-black text-sm">
                       {userProfile?.username?.charAt(0) || "U"}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {userProfile?.username || "사용자"}
+                  <span className="text-sm font-black text-white/80">
+                    {userProfile?.username || "CHEF"}
                   </span>
                 </button>
 
                 {isMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2">
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-black/95 backdrop-blur-xl rounded-none border border-white/10 py-2 shadow-2xl">
                     <button
                       onClick={() => {
                         router.push("/mypage");
                         setIsMenuOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-2 text-xs font-black text-white/60 hover:text-white transition-colors"
                     >
                       <User className="w-4 h-4" />
-                      마이페이지
+                      MY STUDIO
                     </button>
                     <button
                       onClick={() => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600"
+                      className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-2 text-xs font-black text-red-500/80 hover:text-red-500 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
-                      로그아웃
+                      LOGOUT
                     </button>
                   </div>
                 )}
@@ -84,13 +98,13 @@ export function MyRatingIsHeader() {
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost" className="rounded-full px-5 font-medium">
-                  로그인
+                <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 px-5 font-black text-xs uppercase tracking-widest">
+                  Login
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6 font-medium">
-                  회원가입
+                <Button className="bg-white text-black hover:bg-white/90 bevel-cta px-6 font-black text-xs uppercase tracking-widest">
+                  Signup
                 </Button>
               </Link>
             </div>
@@ -102,10 +116,10 @@ export function MyRatingIsHeader() {
           className="md:hidden p-2"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          <div className="w-6 h-5 flex flex-col justify-between">
-            <span className="w-full h-0.5 bg-gray-900 rounded"></span>
-            <span className="w-full h-0.5 bg-gray-900 rounded"></span>
-            <span className="w-full h-0.5 bg-gray-900 rounded"></span>
+          <div className="w-6 h-5 flex flex-col justify-between items-end">
+            <span className="w-full h-0.5 bg-white rounded"></span>
+            <span className="w-2/3 h-0.5 bg-white rounded"></span>
+            <span className="w-full h-0.5 bg-white rounded"></span>
           </div>
         </button>
       </div>

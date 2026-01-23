@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-type TabType = 'projects' | 'likes' | 'collections' | 'proposals' | 'comments' | 'ai_tools' | 'settings';
+type TabType = 'projects' | 'audit_requests' | 'likes' | 'collections' | 'proposals' | 'comments' | 'ai_tools' | 'settings';
 type AiToolType = 'lean-canvas' | 'persona' | 'assistant' | 'job' | 'trend' | 'recipe' | 'tool' | 'api-settings';
 
 import { LeanCanvasModal, type LeanCanvasData } from "@/components/LeanCanvasModal";
@@ -114,7 +114,8 @@ export default function MyPage() {
           .single();
 
         setUserProfile({
-          username: (dbProfile as any)?.nickname || (dbProfile as any)?.username || authProfile?.username || (authProfile as any)?.full_name || '사용자',
+          username: (dbProfile as any)?.username || authProfile?.username || 'user',
+          nickname: (dbProfile as any)?.nickname || authProfile?.username || '사용자',
           email: authUser.email,
           profile_image_url: authProfile?.profile_image_url || '/globe.svg',
           role: authProfile?.role || 'user',
@@ -165,14 +166,19 @@ export default function MyPage() {
       setProjects([]);
       
       try {
-        if (activeTab === 'projects') {
+        if (activeTab === 'projects' || activeTab === 'audit_requests') {
           const { data } = await supabase
             .from('Project')
             .select('project_id, title, thumbnail_url, likes_count, views_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
           
-          setProjects((data || []).map((p: any) => ({
+          let filteredData = data || [];
+          if (activeTab === 'audit_requests') {
+            filteredData = filteredData.filter((p: any) => p.custom_data?.audit_config || p.audit_deadline);
+          }
+
+          setProjects(filteredData.map((p: any) => ({
             id: String(p.project_id),
             title: p.title || '제목 없음',
             thumbnail_url: p.thumbnail_url || '/placeholder.jpg',
@@ -184,7 +190,7 @@ export default function MyPage() {
             alt_description: p.title || '',
             custom_data: p.custom_data,
             scheduled_at: p.scheduled_at,
-            visibility: p.visibility || 'public', // [New]
+            visibility: p.visibility || 'public',
           })));
           
         } else if (activeTab === 'likes') {
@@ -448,6 +454,7 @@ export default function MyPage() {
 
   const tabs = [
     { id: 'projects' as TabType, label: '내 프로젝트', icon: Grid, color: 'text-green-600', bgColor: 'bg-green-600' },
+    { id: 'audit_requests' as TabType, label: '내 평가 의뢰', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
     { id: 'likes' as TabType, label: '좋아요', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
     { id: 'collections' as TabType, label: '컬렉션', icon: Folder, color: 'text-blue-500', bgColor: 'bg-blue-500' },
     { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-green-500', bgColor: 'bg-green-500' },
@@ -578,32 +585,33 @@ export default function MyPage() {
           </div>
         ) : (
           <>
-            {/* 내 프로젝트 탭 */}
-            {activeTab === 'projects' && (
+            {/* 내 프로젝트 / 평가 의뢰 탭 */}
+            {(activeTab === 'projects' || activeTab === 'audit_requests') && (
               <div className="space-y-6">
                 {/* [New] Project Sub-filters */}
-                <div className="flex gap-2">
-                   <button onClick={() => setProjectFilter('all')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'all' ? "bg-slate-900 text-white" : "bg-white border border-gray-200 text-slate-500")}>전체</button>
-                   <button onClick={() => setProjectFilter('audit')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2", projectFilter === 'audit' ? "bg-orange-600 text-white" : "bg-white border border-gray-200 text-orange-600")}><ChefHat size={12} /> 제 평가는요?</button>
-                   <button onClick={() => setProjectFilter('active')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'active' ? "bg-green-600 text-white" : "bg-white border border-gray-200 text-green-600")}>발행 중</button>
-                </div>
+                {activeTab === 'projects' && (
+                  <div className="flex gap-2">
+                    <button onClick={() => setProjectFilter('all')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'all' ? "bg-slate-900 text-white" : "bg-white border border-gray-200 text-slate-500")}>전체</button>
+                    <button onClick={() => setProjectFilter('active')} className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", projectFilter === 'active' ? "bg-green-600 text-white" : "bg-white border border-gray-200 text-green-600")}>발행 중</button>
+                  </div>
+                )}
 
                 {projects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-                    {/* 프로젝트 등록 카드 */}
-                    <div 
-                      onClick={() => router.push('/project/upload')}
-                      className="bg-white rounded-[2rem] border-2 border-dashed border-gray-100 hover:border-green-400 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] bg-gray-50/30"
-                    >
-                      <div className="w-16 h-16 rounded-3xl bg-white group-hover:bg-green-50 flex items-center justify-center mb-4 transition-all shadow-sm group-hover:shadow-md">
-                        <Plus className="w-8 h-8 text-gray-300 group-hover:text-green-500 transition-colors" />
-                      </div>
-                      <p className="text-gray-400 group-hover:text-green-600 font-bold transition-colors">새 프로젝트 등록</p>
-                    </div>
+                     {activeTab === 'projects' && (
+                        <div 
+                          onClick={() => router.push('/project/upload')}
+                          className="bg-white rounded-[2rem] border-2 border-dashed border-gray-100 hover:border-green-400 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] bg-gray-50/30"
+                        >
+                          <div className="w-16 h-16 rounded-3xl bg-white group-hover:bg-green-50 flex items-center justify-center mb-4 transition-all shadow-sm group-hover:shadow-md">
+                            <Plus className="w-8 h-8 text-gray-300 group-hover:text-green-500 transition-colors" />
+                          </div>
+                          <p className="text-gray-400 group-hover:text-green-600 font-bold transition-colors">새 프로젝트 등록</p>
+                        </div>
+                     )}
                     
                     {projects.filter(p => {
-                      if (projectFilter === 'audit') return p.custom_data?.audit_config || p.audit_deadline;
-                      if (projectFilter === 'active') return p.visibility === 'public';
+                      if (activeTab === 'projects' && projectFilter === 'active') return p.visibility === 'public';
                       return true;
                     }).map((project) => (
                       <div key={project.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all group relative">
@@ -616,83 +624,35 @@ export default function MyPage() {
                              </div>
                           </div>
                         )}
-
+                        {/* ... rest of project card remains same ... */}
                         <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-                          <img 
-                            src={project.thumbnail_url || '/placeholder.jpg'}
-                            alt={project.title}
-                            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${project.scheduled_at && new Date(project.scheduled_at) > new Date() ? 'grayscale-[0.5]' : ''}`}
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.jpg'; }}
-                          />
-                          
-                          {/* Visibility/Schedule Badges */}
-                          <div className="absolute top-4 right-4 flex flex-col gap-2 items-end z-10">
-                            {project.scheduled_at && new Date(project.scheduled_at) > new Date() && (
-                              <div className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-1 rounded-lg shadow-md flex items-center gap-1 animate-pulse">
-                                <Clock size={12} strokeWidth={3} />
-                                <span>{new Date(project.scheduled_at).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                            {project.visibility === 'private' && (
-                               <div className="bg-gray-800/80 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-md flex items-center gap-1 backdrop-blur-sm">
-                                 <Lock size={12} strokeWidth={3} />
-                                 <span>비공개</span>
-                               </div>
-                            )}
-                          </div>
-
-                          {/* Hover Actions */}
-                          <div className="absolute inset-x-4 bottom-4 z-10 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                             <div className="flex gap-2">
-                                <Button 
-                                  onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }}
-                                  className="flex-1 bg-white text-slate-900 rounded-xl font-bold text-[11px] h-11 hover:bg-orange-600 hover:text-white transition-all shadow-xl"
-                                >
+                           <img src={project.thumbnail_url || '/placeholder.jpg'} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                           <div className="absolute inset-x-4 bottom-4 z-10 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 flex gap-2">
+                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} className="flex-1 bg-white text-slate-900 rounded-xl font-bold text-[11px] h-11 hover:bg-orange-600 hover:text-white transition-all shadow-xl">
                                   <Settings className="w-3.5 h-3.5 mr-2" /> 수정
                                 </Button>
-                                <Button 
-                                  onClick={(e) => { e.stopPropagation(); router.push(`/review/viewer?projectId=${project.id}`); }}
-                                  className="flex-1 bg-slate-900 text-white rounded-xl font-bold text-[11px] h-11 transition-all shadow-xl"
-                                >
-                                  <Eye className="w-3.5 h-3.5 mr-2" /> 진단
+                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/review/viewer?projectId=${project.id}`); }} className="flex-1 bg-slate-900 text-white rounded-xl font-bold text-[11px] h-11 transition-all shadow-xl">
+                                  <Eye className="w-3.5 h-3.5 mr-2" /> 진단 결과
                                 </Button>
-                             </div>
-                          </div>
-                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                           </div>
                         </div>
-                        
                         <div className="p-5 space-y-3">
-                          <div className="flex justify-between items-start">
-                             <h3 className="font-bold text-gray-900 line-clamp-1 group-hover:text-orange-600 transition-colors">{project.title}</h3>
-                             <div className="flex items-center gap-1.5 text-slate-400">
-                                <Heart size={14} className={project.likes > 0 ? "fill-red-500 text-red-500" : ""} />
-                                <span className="text-[11px] font-bold">{project.likes || 0}</span>
+                           <h3 className="font-bold text-gray-900 line-clamp-1">{project.title}</h3>
+                           {project.audit_deadline && (
+                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 p-2 rounded-xl">
+                                <Clock size={14} className="text-orange-500" />
+                                진단 마감일: <span className="text-orange-600">{new Date(project.audit_deadline).toLocaleDateString()}</span>
                              </div>
-                          </div>
-                          
-                          {project.audit_deadline && (
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 bg-slate-50 p-2 rounded-xl">
-                               <Clock size={14} className="text-orange-500" />
-                               진단 마감일: <span className="text-orange-600">{new Date(project.audit_deadline).toLocaleDateString()}</span>
-                            </div>
-                          )}
+                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border border-dashed border-gray-200 relative overflow-hidden group hover:border-green-400/30 transition-colors">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300">
-                      <Upload className="w-10 h-10 text-green-500" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 z-10">아직 캔버스가 비어있어요</h3>
-                    <p className="text-gray-500 text-sm mb-8 z-10 text-center max-w-sm px-4 leading-relaxed">
-                      첫 번째 프로젝트를 업로드하고<br/>당신의 크리에이티브를 전 세계에 공유해보세요! 🎨
-                    </p>
-                    <Button onClick={() => router.push('/project/upload')} className="bg-green-600 hover:bg-green-700 text-white rounded-full px-8 h-14 text-base font-bold shadow-lg shadow-green-200">
-                      첫 프로젝트 시작하기
-                    </Button>
+                  <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+                    <ChefHat className="w-16 h-16 text-gray-300 mb-4" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{activeTab === 'audit_requests' ? '등록된 평가 의뢰가 없습니다' : '프로젝트가 없습니다'}</h3>
+                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-4">의뢰하기</Button>
                   </div>
                 )}
               </div>

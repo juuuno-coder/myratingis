@@ -408,110 +408,98 @@
   }
 
   /* ============================================ */
-  /* [MyRatingIs] Chef Concept: Black & Sharp Design */
+  /* [MyRatingIs] Theme System: Light & Dark */
   /* ============================================ */
 
-  /* 사선 절단 (육각형/팔각형 스타일) 베젤 섹션 */
-  .bevel-section {
-    position: relative;
-    clip-path: polygon(
-      20px 0%,
-      calc(100% - 20px) 0%,
-      100% 20px,
-      100% calc(100% - 20px),
-      calc(100% - 20px) 100%,
-      20px 100%,
-      0% calc(100% - 20px),
-      0% 20px
-    );
+  :root {
+    --chef-bg: #fdfdfd;
+    --chef-card-bg: #ffffff;
+    --chef-text: #000000;
+    --chef-border: rgba(0, 0, 0, 0.1);
+    --chef-frame: rgba(0, 0, 0, 0.8);
+    --chef-panel: #f4f4f4;
   }
 
-  /* 조금 더 작은 베젤 (버튼이나 작은 카드용) */
-  .bevel-sm {
-    clip-path: polygon(
-      8px 0%,
-      calc(100% - 8px) 0%,
-      100% 8px,
-      100% calc(100% - 8px),
-      calc(100% - 8px) 100%,
-      8px 100%,
-      0% calc(100% - 8px),
-      0% 8px
-    );
+  .dark {
+    --chef-bg: #000000;
+    --chef-card-bg: #0a0a0a;
+    --chef-text: #ffffff;
+    --chef-border: rgba(255, 255, 255, 0.1);
+    --chef-frame: rgba(255, 255, 255, 0.5);
+    --chef-panel: #111111;
   }
 
-  /* 강한 흑백 대비 다크 섹션 */
-  .chef-black-panel {
-    background: #000000;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  /* 배경 테마 적용 */
+  .chef-bg-page {
+    background-color: var(--chef-bg);
+    color: var(--chef-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* 사선 베젤의 테두리 효과 (Pseudo element 활용) */
-  .bevel-border {
-    position: relative;
-    background: #000000;
-    z-index: 0;
+  /* Tailwind 스타일 연동 유틸리티 */
+  .text-chef-text { color: var(--chef-text); }
+  .bg-chef-bg { background-color: var(--chef-bg); }
+  .bg-chef-card { background-color: var(--chef-card-bg); }
+  .border-chef-border { border-color: var(--chef-border); }
+
+  .dark .chef-bg-dark {
+    background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('/dark-texture-bg.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
   }
 
-  .bevel-border::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.4) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.2) 100%
-    );
-    z-index: -1;
-    clip-path: polygon(
-      20px 0%,
-      calc(100% - 20px) 0%,
-      100% 20px,
-      100% calc(100% - 20px),
-      calc(100% - 20px) 100%,
-      20px 100%,
-      0% calc(100% - 20px),
-      0% 20px
-    );
-  }
-
-  /* 포인트 컬러: 흑백 대비 속의 오렌지 */
-  .chef-point-orange {
-    color: #f97316;
-  }
-
-  .chef-bg-orange {
-    background: #f97316;
-  }
-
-  /* 배경 흑백 그라데이션 */
   .chef-bg-dark {
-    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+    background: #f8f8f8;
   }
 
-  /* ============================================ */
-  /* [MyRatingIs] Banjeom Style: Frame & Menu UI */
-  /* ============================================ */
+  /* 헤더 테마 */
+  .chef-header-dark {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
 
-  /* 외부 화이트 라인 프레임 */
+  .dark .chef-header-dark {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* 강한 대비 패널 */
+  .chef-black-panel {
+    background: var(--chef-card-bg);
+    color: var(--chef-text);
+    border: 1px solid var(--chef-border);
+  }
+
+  /* 입력 필드 시인성 개선 */
+  .chef-input-high-v {
+    color: var(--chef-text) !important;
+    font-weight: 700 !important;
+  }
+
+  .chef-input-high-v::placeholder {
+    color: var(--chef-text);
+    opacity: 0.2;
+  }
+
+  /* 트리플 반점 프레임 */
   .chef-frame-container {
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--chef-frame);
     padding: 40px 10px 10px 10px;
     margin-top: 20px;
   }
 
-  /* 상단 돌출형 블랙 탭 헤더 */
   .chef-frame-header {
     position: absolute;
     top: -18px;
     left: 50%;
     transform: translateX(-50%);
-    background: #000000;
-    border: 1px solid #ffffff;
-    color: #ffffff;
+    background: var(--chef-text);
+    border: 1px solid var(--chef-bg);
+    color: var(--chef-bg);
     padding: 4px 24px;
     font-weight: 900;
     font-size: 14px;
@@ -520,27 +508,28 @@
     z-index: 10;
   }
 
-  /* 메뉴 스타일 카드 */
   .chef-menu-card {
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--chef-border);
     background: transparent;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-    position: relative;
   }
 
-  /* 카드 하부 90% 불투명 블랙 영역 */
   .chef-menu-bottom {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--chef-text);
     padding: 16px;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    flex-grow: 1;
+    color: var(--chef-bg);
     display: flex;
     flex-direction: column;
     justify-content: center;
+  }
+
+  .dark .chef-menu-bottom {
+    background: rgba(0, 0, 0, 0.9);
+  }
+
+  .chef-line-detail {
+    border-top: 1px solid var(--chef-bg);
+    opacity: 0.2;
+    margin: 8px 0;
   }
 
   /* Editor Block Visual Indicators */

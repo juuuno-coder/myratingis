@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let title = defaultTitle;
   let description = defaultDesc;
   let ogImage = "";
-  let favicon = "/myratingis-logo.png"; // Updated favicon path
+  let favicon = "/favicon.ico"; 
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -75,7 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(
       process.env.NEXT_PUBLIC_APP_URL || "https://myratingis.vercel.app",
-    ), // Updated base
+    ), 
     title: title,
     description: description,
     keywords: [
@@ -93,9 +93,13 @@ export async function generateMetadata(): Promise<Metadata> {
       images: ogImage ? [{ url: ogImage }] : [],
     },
     icons: {
-      icon: favicon,
-      shortcut: favicon,
-      apple: favicon,
+      icon: [
+        { url: "/favicon.ico" },
+        { url: "/favicon.png", type: "image/png" },
+      ],
+      apple: [
+        { url: "/favicon.png" },
+      ],
     },
   };
 }

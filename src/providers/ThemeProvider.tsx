@@ -19,9 +19,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // 초기 테마 설정
   useEffect(() => {
     setMounted(true);
-    // 강제로 Light 모드 적용 (사용자 요청에 따라 다크모드 비활성화 및 화이트 테마 고정)
-    setTheme("light");
-    localStorage.setItem("theme", "light"); // 기존 dark 설정 덮어쓰기
+    const savedTheme = localStorage.getItem("theme") as Theme;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
   }, []);
 
   // 테마 변경 시 적용

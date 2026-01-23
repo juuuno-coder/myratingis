@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase/client";
 import { 
   Loader2, Globe, Github, Twitter, Instagram, 
   Settings, Check, X, Copy, ExternalLink, 
-  Eye, EyeOff, Terminal, Key, Plus, Trash2, RefreshCw
+  Eye, EyeOff, Terminal, Key, Plus, Trash2, RefreshCw, Lock
 } from "lucide-react";
 import { GENRE_CATEGORIES_WITH_ICONS, FIELD_CATEGORIES_WITH_ICONS } from "@/lib/ui-constants";
 
@@ -29,12 +29,20 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
   const [isPublic, setIsPublic] = useState(true);
   const [formData, setFormData] = useState({
     username: "",
+    nickname: "",
     bio: "",
     website: "",
     github: "",
     twitter: "",
     instagram: "",
   });
+  
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: ""
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   // Interests
   const [interests, setInterests] = useState<{ genres: string[], fields: string[] }>({
@@ -57,6 +65,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
     if (user) {
       setFormData({
         username: user.username || "",
+        nickname: user.nickname || user.username || "",
         bio: user.bio || "",
         website: user.social_links?.website || "",
         github: user.social_links?.github || "",
@@ -166,30 +175,75 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const updateData = {
+        username: formData.username,
+        nickname: formData.nickname,
+        bio: formData.bio,
+        social_links: {
+          website: formData.website,
+          github: formData.github,
+          twitter: formData.twitter,
+          instagram: formData.instagram,
+        },
+        is_public: isPublic,
+        interests: interests,
+        expertise: expertise,
+      };
+
+      // profiles 테이블 업데이트
+      const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          username: formData.username,
-          bio: formData.bio,
-          social_links: {
-            website: formData.website,
-            github: formData.github,
-            twitter: formData.twitter,
-            instagram: formData.instagram,
-          },
-          is_public: isPublic,
-          interests: interests,
-          expertise: expertise,
-        })
+        .update(updateData)
         .eq('id', user.id);
 
-      if (error) throw error;
+      // users 테이블이 존재할 수 있으므로 시도 (있는 경우에만)
+      try {
+        await supabase.from('users').update({ 
+            nickname: formData.nickname,
+            username: formData.username
+        }).eq('id', user.id);
+      } catch (e) {}
+
+      if (profileError) throw profileError;
+
+      // Auth Metadata 업데이트
+      await supabase.auth.updateUser({
+          data: { 
+              nickname: formData.nickname,
+              full_name: formData.nickname 
+          }
+      });
+
       toast.success("설정이 저장되었습니다!");
       onUpdate();
     } catch (error: any) {
       toast.error(error.message || "저장 실패");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!passwords.new || passwords.new.length < 6) {
+        return toast.error("새 비밀번호는 최소 6자 이상이어야 합니다.");
+    }
+    if (passwords.new !== passwords.confirm) {
+        return toast.error("새 비밀번호가 일치하지 않습니다.");
+    }
+
+    setIsChangingPassword(true);
+    try {
+        const { error } = await supabase.auth.updateUser({
+            password: passwords.new
+        });
+        if (error) throw error;
+        
+        toast.success("비밀번호가 성공적으로 변경되었습니다.");
+        setPasswords({ current: "", new: "", confirm: "" });
+    } catch (error: any) {
+        toast.error(error.message || "비밀번호 변경 실패");
+    } finally {
+        setIsChangingPassword(false);
     }
   };
 
@@ -259,25 +313,26 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     setFormData({...formData, username: val});
                                     checkUsername(val);
                                 }}
-                                className="pl-[105px]"
+                                className="pl-[105px] h-12 rounded-xl"
                                 placeholder="username"
                             />
-                            <div className="absolute right-3 top-2.5">
+                            <div className="absolute right-3 top-3">
                                 {checking ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> :
                                  usernameAvailable === true ? <Check className="w-4 h-4 text-green-500" /> :
                                  usernameAvailable === false ? <X className="w-4 h-4 text-red-500" /> : null}
                             </div>
                         </div>
                         {usernameAvailable === false && <p className="text-xs text-red-500">사용할 수 없는 아이디입니다.</p>}
-                        {formData.username && usernameAvailable !== false && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <span className="truncate max-w-[200px]">{profileUrl}</span>
-                                <Copy className="w-3 h-3 cursor-pointer hover:text-green-600" onClick={() => {
-                                    navigator.clipboard.writeText(profileUrl);
-                                    toast.success("복사됨");
-                                }} />
-                            </div>
-                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>닉네임 (표시 이름)</Label>
+                        <Input 
+                            value={formData.nickname}
+                            onChange={e => setFormData({...formData, nickname: e.target.value})}
+                            placeholder="활동하실 닉네임을 입력하세요."
+                            className="h-12 rounded-xl"
+                        />
                     </div>
                 </div>
 
@@ -285,11 +340,11 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                     <div className="space-y-2">
                         <Label>한줄 소개</Label>
                         <Textarea 
-                            rows={3}
+                            rows={5}
                             value={formData.bio}
                             onChange={e => setFormData({...formData, bio: e.target.value})}
                             placeholder="자기소개를 입력하세요."
-                            className="resize-none"
+                            className="resize-none rounded-xl"
                         />
                     </div>
                 </div>
@@ -370,25 +425,67 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             </div>
         </section>
 
+        {/* 2.7 비밀번호 변경 */}
+        <section className="space-y-6">
+            <h2 className="text-xl font-bold border-b pb-4 flex items-center gap-2">
+                <Lock className="w-6 h-6 text-gray-700" />
+                보안 및 비밀번호 변경
+            </h2>
+            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label>새 비밀번호</Label>
+                        <Input 
+                            type="password"
+                            value={passwords.new}
+                            onChange={e => setPasswords({...passwords, new: e.target.value})}
+                            placeholder="새 비밀번호 입력"
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>새 비밀번호 확인</Label>
+                        <Input 
+                            type="password"
+                            value={passwords.confirm}
+                            onChange={e => setPasswords({...passwords, confirm: e.target.value})}
+                            placeholder="비밀번호 확인"
+                            className="bg-white"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <Button 
+                        onClick={handlePasswordChange} 
+                        disabled={isChangingPassword || !passwords.new}
+                        className="bg-slate-900 text-white hover:bg-slate-800"
+                    >
+                        {isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                        비밀번호 업데이트
+                    </Button>
+                </div>
+            </div>
+        </section>
+
         {/* 3. 소셜 링크 */}
         <section className="space-y-6">
             <h2 className="text-xl font-bold border-b pb-4">소셜 링크</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Globe className="w-4 h-4"/>웹사이트</Label>
-                    <Input value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://" />
+                    <Input value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://" className="h-11 shadow-sm" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Github className="w-4 h-4"/>GitHub</Label>
-                    <Input value={formData.github} onChange={e => setFormData({...formData, github: e.target.value})} placeholder="URL" />
+                    <Input value={formData.github} onChange={e => setFormData({...formData, github: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Twitter className="w-4 h-4"/>Twitter (X)</Label>
-                    <Input value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} placeholder="URL" />
+                    <Input value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Instagram className="w-4 h-4"/>Instagram</Label>
-                    <Input value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} placeholder="URL" />
+                    <Input value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
                 </div>
             </div>
         </section>

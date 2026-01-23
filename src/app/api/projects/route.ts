@@ -275,13 +275,24 @@ export async function POST(request: NextRequest) {
     // Content is verified but allowed empty if user intends just a title/image post
 
     // [Validation] Verify User Exists in Profiles (Double Check)
-    let { data: userExists } = await supabaseAdmin
-        .from('profiles')
-        .select('id')
-        .eq('id', user_id)
-        .single();
+    const profileTables = ['profiles', 'users', 'User'];
+    let userExists = null;
+    let activeProfileTable = 'profiles';
+
+    for (const table of profileTables) {
+      const { data } = await supabaseAdmin
+          .from(table)
+          .select('id')
+          .eq('id', user_id)
+          .single();
+      if (data) {
+        userExists = data;
+        activeProfileTable = table;
+        break;
+      }
+    }
     
-    // 만약 profiles에 없다면 auth.users에서 정보를 가져와서 생성 시도
+    // 만약 프로필 테이블들에 없다면 auth.users에서 정보를 가져와서 생성 시도
     let profileCreationError: any = null;
     if (!userExists) {
         console.log(`[API] Profile not found for ${user_id}. Attempting to auto-create and retry.`);
@@ -300,25 +311,33 @@ export async function POST(request: NextRequest) {
             const profileData: any = {
                 id: user_id,
                 username: baseUsername,
-                nickname: baseUsername, // nickname 컬럼일 수도 있음
-                email: authUser.email,  // email은 보통 NOT NULL 필수값
+                nickname: baseUsername,
+                email: authUser.email,
                 avatar_url: baseAvatar,
-                profile_image_url: baseAvatar, // profile_image_url 컬럼일 수도 있음
+                profile_image_url: baseAvatar,
                 points: 1000 
             };
 
-            const { data: newProfile, error: createError } = await supabaseAdmin
-                .from('profiles')
-                .upsert(profileData, { onConflict: 'id' })
-                .select()
-                .single();
-            
-            if (!createError && newProfile) {
-                userExists = newProfile;
-                console.log(`[API] Profile auto-created successfully for ${user_id}`);
-            } else {
-                profileCreationError = createError;
-                console.error('[API] Failed to auto-create profile:', createError);
+            // 가능한 모든 프로필 테이블에 시도 (하위 호환성)
+            for (const table of profileTables) {
+              try {
+                const { data: newProfile, error: createError } = await supabaseAdmin
+                    .from(table)
+                    .upsert(profileData, { onConflict: 'id' })
+                    .select()
+                    .single();
+                
+                if (!createError && newProfile) {
+                    userExists = newProfile;
+                    activeProfileTable = table;
+                    console.log(`[API] Profile auto-created successfully in table: ${table}`);
+                    break;
+                } else {
+                  profileCreationError = createError;
+                }
+              } catch (e) {
+                profileCreationError = e;
+              }
             }
         }
     }
