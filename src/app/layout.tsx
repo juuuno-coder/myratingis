@@ -30,15 +30,16 @@ const notoSansKr = Noto_Sans_KR({
 import { createClient } from "@supabase/supabase-js";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const defaultTitle = "제 평가는요? (TestMe) - 흑백요리사 컨셉 프로젝트 진단";
+  const defaultTitle =
+    "제 평가는요? (MyRatingIs) - 흑백요리사 컨셉 프로젝트 진단";
   const defaultDesc =
     "당신의 프로젝트/MVP를 미슐랭 스타급으로 평가받으세요. 냉철하고 감각적인 프로젝트 진단 솔루션.";
-  const defaultOgImage = "/images/og-testme.png";
+  const defaultOgImage = "/images/og-myratingis.png";
 
   let title = defaultTitle;
   let description = defaultDesc;
   let ogImage = "";
-  let favicon = "/testme-logo.png"; // Updated favicon path
+  let favicon = "/myratingis-logo.png"; // Updated favicon path
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -73,7 +74,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(
-      process.env.NEXT_PUBLIC_APP_URL || "https://testme.vibe",
+      process.env.NEXT_PUBLIC_APP_URL || "https://myratingis.vercel.app",
     ), // Updated base
     title: title,
     description: description,

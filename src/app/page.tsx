@@ -133,7 +133,7 @@ export default function Home() {
 
       {/* Footer Hint */}
       <footer className="relative z-10 py-12 text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">
-        © 2026 TestMe. All Rights Reserved.
+        © 2026 MyRatingIs. All Rights Reserved.
       </footer>
     </div>
   );

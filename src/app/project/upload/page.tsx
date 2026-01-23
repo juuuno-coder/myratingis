@@ -27,7 +27,7 @@ export default function ProjectUploadPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   
-  const mode = searchParams.get('mode') || 'audit'; // Default to audit for TestMe
+  const mode = searchParams.get('mode') || 'audit'; // Default to audit for MyRatingIs
   const isAuditMode = mode === 'audit';
   
   const [auditStep, setAuditStep] = useState(1);

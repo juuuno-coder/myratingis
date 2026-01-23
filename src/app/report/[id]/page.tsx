@@ -301,7 +301,7 @@ export default function ReportPage() {
       <footer className="border-t border-white/5 py-20 px-6 text-center text-white/20">
          <div className="flex flex-col items-center gap-6">
             <ChefHat size={32} />
-            <p className="text-xs font-black uppercase tracking-[0.4em]">TestMe Diagnostic System &copy; 2026</p>
+            <p className="text-xs font-black uppercase tracking-[0.4em]">MyRatingIs Diagnostic System &copy; 2026</p>
          </div>
       </footer>
     </div>

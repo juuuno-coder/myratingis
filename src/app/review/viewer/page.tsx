@@ -133,7 +133,7 @@ function ViewerContent() {
 
   const handleFinalSubmit = async () => {
     try {
-      // For TestMe, we can allow guest submissions or require login
+      // For MyRatingIs, we can allow guest submissions or require login
       // Let's implement a simple submission for now
       const res = await fetch(`/api/projects/${projectId}/rating`, {
         method: 'POST',
