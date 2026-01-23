@@ -275,15 +275,49 @@ export async function POST(request: NextRequest) {
     // Content is verified but allowed empty if user intends just a title/image post
 
     // [Validation] Verify User Exists in Profiles (Double Check)
-    const { data: userExists } = await supabaseAdmin
+    let { data: userExists } = await supabaseAdmin
         .from('profiles')
         .select('id')
         .eq('id', user_id)
         .single();
     
+    // 만약 profiles에 없다면 auth.users에서 정보를 가져와서 생성 시도
+    if (!userExists) {
+        console.log(`[API] Profile not found for ${user_id}. Attempting to create one.`);
+        const { data: { user: authUser } } = await supabaseAdmin.auth.admin.getUserById(user_id);
+        
+        if (authUser) {
+            // 기본 프로필 생성
+            const { data: newProfile, error: createError } = await supabaseAdmin
+                .from('profiles')
+                .insert([{
+                    id: user_id,
+                    username: authUser.email?.split('@')[0] || 'Member',
+                    email: authUser.email,
+                    avatar_url: '/globe.svg',
+                    points: 1000 // 기본 포인트 부여
+                }])
+                .select()
+                .single();
+            
+            if (!createError) {
+                userExists = newProfile;
+            } else {
+                console.error('[API] Failed to create profile automatically:', createError);
+                // profiles 테이블이 아닐 수도 있으니 'User' 테이블도 확인해봄 (Vibefolio 레거시 대응)
+                const { data: userTableExists } = await supabaseAdmin
+                    .from('User')
+                    .select('id')
+                    .eq('id', user_id)
+                    .single();
+                userExists = userTableExists;
+            }
+        }
+    }
+    
     if (!userExists) {
         return NextResponse.json({ 
-            error: `User Profile Not Found: ${user_id}`,
+            error: `User Profile Not Found: ${user_id}. 서비스 이용을 위해 프로필 생성이 필요합니다.`,
             code: 'USER_PROFILE_NOT_FOUND' 
         }, { status: 400 });
     }
