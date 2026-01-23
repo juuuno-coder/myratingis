@@ -11,7 +11,7 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 export default function Home() {
   const router = useRouter();
 
-  console.log("[Home Page] Rendering...");
+
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
@@ -89,48 +89,15 @@ export default function Home() {
             진단 의뢰하기
           </Button>
           <Button
-            variant="outline"
             onClick={() => router.push("/projects")}
-            className="w-full h-20 rounded-[2.5rem] border-white/10 hover:bg-white/5 text-white/80 text-xl font-bold transition-all"
+            className="w-full h-20 rounded-[2.5rem] bg-white hover:bg-gray-100 text-gray-900 text-2xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center gap-4 justify-center"
           >
+            <Star className="w-7 h-7" />
             진단 참여하기
           </Button>
         </motion.div>
 
-        {/* Floating Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full pt-16">
-          {[
-            { 
-              icon: <Star className="w-5 h-5 text-orange-400" />, 
-              title: "미슐랭 5성 평가", 
-              desc: "기획부터 독창성까지 방사형 차트로 완성도를 진단합니다." 
-            },
-            { 
-              icon: <Sparkles className="w-5 h-5 text-indigo-400" />, 
-              title: "스티커 투표", 
-              desc: "직관적이고 위트 있는 스티커로 반응을 실시간 확인하세요." 
-            },
-            { 
-              icon: <Rocket className="w-5 h-5 text-green-400" />, 
-              title: "바이럴 리포트", 
-              desc: "인스타그램 스토리용 요약 이미지를 즉시 생성해 드립니다." 
-            }
-          ].map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}
-              className="p-8 rounded-[2rem] bg-white/5 border border-white/5 text-left space-y-3 hover:bg-white/10 transition-all cursor-default group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                {feature.icon}
-              </div>
-              <h3 className="text-lg font-black text-white">{feature.title}</h3>
-              <p className="text-xs text-white/40 font-medium leading-relaxed">{feature.desc}</p>
-            </motion.div>
-          ))}
-        </div>
+
       </main>
 
       {/* Footer Hint */}
