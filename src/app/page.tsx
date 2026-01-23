@@ -31,12 +31,12 @@ export default function Home() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="pt-8"
+          className="pt-4 md:pt-8"
         >
           <img 
             src="/myratingis-logo.png" 
             alt="제 평가는요?" 
-            className="h-16 md:h-20 w-auto object-contain"
+            className="h-12 md:h-16 lg:h-20 w-auto object-contain"
           />
         </motion.div>
 
@@ -44,42 +44,32 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
         >
-          <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
+          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-orange-400 fill-orange-400" />
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
             Culinary Class Wars Concept
           </span>
         </motion.div>
 
-        {/* Title & Headline */}
-        <div className="space-y-4">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-8xl font-black tracking-tighter"
-          >
-            제 평가는<span className="text-orange-500 italic">요?</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-2xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed"
-          >
-            당신의 프로젝트/MVP를 미슐랭 스타급으로 진단해 보세요.<br />
-            냉철한 시선과 집요한 디테일, 당신의 성장을 위한 마침표.
-          </motion.p>
-        </div>
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-sm md:text-lg lg:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed px-4"
+        >
+          당신의 프로젝트/MVP를 미슐랭 스타급으로 진단해 보세요.<br />
+          냉철한 시선과 집요한 디테일, 당신의 성장을 위한 마침표.
+        </motion.p>
 
-        {/* Cloche Illustration Move */}
+        {/* Cloche Illustration */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.3, type: "spring" }}
-          className="relative w-64 h-64 md:w-80 md:h-80"
+          className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80"
         >
           <img 
             src="/review/cloche-cover.png" 
