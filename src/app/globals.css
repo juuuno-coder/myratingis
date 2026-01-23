@@ -1,12 +1,12 @@
 /* src/app/globals.css */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
-
 @font-face {
-    font-family: 'Taenada';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2210-2@1.0/Tenada.woff2') format('woff2');
-    font-weight: normal;
-    font-display: swap;
+  font-family: "Taenada";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2210-2@1.0/Tenada.woff2")
+    format("woff2");
+  font-weight: normal;
+  font-display: swap;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -18,71 +18,71 @@
 @layer base {
   :root {
     /* 트렌디한 Vibe 테마 (Clean & Modern Ver.) */
-    --background: 0 0% 100%;       /* Pure White */
-    --foreground: 222 47% 11%;     /* Dark Navy Black (#0F172A) */
-    
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 222 47% 11%; /* Dark Navy Black (#0F172A) */
+
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    
+
     /* Primary: Vibrant Green (#16A34A) */
     --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
-    
-    --secondary: 210 40% 96.1%;    /* Cool Gray (#F1F5F9) */
+
+    --secondary: 210 40% 96.1%; /* Cool Gray (#F1F5F9) */
     --secondary-foreground: 222 47% 11%;
-    
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215 16% 47%;
-    
+
     /* Accent: Lime Green (#84CC16) */
     --accent: 84 81% 44%;
     --accent-foreground: 0 0% 100%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    
-    --border: 214 32% 91%;         /* Light Gray (#E2E8F0) */
+
+    --border: 214 32% 91%; /* Light Gray (#E2E8F0) */
     --input: 214 32% 91%;
     --ring: 142 76% 36%;
-    
+
     --radius: 0.75rem;
 
     /* Vibe 전용 변수 (Green Theme) */
     --vibe-green: 142 76% 36%;
     --vibe-mint: 84 81% 44%;
     --vibe-hover: 210 40% 96.1%;
-    
+
     --divider: 214 32% 91%;
   }
 
   .dark {
     --background: 144 10% 4%;
     --foreground: 0 0% 98%;
-    
+
     --card: 144 10% 4%;
     --card-foreground: 0 0% 98%;
-    
+
     --popover: 144 10% 4%;
     --popover-foreground: 0 0% 98%;
-    
+
     --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    
+
     --secondary: 144 4% 16%;
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 144 4% 16%;
     --muted-foreground: 144 5% 65%;
-    
+
     --accent: 84 81% 44%;
     --accent-foreground: 144 10% 4%;
-    
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 144 4% 16%;
     --input: 144 4% 16%;
     --ring: 142 71% 45%;
@@ -95,9 +95,10 @@
   body {
     @apply bg-white text-foreground;
     scrollbar-gutter: stable;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-      "Helvetica Neue", sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -158,8 +159,8 @@
 
   .btn-secondary:hover {
     background: var(--vibe-hover);
-    border-color: #16A34A;
-    color: #16A34A;
+    border-color: #16a34a;
+    color: #16a34a;
   }
 
   /* 헤더 스타일 */
@@ -322,8 +323,12 @@
   }
 
   @keyframes shimmer {
-    0% { background-position: -468px 0; }
-    100% { background-position: 468px 0; }
+    0% {
+      background-position: -468px 0;
+    }
+    100% {
+      background-position: 468px 0;
+    }
   }
 
   /* 스크롤바 숨기기 */
@@ -402,6 +407,142 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 
+  /* ============================================ */
+  /* [MyRatingIs] Chef Concept: Black & Sharp Design */
+  /* ============================================ */
+
+  /* 사선 절단 (육각형/팔각형 스타일) 베젤 섹션 */
+  .bevel-section {
+    position: relative;
+    clip-path: polygon(
+      20px 0%,
+      calc(100% - 20px) 0%,
+      100% 20px,
+      100% calc(100% - 20px),
+      calc(100% - 20px) 100%,
+      20px 100%,
+      0% calc(100% - 20px),
+      0% 20px
+    );
+  }
+
+  /* 조금 더 작은 베젤 (버튼이나 작은 카드용) */
+  .bevel-sm {
+    clip-path: polygon(
+      8px 0%,
+      calc(100% - 8px) 0%,
+      100% 8px,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      8px 100%,
+      0% calc(100% - 8px),
+      0% 8px
+    );
+  }
+
+  /* 강한 흑백 대비 다크 섹션 */
+  .chef-black-panel {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* 사선 베젤의 테두리 효과 (Pseudo element 활용) */
+  .bevel-border {
+    position: relative;
+    background: #000000;
+    z-index: 0;
+  }
+
+  .bevel-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.2) 100%
+    );
+    z-index: -1;
+    clip-path: polygon(
+      20px 0%,
+      calc(100% - 20px) 0%,
+      100% 20px,
+      100% calc(100% - 20px),
+      calc(100% - 20px) 100%,
+      20px 100%,
+      0% calc(100% - 20px),
+      0% 20px
+    );
+  }
+
+  /* 포인트 컬러: 흑백 대비 속의 오렌지 */
+  .chef-point-orange {
+    color: #f97316;
+  }
+
+  .chef-bg-orange {
+    background: #f97316;
+  }
+
+  /* 배경 흑백 그라데이션 */
+  .chef-bg-dark {
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+  }
+
+  /* ============================================ */
+  /* [MyRatingIs] Banjeom Style: Frame & Menu UI */
+  /* ============================================ */
+
+  /* 외부 화이트 라인 프레임 */
+  .chef-frame-container {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 40px 10px 10px 10px;
+    margin-top: 20px;
+  }
+
+  /* 상단 돌출형 블랙 탭 헤더 */
+  .chef-frame-header {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    padding: 4px 24px;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  /* 메뉴 스타일 카드 */
+  .chef-menu-card {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+  }
+
+  /* 카드 하부 90% 불투명 블랙 영역 */
+  .chef-menu-bottom {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 16px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   /* Editor Block Visual Indicators */
   .editor-blocks .block-indicator {
     position: relative;
@@ -416,18 +557,18 @@
   }
 
   .editor-blocks .block-heading {
-    border-left-color: #22C55E; /* Green */
+    border-left-color: #22c55e; /* Green */
   }
 
   .editor-blocks .block-heading::before {
-    content: 'H';
+    content: "H";
     position: absolute;
     left: -28px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 10px;
     font-weight: bold;
-    color: #22C55E;
+    color: #22c55e;
     opacity: 0;
     transition: opacity 0.2s ease;
   }
@@ -437,16 +578,16 @@
   }
 
   .editor-blocks .block-paragraph {
-    border-left-color: #94A3B8; /* Slate */
+    border-left-color: #94a3b8; /* Slate */
   }
 
   .editor-blocks .block-image {
-    border-left-color: #3B82F6; /* Blue */
+    border-left-color: #3b82f6; /* Blue */
     padding: 8px 0 8px 16px;
   }
 
   .editor-blocks .block-image::before {
-    content: '📷';
+    content: "📷";
     position: absolute;
     left: -32px;
     top: 8px;
@@ -460,12 +601,12 @@
   }
 
   .editor-blocks .block-video {
-    border-left-color: #EF4444; /* Red */
+    border-left-color: #ef4444; /* Red */
     padding: 8px 0 8px 16px;
   }
 
   .editor-blocks .block-video::before {
-    content: '🎬';
+    content: "🎬";
     position: absolute;
     left: -32px;
     top: 8px;
@@ -479,18 +620,18 @@
   }
 
   .editor-blocks .block-code {
-    border-left-color: #F97316; /* Orange */
-    background: #1E293B;
-    color: #E2E8F0;
+    border-left-color: #f97316; /* Orange */
+    background: #1e293b;
+    color: #e2e8f0;
     padding: 16px;
     border-radius: 8px;
-    font-family: 'Fira Code', 'Consolas', monospace;
+    font-family: "Fira Code", "Consolas", monospace;
     font-size: 14px;
   }
 
   .editor-blocks .block-quote {
-    border-left-color: #A855F7; /* Purple */
-    background: #F5F3FF;
+    border-left-color: #a855f7; /* Purple */
+    background: #f5f3ff;
     padding: 16px;
     font-style: italic;
   }
@@ -501,7 +642,6 @@
     box-shadow: inset 4px 0 0 0 currentColor;
   }
 }
-
 
 /* Autofill Background Fix */
 input:-webkit-autofill,

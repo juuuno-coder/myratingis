@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
-import MyRatingIsHeader from "@/components/MyRatingIsHeader";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -48,11 +48,9 @@ export default function SignupPage() {
       if (error) throw error;
 
       if (data.session) {
-        // 이미 세션이 생성됨 (자동 로그인 설정인 경우)
         toast.success("회원가입이 완료되었습니다!");
         router.push("/");
       } else {
-        // 이메일 확인 필요
         toast.success("회원가입 확인 이메일이 발송되었습니다!", {
           description: "이메일을 확인하여 계정을 활성화해주세요.",
           duration: 5000,
@@ -84,141 +82,141 @@ export default function SignupPage() {
   };
 
   return (
-    <>
+    <div className="min-h-screen chef-bg-dark selection:bg-orange-500/30">
       <MyRatingIsHeader />
-      <div 
-        className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-24"
-        style={{
-          backgroundImage: 'url(/dark-texture-bg.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="w-full max-w-md space-y-8 bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
-          {/* 로고 */}
-          <div className="flex justify-center mb-4">
-            <Image
-              src="/myratingis-logo.png"
-              alt="MyRatingIs"
-              width={200}
-              height={60}
-              className="h-12 w-auto"
-            />
-          </div>
+      
+      <div className="flex min-h-screen flex-col items-center justify-center py-24 px-6">
+        {/* Decorative Ornaments */}
+        <div className="absolute top-0 right-0 p-20 opacity-5 pointer-events-none select-none">
+          <div className="text-[120px] font-black text-white leading-none tracking-tighter">JOIN</div>
+        </div>
 
-          <div>
-            <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-              반가워요! 👋
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              이미 계정이 있으신가요?{" "}
-              <Link href="/login" className="font-medium text-amber-600 hover:text-amber-700 hover:underline transition-colors">
-                로그인하기
-              </Link>
-            </p>
-          </div>
-
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm font-medium">
-              ⚠️ {error}
+        <div className="w-full max-w-md relative z-10">
+          <div className="bevel-border bevel-section p-10 bg-black/40 backdrop-blur-2xl">
+            {/* 로고 영역 */}
+            <div className="flex justify-center mb-10">
+              <Image
+                src="/myratingis-logo.png"
+                alt="MyRatingIs"
+                width={180}
+                height={54}
+                className="h-10 w-auto invert brightness-0"
+              />
             </div>
-          )}
 
-          {/* 소셜 회원가입 */}
-          <div className="space-y-3">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
+                Register as Chef
+              </h2>
+              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
+            </div>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 mb-6 bevel-sm text-[10px] font-black uppercase tracking-widest leading-loose">
+                 [ {error} ]
+              </div>
+            )}
+
+            {/* 소셜 회원가입 */}
             <Button
-              type="button"
               onClick={handleGoogleSignup}
               disabled={loading}
               variant="outline"
-              className="w-full h-12 flex items-center justify-center gap-3 border-2 border-gray-300 hover:bg-gray-50 rounded-full transition-all hover:shadow-md"
+              className="w-full h-14 bg-white/5 border border-white/10 text-white hover:bg-white/10 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8"
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-              ) : (
-                <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-red-500" />
-              )}
-              <span className="text-gray-700 font-medium">Google로 계속하기</span>
+              <FcGoogle className="h-4 w-4 mr-3" />
+              Join with Google
             </Button>
-          </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+            <div className="relative mb-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/5" />
+              </div>
+              <div className="relative flex justify-center text-[8px] font-black uppercase tracking-[0.4em]">
+                <span className="bg-[#0a0a0a] px-4 text-white/20">OR CREATE CHEF ID</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-500">또는</span>
-            </div>
-          </div>
 
-          <form className="space-y-5" onSubmit={handleEmailSignup}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                이메일
-              </label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="h-11 rounded-lg"
+            <form className="space-y-5" onSubmit={handleEmailSignup}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                    Email Identity
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="CHEF@MYRATING.IS"
+                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="password" name="password" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                    Security Key
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="password-confirm" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                    Confirm Key
+                  </label>
+                  <input
+                    id="password-confirm"
+                    type="password"
+                    required
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
                 disabled={loading}
-              />
+                className="w-full h-16 bg-orange-600 text-white hover:bg-orange-700 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl mt-4"
+              >
+                {loading ? "PROCESSING..." : "JOIN THE KITCHEN"}
+              </Button>
+            </form>
+
+            <div className="mt-10 text-center space-y-4">
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest leading-relaxed">
+                Already a Chef?{" "}
+                <Link
+                  href="/login"
+                  className="text-white hover:text-orange-500 underline underline-offset-4 ml-2"
+                >
+                  Enter Studio
+                </Link>
+              </p>
+              
+              <p className="text-[8px] font-black text-white/10 uppercase tracking-widest leading-loose max-w-[200px] mx-auto">
+                By joining, you agree to our{" "}
+                <Link href="/policy/terms" className="underline">Terms</Link> &{" "}
+                <Link href="/policy/privacy" className="underline">Privacy Policy</Link>
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                비밀번호
-              </label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="최소 6자 이상"
-                className="h-11 rounded-lg"
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-700 mb-1">
-                비밀번호 확인
-              </label>
-              <Input
-                id="password-confirm"
-                type="password"
-                required
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                placeholder="비밀번호 다시 입력"
-                className="h-11 rounded-lg"
-                disabled={loading}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-full text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {loading ? "가입 중..." : "3초만에 가입하기"}
-            </Button>
-          </form>
-
-          <div className="text-center text-xs text-gray-400">
-            <p>
-              가입 시{" "}
-              <Link href="/policy/terms" className="underline">이용약관</Link> 및{" "}
-              <Link href="/policy/privacy" className="underline">개인정보처리방침</Link>에 동의하게 됩니다.
-            </p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

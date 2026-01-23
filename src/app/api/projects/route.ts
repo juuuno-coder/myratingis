@@ -282,12 +282,12 @@ export async function POST(request: NextRequest) {
         .single();
     
     // 만약 profiles에 없다면 auth.users에서 정보를 가져와서 생성 시도
+    let profileCreationError: any = null;
     if (!userExists) {
         console.log(`[API] Profile not found for ${user_id}. Attempting to auto-create and retry.`);
         const { data: { user: authUser } } = await supabaseAdmin.auth.admin.getUserById(user_id);
         
         if (authUser) {
-            // 기본 프로필 정보 구성 (컬럼명 유연성 확보)
             const baseUsername = authUser.user_metadata?.full_name || 
                                 authUser.user_metadata?.name || 
                                 authUser.user_metadata?.nickname || 
@@ -296,16 +296,20 @@ export async function POST(request: NextRequest) {
             const baseAvatar = authUser.user_metadata?.avatar_url || 
                               authUser.user_metadata?.picture || '/globe.svg';
 
-            // 최소 정보로 Upsert 시도 (기존 데이터가 있어도 충돌 방지)
+            // 모든 경우의 수(컬럼명)를 고려한 데이터 구성
+            const profileData: any = {
+                id: user_id,
+                username: baseUsername,
+                nickname: baseUsername, // nickname 컬럼일 수도 있음
+                email: authUser.email,  // email은 보통 NOT NULL 필수값
+                avatar_url: baseAvatar,
+                profile_image_url: baseAvatar, // profile_image_url 컬럼일 수도 있음
+                points: 1000 
+            };
+
             const { data: newProfile, error: createError } = await supabaseAdmin
                 .from('profiles')
-                .upsert({
-                    id: user_id,
-                    username: baseUsername,
-                    // nickname: baseUsername, // 혹시 nickname 컬럼일 수도 있으니 대비 (필요시 추가)
-                    avatar_url: baseAvatar,
-                    points: 1000 // 가입 축하 포인트
-                }, { onConflict: 'id' })
+                .upsert(profileData, { onConflict: 'id' })
                 .select()
                 .single();
             
@@ -313,14 +317,8 @@ export async function POST(request: NextRequest) {
                 userExists = newProfile;
                 console.log(`[API] Profile auto-created successfully for ${user_id}`);
             } else {
-                console.warn('[API] Failed to auto-create profile in profiles table, checking fallback tables.', createError);
-                // profiles 테이블이 아닌 User(Vibefolio 레거시) 테이블 확인
-                const { data: userTableExists } = await supabaseAdmin
-                    .from('User')
-                    .select('id')
-                    .eq('id', user_id)
-                    .single();
-                userExists = userTableExists;
+                profileCreationError = createError;
+                console.error('[API] Failed to auto-create profile:', createError);
             }
         }
     }
@@ -328,8 +326,9 @@ export async function POST(request: NextRequest) {
     if (!userExists) {
         return NextResponse.json({ 
             error: `User Profile Not Found: ${user_id}. 서비스 이용을 위해 프로필 생성이 필요합니다.`,
-            code: 'USER_PROFILE_NOT_FOUND' 
-        }, { status: 400 });
+            details: profileCreationError?.message || '지원되지 않는 프로필 테이블 구조이거나 필수값이 누락되었습니다.',
+            code: 'USER_PROFILE_NOT_FOUND'
+        }, { status: 404 });
     }
 
     // [Point System] Growth Mode Check & Points Deduction

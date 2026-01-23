@@ -4,23 +4,21 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
-  faArrowLeft, 
   faCamera, 
   faCheck, 
-  faRocket, 
-  faStar, 
-  faImage, 
   faPlus,
-  faTrash
+  faTrash,
+  faStar
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { uploadImage } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Sparkles, Rocket as RocketIcon, Clock } from "lucide-react";
+import { ChefHat } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
@@ -29,8 +27,7 @@ export default function ProjectUploadPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   
-  const mode = searchParams.get('mode') || 'audit'; // Default to audit for MyRatingIs
-  const isAuditMode = mode === 'audit';
+  const mode = searchParams.get('mode') || 'audit'; 
   
   const [auditStep, setAuditStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +45,6 @@ export default function ProjectUploadPage() {
   const [linkPreview, setLinkPreview] = useState<{title?: string, description?: string, image?: string} | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   
-  // 미슐랭 평가 항목 (최초 5개, 최소 3개, 최대 6개)
   const [customCategories, setCustomCategories] = useState<any[]>([
     { id: 'm1', label: '기획력', desc: '탄탄한 논리와 명확한 문제 해결 전략' },
     { id: 'm2', label: '독창성', desc: '기존의 틀을 깨는 신선하고 개성 있는 시도' },
@@ -57,7 +53,6 @@ export default function ProjectUploadPage() {
     { id: 'm5', label: '상업성', desc: '시장의 니즈를 꿰뚫는 가치와 비즈니스 가능성' }
   ]);
 
-  // 스티커 프리셋
   const STICKER_PRESETS: Record<string, any[]> = {
     professional: [
       { id: 'pr1', label: '당장 계약하시죠! 탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼 압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
@@ -79,8 +74,6 @@ export default function ProjectUploadPage() {
   const [selectedPreset, setSelectedPreset] = useState<'professional' | 'michelin' | 'mz'>('professional');
   const [pollOptions, setPollOptions] = useState<any[]>(STICKER_PRESETS.professional);
   const [pollDesc, setPollDesc] = useState("[몰입형] 현업 전문가의 리얼한 반응");
-
-  // 종합 의견 (최소 1개, 기본 1개, 최대 3개)
   const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
 
   // --- Handlers ---
@@ -101,13 +94,10 @@ export default function ProjectUploadPage() {
 
     setIsSubmitting(true);
     try {
-      // 인증 확인
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-
       if (!token) {
         toast.error("로그인이 필요합니다.");
-        // 현재 작성 중인 내용은 유지되지 않으므로 경고 필요 (또는 로컬 스토리지 저장 등)
         router.push("/login?returnTo=/project/upload");
         return;
       }
@@ -124,16 +114,14 @@ export default function ProjectUploadPage() {
         custom_data: {
           is_feedback_requested: true,
           audit_config: {
-            type: auditType,
-            mediaA: mediaData,
-            categories: customCategories,
-            poll: { desc: pollDesc, options: pollOptions },
-            questions: auditQuestions
+             type: auditType,
+             mediaA: mediaData,
+             categories: customCategories,
+             poll: { desc: pollDesc, options: pollOptions },
+             questions: auditQuestions
           }
         }
       };
-
-      console.log('Submitting project:', projectData);
 
       const res = await fetch("/api/projects", {
         method: "POST",
@@ -145,16 +133,11 @@ export default function ProjectUploadPage() {
       });
 
       const data = await res.json();
-      
-      if (!res.ok) {
-        console.error('API Error:', data);
-        throw new Error(data.error || "등록 실패");
-      }
+      if (!res.ok) throw new Error(data.error || "등록 실패");
       
       toast.success("평가 의뢰가 성공적으로 등록되었습니다!");
       router.push(`/project/share/${data.project.project_id}`);
     } catch (error: any) {
-      console.error('Submit error:', error);
       toast.error(error.message || "등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
@@ -163,32 +146,56 @@ export default function ProjectUploadPage() {
 
   // --- Render Steps ---
   const renderStep1 = () => (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-12">
       <section className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-xl shadow-lg ring-4 ring-orange-100 italic font-black">?</div>
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight">제 평가는요? 의뢰 정보</h2>
+        <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-4 py-1">
+          <h3 className="text-3xl font-black text-white tracking-tighter">? 제 평가는요? 의뢰 정보</h3>
         </div>
-        <div className="space-y-4">
-          <Input placeholder="진단받을 제목 (예: 커피 배달 매칭 MVP)" value={title} onChange={e => setTitle(e.target.value)} className="h-16 text-2xl font-bold border-2 border-gray-100 focus:border-orange-500 rounded-2xl px-6" />
-          <Input placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" value={summary} onChange={e => setSummary(e.target.value)} className="h-14 text-lg border-2 border-gray-100 focus:border-orange-500 rounded-xl px-6" />
+        
+        <div className="space-y-2">
+          <div className="chef-black-panel bevel-section p-1">
+            <input 
+              placeholder="진단받을 제목 (예: 커피 배달 매칭 MVP)" 
+              value={title} 
+              onChange={e => setTitle(e.target.value)} 
+              className="w-full h-16 bg-white/5 border-none text-xl font-bold text-white px-8 placeholder:text-white/10 outline-none"
+            />
+          </div>
+          <div className="chef-black-panel bevel-sm p-1">
+            <input 
+              placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" 
+              value={summary} 
+              onChange={e => setSummary(e.target.value)} 
+              className="w-full h-12 bg-white/5 border-none text-sm font-medium text-white/60 px-8 placeholder:text-white/10 outline-none"
+            />
+          </div>
         </div>
       </section>
 
-      <section className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl space-y-8">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-black flex items-center gap-2">
-            <FontAwesomeIcon icon={faCamera} className="text-orange-500" /> 대상 미디어 및 마감 기한
-          </h3>
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black text-white/40 uppercase mb-1">진단 마감일</span>
-            <input type="date" value={auditDeadline} onChange={e => setAuditDeadline(e.target.value)} className="bg-white/10 border-none rounded-lg px-3 py-1 text-xs font-bold text-orange-400 outline-none" />
+      <section className="bevel-border bevel-section p-8 md:p-12 space-y-10">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xl font-black text-white flex items-center gap-3">
+             <FontAwesomeIcon icon={faCamera} className="text-orange-500" /> 대상 미디어 및 마감 기한
+          </h4>
+          <div className="relative">
+             <Label className="text-[10px] font-black text-white/30 uppercase absolute -top-4 right-0">진단 마감일</Label>
+             <input type="date" value={auditDeadline} onChange={e => setAuditDeadline(e.target.value)} className="bg-white/5 text-white border border-white/10 px-4 py-2 text-xs font-black bevel-sm outline-none focus:border-orange-500 transition-all cursor-pointer" />
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          {['link', 'image', 'video'].map((t) => (
-            <button key={t} onClick={() => setAuditType(t as any)} className={cn("py-4 rounded-2xl border-2 transition-all font-bold text-sm", auditType === t ? "bg-white text-black border-orange-500 shadow-xl" : "bg-white/5 border-white/5 text-gray-500 hover:bg-white/10")}>
+        <div className="grid grid-cols-3 gap-1">
+          {(['link', 'image', 'video'] as const).map(t => (
+            <button 
+              key={t} 
+              onClick={() => {
+                setAuditType(t);
+                setMediaData(t === 'image' ? [] : "");
+              }} 
+              className={cn(
+                "h-14 font-black text-xs uppercase tracking-widest transition-all bevel-sm",
+                auditType === t ? "bg-white text-black" : "bg-white/5 text-white/40 hover:bg-white/10"
+              )}
+            >
               {t === 'link' ? "웹 링크" : t === 'image' ? "이미지 갤러리" : "유튜브"}
             </button>
           ))}
@@ -196,103 +203,70 @@ export default function ProjectUploadPage() {
 
         <div className="space-y-4">
           {auditType === 'image' ? (
-            <div className="flex flex-wrap gap-2 p-4 bg-white/5 rounded-2xl border border-white/10">
-              {Array.isArray(mediaData) && (mediaData as string[]).map((img, i) => (
-                <div key={i} className="w-20 h-20 rounded-xl overflow-hidden relative group">
-                  <img src={img} className="w-full h-full object-cover" />
-                  <button onClick={() => setMediaData((mediaData as string[]).filter((_, j) => j !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <FontAwesomeIcon icon={faTrash} size="xs" />
-                  </button>
-                </div>
-              ))}
-              <label className="w-20 h-20 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
-                <FontAwesomeIcon icon={faPlus} className="text-gray-500 mb-1" />
-                <input type="file" multiple className="hidden" onChange={async e => {
-                  if (e.target.files) {
-                    const urls = await Promise.all(Array.from(e.target.files).map(f => uploadImage(f)));
-                    setMediaData([...(Array.isArray(mediaData) ? mediaData : []), ...urls]);
-                  }
-                }} />
-              </label>
-            </div>
+             <div className="flex flex-wrap gap-4 p-6 bg-white/5 bevel-section border border-white/5 min-h-[160px]">
+               {Array.isArray(mediaData) && mediaData.map((img, i) => (
+                 <div key={i} className="w-24 h-24 bevel-sm overflow-hidden relative group">
+                   <img src={img} className="w-full h-full object-cover" />
+                   <button onClick={() => setMediaData((mediaData as string[]).filter((_, j) => j !== i))} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                     <FontAwesomeIcon icon={faTrash} />
+                   </button>
+                 </div>
+               ))}
+               <label className="w-24 h-24 bevel-sm border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:bg-white/10 transition-colors text-white/20 hover:text-white/60">
+                 <FontAwesomeIcon icon={faPlus} className="mb-2" />
+                 <span className="text-[8px] font-black uppercase">Add Photo</span>
+                 <input type="file" multiple className="hidden" onChange={async e => {
+                   if (e.target.files) {
+                     const urls = await Promise.all(Array.from(e.target.files).map(f => uploadImage(f)));
+                     setMediaData([...(Array.isArray(mediaData) ? mediaData : []), ...urls]);
+                   }
+                 }} />
+               </label>
+             </div>
           ) : (
             <div className="space-y-4">
-              <Input 
-                className="bg-white border-gray-300 h-14 text-black placeholder:text-gray-500 rounded-xl focus:border-orange-500 px-5" 
-                placeholder={auditType === 'link' ? "웹사이트 URL (예: https://example.com)" : "유튜브 URL (예: https://youtube.com/watch?v=...)"}
+              <input 
                 value={typeof mediaData === 'string' ? mediaData : ''} 
-                onChange={async (e) => {
+                onChange={async e => {
                   const val = e.target.value;
                   setMediaData(val);
-                  
-                  // Open Graph 미리보기 가져오기 (링크 타입일 때만)
-                  if (auditType === 'link' && val && val.includes('.')) {
-                    // 프로토콜이 없으면 https:// 붙여서 시도
-                    const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
-                    
+                  if (auditType === 'link' && val.includes('.')) {
                     setIsLoadingPreview(true);
                     try {
+                      const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
                       const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
                       if (response.ok) {
                         const data = await response.json();
-                        if (data.title || data.image) {
-                          setLinkPreview(data);
-                        }
+                        setLinkPreview(data.title || data.image ? data : null);
                       }
-                    } catch (error) {
-                      console.error('Failed to fetch preview:', error);
-                    } finally {
-                      setIsLoadingPreview(false);
-                    }
-                  } else {
-                    setLinkPreview(null);
-                  }
-                }}
+                    } catch (e) { console.error(e); } finally { setIsLoadingPreview(false); }
+                  } else { setLinkPreview(null); }
+                }} 
+                placeholder={auditType === 'link' ? "wayo.co.kr" : "YouTube 영상 주소..."} 
+                className="w-full h-16 bg-white/5 border border-white/10 text-white font-bold px-8 text-lg bevel-sm placeholder:text-white/10 focus:border-orange-500 transition-colors outline-none"
               />
-              {typeof mediaData === 'string' && mediaData && (
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                  <p className="text-xs text-gray-400 mb-2">미리보기</p>
-                  {auditType === 'video' && (mediaData.includes('youtube.com') || mediaData.includes('youtu.be')) ? (
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <iframe 
-                        src={`https://www.youtube.com/embed/${mediaData.includes('youtu.be') ? mediaData.split('youtu.be/')[1] : new URLSearchParams(new URL(mediaData).search).get('v')}`}
-                        className="w-full h-full"
-                        allowFullScreen
-                      />
-                    </div>
-                  ) : auditType === 'link' && linkPreview ? (
-                    <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
-                      {linkPreview.image && (
-                        <img src={linkPreview.image} alt="Preview" className="w-full h-48 object-cover" />
-                      )}
-                      <div className="p-4">
-                        {linkPreview.title && (
-                          <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{linkPreview.title}</h3>
-                        )}
-                        {linkPreview.description && (
-                          <p className="text-sm text-gray-600 line-clamp-2">{linkPreview.description}</p>
-                        )}
-                        <p className="text-xs text-gray-400 mt-2 truncate">{mediaData}</p>
-                      </div>
-                    </div>
-                  ) : isLoadingPreview ? (
-                    <div className="p-3 bg-white/5 rounded-lg flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-white/5 rounded-lg">
-                      <p className="text-sm text-white/80 truncate">{mediaData}</p>
-                    </div>
-                  )}
-                </div>
+              
+              {linkPreview && (
+                 <div className="chef-black-panel bevel-section p-6 border border-white/5 space-y-4 animate-in fade-in slide-in-from-top-2">
+                   <div className="flex gap-6 items-center">
+                     {linkPreview.image && <img src={linkPreview.image} className="w-24 h-24 object-cover bevel-sm shrink-0 border border-white/10" />}
+                     <div className="space-y-1">
+                        <h5 className="text-xl font-black text-white leading-tight">{linkPreview.title || "링크 미리보기"}</h5>
+                        <p className="text-xs font-medium text-white/40 line-clamp-2">{linkPreview.description || "설명이 없습니다."}</p>
+                     </div>
+                   </div>
+                 </div>
               )}
             </div>
           )}
         </div>
       </section>
 
-      <div className="flex justify-end">
-        <Button onClick={() => setAuditStep(2)} className="h-14 px-12 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-lg">
+      <div className="flex justify-end pt-4">
+        <Button 
+          onClick={() => setAuditStep(2)} 
+          className="h-16 px-12 bg-orange-600 hover:bg-orange-700 text-white text-lg font-black transition-all hover:scale-105 bevel-section shadow-[0_20px_40px_rgba(234,88,12,0.2)]"
+        >
           다음 단계로 <FontAwesomeIcon icon={faCheck} className="ml-3" />
         </Button>
       </div>
@@ -300,44 +274,46 @@ export default function ProjectUploadPage() {
   );
 
   const renderStep2 = () => (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
       <section className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-white/5 pb-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-[1.2rem] bg-orange-500 text-white flex items-center justify-center text-2xl shadow-lg ring-4 ring-orange-100">🎯</div>
+            <div className="w-14 h-14 bg-orange-500 text-white flex items-center justify-center text-2xl bevel-section">🎯</div>
             <div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">1. 미슐랭 평가 (항목당 5.0 만점)</h3>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">EVALUATION METRICS (RADAR CHART)</p>
+              <h3 className="text-2xl font-black text-white tracking-tighter">1. 미슐랭 평가 설정</h3>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mt-0.5">EVALUATION METRICS</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-black text-gray-300">{customCategories.length}/6</span>
-            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 6} className="rounded-xl border-gray-100 h-10 font-bold hover:bg-gray-50 flex items-center gap-2 px-4 text-xs">
-              <FontAwesomeIcon icon={faPlus} /> 항목 추가
+            <span className="text-xs font-black text-white/20">{customCategories.length}/6</span>
+            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 6} className="bevel-sm border-white/10 h-10 font-black text-white bg-transparent hover:bg-white/5 text-[10px] tracking-widest px-4 uppercase">
+              <FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {customCategories.map((cat, idx) => (
-            <div key={idx} className="flex items-center gap-5 p-6 rounded-[2rem] border border-gray-50 bg-white relative group shadow-sm hover:shadow-md transition-all">
-              <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 shrink-0">
-                <FontAwesomeIcon icon={faStar} className="text-sm" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <input value={cat.label} onChange={e => {
-                  const next = [...customCategories];
-                  next[idx].label = e.target.value;
-                  setCustomCategories(next);
-                }} className="font-black text-gray-900 outline-none w-full bg-transparent text-lg placeholder:text-gray-200" placeholder="항목 이름" />
-                <input value={cat.desc} onChange={e => {
-                  const next = [...customCategories];
-                  next[idx].desc = e.target.value;
-                  setCustomCategories(next);
-                }} className="text-xs text-gray-400 outline-none w-full bg-transparent font-bold" placeholder="항목에 대한 간단한 가이드" />
+            <div key={idx} className="chef-black-panel bevel-section p-8 border border-white/5 relative group hover:border-orange-500/50 transition-all">
+              <div className="flex items-center gap-6">
+                <div className="w-12 h-12 bg-white/5 text-white/20 flex items-center justify-center bevel-sm shrink-0 font-black text-xs">
+                   0{idx+1}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <input value={cat.label} onChange={e => {
+                    const next = [...customCategories];
+                    next[idx].label = e.target.value;
+                    setCustomCategories(next);
+                  }} className="font-black text-white outline-none w-full bg-transparent text-xl placeholder:text-white/10" placeholder="평가 항목명" />
+                  <input value={cat.desc} onChange={e => {
+                    const next = [...customCategories];
+                    next[idx].desc = e.target.value;
+                    setCustomCategories(next);
+                  }} className="text-[10px] text-white/40 outline-none w-full bg-transparent font-black uppercase tracking-widest" placeholder="가이드라인 입력..." />
+                </div>
               </div>
               {customCategories.length > 3 && (
-                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-gray-200 hover:text-red-500 transition-all">
+                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-white/10 hover:text-red-500 transition-all">
                   <FontAwesomeIcon icon={faTrash} size="xs" />
                 </button>
               )}
@@ -346,122 +322,175 @@ export default function ProjectUploadPage() {
         </div>
       </section>
 
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 rounded-2xl font-bold text-gray-400">이전으로</Button>
-        <Button onClick={() => setAuditStep(3)} className="h-14 px-12 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-lg">다음 단계로</Button>
+      <div className="flex justify-between items-center pt-8">
+        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-white/40 hover:text-white uppercase tracking-widest text-xs">이전 단계</Button>
+        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-white text-black hover:bg-white/90 text-lg font-black bevel-section transition-transform hover:scale-105 shadow-2xl">다음 단계로</Button>
       </div>
     </motion.div>
   );
 
   const renderStep3 = () => (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-16">
       <section className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-white/5 pb-8">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-[1.2rem] bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-lg ring-4 ring-indigo-100">📊</div>
+            <div className="w-14 h-14 bg-indigo-600 text-white flex items-center justify-center text-2xl bevel-section">📊</div>
             <div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">2. 스티커 투표 설정</h3>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">STICKER POLL (2-6 OPTIONS)</p>
+              <h3 className="text-2xl font-black text-white tracking-tighter">2. 스티커 투표 설정</h3>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mt-0.5">STICKER POLL OPTIONS</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex bg-white/5 p-1 bevel-sm gap-1">
               {(['professional', 'michelin', 'mz'] as const).map(p => (
-                <button key={p} onClick={() => handlePresetChange(p)} className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase", selectedPreset === p ? "bg-white text-indigo-600 shadow-sm" : "text-gray-400")}>{p}</button>
+                <button key={p} onClick={() => handlePresetChange(p)} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === p ? "bg-white text-black" : "text-white/20 hover:text-white")}>{p}</button>
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs font-black text-gray-300">{pollOptions.length}/6</span>
-              <Button variant="outline" onClick={() => setPollOptions([...pollOptions, { id: `p-${Date.now()}`, label: "", desc: "", image_url: "" }])} disabled={pollOptions.length >= 6} className="rounded-xl border-gray-100 h-10 font-bold text-xs"><FontAwesomeIcon icon={faPlus} /> 추가</Button>
+              <span className="text-xs font-black text-white/20">{pollOptions.length}/6</span>
+              <Button onClick={() => setPollOptions([...pollOptions, { id: `p-${Date.now()}`, label: "", desc: "", image_url: "" }])} disabled={pollOptions.length >= 6} className="bevel-sm h-10 bg-white/10 text-white hover:bg-white/20 font-black text-[10px] uppercase tracking-widest opacity-80 hover:opacity-100"><FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가</Button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {pollOptions.map((opt, idx) => (
-            <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-gray-50 relative group pt-12">
-              <div className="absolute top-4 left-4 bg-slate-900 text-white px-3 py-1 rounded-full text-[8px] font-black tracking-tighter uppercase z-20">STICKER {idx + 1}</div>
-              <label className="w-full aspect-square bg-gray-50 rounded-[2rem] flex items-center justify-center cursor-pointer overflow-hidden border-2 border-dashed border-gray-100 mb-8 relative">
-                {opt.image_url ? <img src={opt.image_url} className="w-full h-full object-cover" /> : <FontAwesomeIcon icon={faCamera} className="text-gray-200 text-2xl" />}
-                <input type="file" className="hidden" onChange={async e => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const url = await uploadImage(file);
-                    const next = [...pollOptions];
-                    next[idx].image_url = url;
-                    setPollOptions(next);
-                  }
-                }} />
-              </label>
-              <div className="space-y-4">
-                <input value={opt.label} onChange={e => {
-                  const next = [...pollOptions];
-                  next[idx].label = e.target.value;
-                  setPollOptions(next);
-                }} className="w-full font-black text-gray-900 outline-none text-lg border-b border-gray-50 pb-2" placeholder="항목 명칭" />
-                <textarea value={opt.desc} onChange={e => {
-                  const next = [...pollOptions];
-                  next[idx].desc = e.target.value;
-                  setPollOptions(next);
-                }} className="w-full text-xs text-gray-500 bg-transparent resize-none outline-none font-bold" placeholder="투표 가이드라인" rows={3} />
+        <div className="chef-frame-container">
+          <div className="chef-frame-header">STICKER MENU</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {pollOptions.map((opt, idx) => (
+              <div key={idx} className="chef-menu-card group">
+                {/* 상단 이미지 영역 */}
+                <label className="w-full aspect-[4/3] bg-white/5 flex items-center justify-center cursor-pointer overflow-hidden relative group/img">
+                  {opt.image_url ? (
+                    <img src={opt.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
+                  ) : (
+                    <FontAwesomeIcon icon={faCamera} className="text-white/10 text-3xl" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
+                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">Select Media</span>
+                  </div>
+                  <input type="file" className="hidden" onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = await uploadImage(file);
+                      const next = [...pollOptions];
+                      next[idx].image_url = url;
+                      setPollOptions(next);
+                    }
+                  }} />
+                </label>
+
+                {/* 하단 90% 블랙 불투명 영역 */}
+                <div className="chef-menu-bottom">
+                  <input 
+                    value={opt.label} 
+                    onChange={e => {
+                      const next = [...pollOptions];
+                      next[idx].label = e.target.value;
+                      setPollOptions(next);
+                    }} 
+                    className="w-full font-black text-white outline-none bg-transparent text-center text-lg placeholder:text-white/10 mb-2 truncate" 
+                    placeholder="메뉴 명칭" 
+                  />
+                  <div className="chef-line-detail" />
+                  <textarea 
+                    value={opt.desc} 
+                    onChange={e => {
+                      const next = [...pollOptions];
+                      next[idx].desc = e.target.value;
+                      setPollOptions(next);
+                    }} 
+                    className="w-full text-[10px] text-white/40 bg-transparent resize-none outline-none font-black uppercase tracking-widest text-center h-12 placeholder:text-white/10" 
+                    placeholder="메뉴 설명 입력..." 
+                    rows={2} 
+                  />
+                </div>
+
+                {/* 삭제 버튼 */}
+                {pollOptions.length > 2 && (
+                  <button onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="absolute top-2 right-2 w-8 h-8 bg-black/80 text-white/20 hover:text-red-500 transition-all flex items-center justify-center border border-white/10 opacity-0 group-hover:opacity-100">
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                )}
               </div>
-              {pollOptions.length > 2 && (
-                <button onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-gray-200 hover:text-red-500 transition-all">
-                  <FontAwesomeIcon icon={faTrash} size="xs" />
-                </button>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="space-y-8">
-        <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 text-white flex items-center justify-center text-xl italic font-black">?</div> 3. 종합 의견 (심층 질문)
-        </h3>
+      <section className="space-y-10">
+        <div className="flex items-center gap-4 border-l-4 border-white pl-4">
+           <h3 className="text-2xl font-black text-white tracking-tighter uppercase tracking-[0.2em]">3. 종합 의견 (심층 질문)</h3>
+        </div>
         <div className="space-y-4">
           {auditQuestions.map((q, idx) => (
-            <div key={idx} className="flex gap-4 group">
-              <div className="shrink-0 w-14 h-14 bg-slate-950 text-white rounded-[1.2rem] flex items-center justify-center font-black text-lg">Q{idx+1}</div>
+            <div key={idx} className="flex gap-4 group items-center">
+              <div className="shrink-0 w-16 h-16 bg-white text-black font-black text-xl flex items-center justify-center bevel-section">Q{idx+1}</div>
               <div className="flex-1 relative">
-                <Input value={q} onChange={e => {
+                <input value={q} onChange={e => {
                    const next = [...auditQuestions];
                    next[idx] = e.target.value;
                    setAuditQuestions(next);
-                }} className="h-14 rounded-2xl border-2 border-gray-100 focus:border-indigo-600 text-lg font-bold px-6 shadow-sm" />
+                }} className="w-full h-16 bg-white/5 border border-white/10 focus:border-white text-white font-black text-lg px-8 bevel-section placeholder:text-white/10 outline-none transition-all" placeholder="창작자에게 묻고 싶은 질문을 입력하세요." />
                 {auditQuestions.length > 1 && (
-                  <button onClick={() => setAuditQuestions(auditQuestions.filter((_, i) => i !== idx))} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setAuditQuestions(auditQuestions.filter((_, i) => i !== idx))} className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 )}
               </div>
             </div>
           ))}
-          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-14 rounded-2xl border-2 border-dashed border-gray-100 text-gray-400 font-bold">
-            <FontAwesomeIcon icon={faPlus} className="mr-2" /> 새 질문 추가하기 (최대 3개)
+          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-16 bevel-section border border-dashed border-white/10 text-white/20 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest transition-all">
+            <FontAwesomeIcon icon={faPlus} className="mr-3" /> 새 질문 추가하기 (최대 3개)
           </Button>
         </div>
       </section>
 
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => setAuditStep(2)} className="h-14 px-8 rounded-2xl font-bold text-gray-400">이전 단계</Button>
-        <Button onClick={handleSubmit} disabled={isSubmitting} className="h-16 px-16 rounded-[2rem] bg-slate-950 hover:bg-black text-white text-xl font-black flex items-center gap-4 transition-all hover:scale-105 shadow-xl">
-          {isSubmitting ? "게시 중..." : <><ChefHat /> 진단 의뢰 게시하기</>}
+      <div className="flex justify-between items-center pt-10 border-t border-white/5">
+        <Button variant="ghost" onClick={() => setAuditStep(2)} className="h-14 px-8 font-black text-white/40 uppercase tracking-widest text-xs hover:text-white">이전 단계</Button>
+        <Button onClick={handleSubmit} disabled={isSubmitting} className="h-20 px-16 bevel-section bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_20px_60px_rgba(234,88,12,0.3)]">
+          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 진단 의뢰 게시하기</>}
         </Button>
       </div>
     </motion.div>
   );
 
   return (
-    <>
+    <div className="min-h-screen chef-bg-dark selection:bg-orange-500/30">
       <MyRatingIsHeader />
-      <div className="min-h-screen bg-[#fafafa] pt-16">
-        <main className="max-w-4xl mx-auto py-12 px-6">
+      
+      {/* Dynamic Stepper Header */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-black/60 backdrop-blur-xl border-b border-white/5">
+         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+               <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Audit Request Lab</span>
+            </div>
+            <div className="flex items-center gap-3">
+               {[1, 2, 3].map(s => (
+                 <div key={s} className="flex items-center gap-2">
+                    <div className={cn(
+                      "w-12 h-1 transition-all duration-500 bevel-sm", 
+                      auditStep >= s ? "bg-orange-500 shadow-[0_0_10px_#f97316]" : "bg-white/10"
+                    )} />
+                    {s < 3 && <div className="text-[8px] text-white/10 font-black">/</div>}
+                 </div>
+               ))}
+            </div>
+         </div>
+      </div>
+
+      <div className="pt-40 pb-32">
+        <main className="max-w-4xl mx-auto px-6">
           <AnimatePresence mode="wait">
             {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : renderStep3()}
           </AnimatePresence>
         </main>
       </div>
-    </>
+      
+      {/* Decorative Ornaments */}
+      <div className="fixed bottom-0 left-0 p-8 opacity-5 pointer-events-none hidden md:block">
+         <div className="text-[120px] font-black text-white select-none leading-none tracking-tighter">STUDIO</div>
+      </div>
+    </div>
   );
 }
