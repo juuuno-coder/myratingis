@@ -9,6 +9,8 @@ import { supabase } from "@/lib/supabase/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { toast } from "sonner";
+import MyRatingIsHeader from "@/components/MyRatingIsHeader";
+import Image from "next/image";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -82,120 +84,141 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-bold tracking-tight text-gray-900">
-            반가워요! 👋
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            이미 계정이 있으신가요?{" "}
-            <Link href="/login" className="font-medium text-green-600 hover:text-green-500 hover:underline">
-              로그인하기
-            </Link>
-          </p>
-        </div>
-
-        {/* 에러 메시지 */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm font-medium">
-            ⚠️ {error}
-          </div>
-        )}
-
-        {/* 소셜 회원가입 */}
-        <div className="space-y-3">
-          <Button
-            type="button"
-            onClick={handleGoogleSignup}
-            disabled={loading}
-            variant="outline"
-            className="w-full h-12 flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-50 rounded-full transition-all hover:shadow-md"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-            ) : (
-              <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-red-500" />
-            )}
-            <span className="text-gray-700 font-medium">Google로 계속하기</span>
-          </Button>
-        </div>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-4 text-gray-500">또는</span>
-          </div>
-        </div>
-
-        <form className="space-y-5" onSubmit={handleEmailSignup}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              이메일
-            </label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="h-11 rounded-lg"
-              disabled={loading}
+    <>
+      <MyRatingIsHeader />
+      <div 
+        className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-24"
+        style={{
+          backgroundImage: 'url(/dark-texture-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="w-full max-w-md space-y-8 bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
+          {/* 로고 */}
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/myratingis-logo.png"
+              alt="MyRatingIs"
+              width={200}
+              height={60}
+              className="h-12 w-auto"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호
-            </label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="최소 6자 이상"
-              className="h-11 rounded-lg"
-              disabled={loading}
-            />
+            <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+              반가워요! 👋
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              이미 계정이 있으신가요?{" "}
+              <Link href="/login" className="font-medium text-amber-600 hover:text-amber-700 hover:underline transition-colors">
+                로그인하기
+              </Link>
+            </p>
           </div>
 
-          <div>
-            <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호 확인
-            </label>
-            <Input
-              id="password-confirm"
-              type="password"
-              required
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              placeholder="비밀번호 다시 입력"
-              className="h-11 rounded-lg"
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {/* 소셜 회원가입 */}
+          <div className="space-y-3">
+            <Button
+              type="button"
+              onClick={handleGoogleSignup}
               disabled={loading}
-            />
+              variant="outline"
+              className="w-full h-12 flex items-center justify-center gap-3 border-2 border-gray-300 hover:bg-gray-50 rounded-full transition-all hover:shadow-md"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              ) : (
+                <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-red-500" />
+              )}
+              <span className="text-gray-700 font-medium">Google로 계속하기</span>
+            </Button>
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 rounded-full text-base font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            {loading ? "가입 중..." : "3초만에 가입하기"}
-          </Button>
-        </form>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-4 text-gray-500">또는</span>
+            </div>
+          </div>
 
-        <div className="text-center text-xs text-gray-400">
-          <p>
-            가입 시{" "}
-            <Link href="/policy/terms" className="underline">이용약관</Link> 및{" "}
-            <Link href="/policy/privacy" className="underline">개인정보처리방침</Link>에 동의하게 됩니다.
-          </p>
+          <form className="space-y-5" onSubmit={handleEmailSignup}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                이메일
+              </label>
+              <Input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="h-11 rounded-lg"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호
+              </label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="최소 6자 이상"
+                className="h-11 rounded-lg"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호 확인
+              </label>
+              <Input
+                id="password-confirm"
+                type="password"
+                required
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                placeholder="비밀번호 다시 입력"
+                className="h-11 rounded-lg"
+                disabled={loading}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-full text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {loading ? "가입 중..." : "3초만에 가입하기"}
+            </Button>
+          </form>
+
+          <div className="text-center text-xs text-gray-400">
+            <p>
+              가입 시{" "}
+              <Link href="/policy/terms" className="underline">이용약관</Link> 및{" "}
+              <Link href="/policy/privacy" className="underline">개인정보처리방침</Link>에 동의하게 됩니다.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

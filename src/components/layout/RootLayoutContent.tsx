@@ -19,7 +19,10 @@ export function RootLayoutContent({
   
   const isHome = pathname === '/';
   const isReport = pathname?.startsWith('/report');
-  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport;
+  const isProjectUpload = pathname?.startsWith('/project/upload');
+  const isLogin = pathname === '/login';
+  const isSignup = pathname === '/signup';
+  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isProjectUpload || isLogin || isSignup;
 
   return (
     <div className="flex min-h-screen flex-col relative w-full overflow-x-hidden">
