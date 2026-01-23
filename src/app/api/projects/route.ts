@@ -283,28 +283,38 @@ export async function POST(request: NextRequest) {
     
     // 만약 profiles에 없다면 auth.users에서 정보를 가져와서 생성 시도
     if (!userExists) {
-        console.log(`[API] Profile not found for ${user_id}. Attempting to create one.`);
+        console.log(`[API] Profile not found for ${user_id}. Attempting to auto-create and retry.`);
         const { data: { user: authUser } } = await supabaseAdmin.auth.admin.getUserById(user_id);
         
         if (authUser) {
-            // 기본 프로필 생성
+            // 기본 프로필 정보 구성 (컬럼명 유연성 확보)
+            const baseUsername = authUser.user_metadata?.full_name || 
+                                authUser.user_metadata?.name || 
+                                authUser.user_metadata?.nickname || 
+                                authUser.email?.split('@')[0] || 'Member';
+            
+            const baseAvatar = authUser.user_metadata?.avatar_url || 
+                              authUser.user_metadata?.picture || '/globe.svg';
+
+            // 최소 정보로 Upsert 시도 (기존 데이터가 있어도 충돌 방지)
             const { data: newProfile, error: createError } = await supabaseAdmin
                 .from('profiles')
-                .insert([{
+                .upsert({
                     id: user_id,
-                    username: authUser.email?.split('@')[0] || 'Member',
-                    email: authUser.email,
-                    avatar_url: '/globe.svg',
-                    points: 1000 // 기본 포인트 부여
-                }])
+                    username: baseUsername,
+                    // nickname: baseUsername, // 혹시 nickname 컬럼일 수도 있으니 대비 (필요시 추가)
+                    avatar_url: baseAvatar,
+                    points: 1000 // 가입 축하 포인트
+                }, { onConflict: 'id' })
                 .select()
                 .single();
             
-            if (!createError) {
+            if (!createError && newProfile) {
                 userExists = newProfile;
+                console.log(`[API] Profile auto-created successfully for ${user_id}`);
             } else {
-                console.error('[API] Failed to create profile automatically:', createError);
-                // profiles 테이블이 아닐 수도 있으니 'User' 테이블도 확인해봄 (Vibefolio 레거시 대응)
+                console.warn('[API] Failed to auto-create profile in profiles table, checking fallback tables.', createError);
+                // profiles 테이블이 아닌 User(Vibefolio 레거시) 테이블 확인
                 const { data: userTableExists } = await supabaseAdmin
                     .from('User')
                     .select('id')
