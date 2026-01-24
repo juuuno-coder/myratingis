@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Monitor, 
   Smartphone, 
   Maximize2, 
-  ChevronRight, 
   ChevronLeft, 
   CheckCircle2, 
-  ChefHat,
   X,
   Star as StarIcon,
-  Sparkles,
-  Info
+  ChefHat,
+  Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -24,6 +22,85 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { MediaPreview } from '@/components/Review/MediaPreview';
 
+// --- Review Intro Component (Overlay) ---
+function ReviewIntro({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="absolute inset-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
+      </div>
+      
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse delay-1000" />
+
+      <main className="relative z-10 w-full max-w-lg mx-auto px-6 flex flex-col items-center text-center space-y-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <img 
+            src="/logo-white.png" 
+            alt="제 평가는요?" 
+            className="h-16 md:h-20 w-auto object-contain"
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+        >
+          <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
+            Professional Audit
+          </span>
+        </motion.div>
+
+        {/* Clickable Cloche area to start */}
+        <motion.div
+          onClick={onStart}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 1, delay: 0.3, type: "spring" }}
+          className="relative w-64 h-64 cursor-pointer group"
+        >
+          <img 
+            src="/review/cloche-cover.png" 
+            alt="Start Review" 
+            className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110"
+          />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+             <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">Click to Open</span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="w-full"
+        >
+          <Button
+            onClick={onStart}
+            className="w-full h-16 bg-orange-600 hover:bg-orange-500 text-white text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none"
+          >
+            <ChefHat className="w-6 h-6" />
+            평가 시작하기
+          </Button>
+          <p className="mt-6 text-white/40 text-xs font-medium leading-relaxed">
+            냉철한 시선과 집요한 디테일로<br />창작자에게 성장의 기회를 선물해주세요.
+          </p>
+        </motion.div>
+      </main>
+    </div>
+  );
+}
+
 type ViewerMode = 'desktop' | 'mobile';
 
 function ViewerContent() {
@@ -32,21 +109,22 @@ function ViewerContent() {
   const projectId = searchParams.get('projectId');
   
   const [viewerMode, setViewerMode] = useState<ViewerMode>('desktop');
-  const [panelWidth, setPanelWidth] = useState(500);
+  const [panelWidth, setPanelWidth] = useState(600); // Default wider for better view
   const [isResizing, setIsResizing] = useState(false);
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
   
   // Review State
   const [currentStep, setCurrentStep] = useState(0); 
-  const [steps, setSteps] = useState<string[]>([]);
+  // Simplified Steps: 1. Rating (All), 2. Voting, 3. Subjective -> Submit
+  const steps = ['rating_all', 'voting', 'subjective', 'summary'];
+  
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
-  const [proposalContent, setProposalContent] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [guestId, setGuestId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Guest ID Check
     if (typeof window !== 'undefined') {
         let gid = localStorage.getItem('guest_id');
         if (!gid) {
@@ -71,47 +149,11 @@ function ViewerContent() {
 
         if (error) throw error;
         
-        // Handle custom_data parsing
         let customData: any = data.custom_data;
         if (typeof customData === 'string') {
-            try {
-                customData = JSON.parse(customData);
-            } catch (e) {
-                console.error("Failed to parse custom_data", e);
-                customData = {};
-            }
+            try { customData = JSON.parse(customData); } catch (e) { customData = {}; }
         }
-        
-        // Merge parsed data back effectively for state
-        const projectWithParsedData = { ...data, custom_data: customData };
-        setProject(projectWithParsedData);
-        
-        // Generate Steps
-        const newSteps: string[] = [];
-        const auditConfig = customData?.audit_config;
-        
-        // 1. Michelin Ratings
-        const categories = auditConfig?.categories || [];
-        if (categories.length > 0) {
-          categories.forEach((_: any, idx: number) => newSteps.push(`rating_${idx}`));
-        } else {
-          // Fallback if no categories
-          newSteps.push('rating_0', 'rating_1', 'rating_2', 'rating_3', 'rating_4');
-        }
-        
-        // 2. Sticker Voting
-        newSteps.push('voting');
-        
-        // 3. Subjective Questions
-        const questions = auditConfig?.questions || [];
-        if (questions.length > 0) {
-          newSteps.push('subjective');
-        }
-        
-        // 4. Summary
-        newSteps.push('summary');
-        
-        setSteps(newSteps);
+        setProject({ ...data, custom_data: customData });
       } catch (e) {
         console.error("Failed to load project", e);
         router.push('/');
@@ -128,7 +170,7 @@ function ViewerContent() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
       const newWidth = window.innerWidth - e.clientX;
-      if (newWidth > 350 && newWidth < 800) setPanelWidth(newWidth);
+      if (newWidth > 350 && newWidth < 1000) setPanelWidth(newWidth);
     };
     const handleMouseUp = () => setIsResizing(false);
 
@@ -145,7 +187,7 @@ function ViewerContent() {
   }, [isResizing]);
 
   const handleNextStep = () => {
-    if (currentStep < steps.length - 1) {
+    if (currentStep < steps.length - 2) { // summary 전까지는 next
       setCurrentStep(prev => prev + 1);
     } else {
       handleFinalSubmit();
@@ -158,8 +200,12 @@ function ViewerContent() {
 
   const handleFinalSubmit = async () => {
     try {
-      // For MyRatingIs, we can allow guest submissions or require login
       const { data: { session } } = await supabase.auth.getSession();
+      
+      // Step 3 Subjective answers submission
+      // Note: MichelinRating component handles its own submission for scores. 
+      // FeedbackPoll also handles its own.
+      // We just need to submit the final proposal/answers if any.
       
       const res = await fetch(`/api/projects/${projectId}/rating`, {
         method: 'POST',
@@ -168,7 +214,6 @@ function ViewerContent() {
             ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
         },
         body: JSON.stringify({
-          proposal: proposalContent,
           custom_answers: customAnswers,
           guest_id: !session ? guestId : undefined
         })
@@ -177,6 +222,7 @@ function ViewerContent() {
       if (!res.ok) throw new Error("Submission failed");
       
       setIsSubmitted(true);
+      setCurrentStep(steps.length - 1); // Go to summary
       toast.success("평가가 제출되었습니다! 🎉");
     } catch (e) {
       console.error(e);
@@ -197,15 +243,27 @@ function ViewerContent() {
   const renderCurrentStep = () => {
     const stepType = steps[currentStep];
     
-    if (stepType?.startsWith('rating_')) {
-      const idx = parseInt(stepType.split('_')[1]);
-      return <MichelinRating projectId={projectId!} activeCategoryIndex={idx} guestId={guestId || undefined} />;
+    // Step 1: All Ratings
+    if (stepType === 'rating_all') {
+      return (
+        <div className="space-y-6">
+           <div className="text-center space-y-2 mb-8">
+             <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 1</span>
+             <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">정량적 평가</h3>
+             <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-xs">각 항목을 슬라이드하여 점수를 매겨주세요</p>
+           </div>
+           {/* activeCategoryIndex를 전달하지 않으면 전체 리스트 뷰 렌더링 */}
+           <MichelinRating projectId={projectId!} guestId={guestId || undefined} />
+        </div>
+      );
     }
 
+    // Step 2: Voting
     if (stepType === 'voting') {
       return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <div className="text-center space-y-2">
+            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 2</span>
             <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">최종 판정</h3>
             <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">{project?.custom_data?.audit_config?.poll?.desc || "당신의 선택은 무엇입니까?"}</p>
           </div>
@@ -214,16 +272,18 @@ function ViewerContent() {
       );
     }
 
+    // Step 3: Subjective
     if (stepType === 'subjective') {
       const questions = project?.custom_data?.audit_config?.questions || [];
       return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
           <div className="text-center space-y-2">
+            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 3</span>
             <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">심층 질문</h3>
             <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">프로젝트에 대한 당신의 세심한 의견을 남겨주세요.</p>
           </div>
           <div className="space-y-8">
-            {questions.map((q: string, i: number) => (
+            {questions.length > 0 ? questions.map((q: string, i: number) => (
               <div key={i} className="space-y-3">
                 <div className="flex gap-3">
                   <span className="text-orange-500 font-black">Q{i+1}</span>
@@ -236,32 +296,31 @@ function ViewerContent() {
                   placeholder="의견을 입력해 주세요..."
                 />
               </div>
-            ))}
+            )) : (
+                <div className="text-center text-chef-text opacity-30 py-10">등록된 추가 질문이 없습니다.<br />다음 단계로 이동하여 제출해주세요.</div>
+            )}
           </div>
         </div>
       );
     }
 
+    // Step 4: Summary (Completion)
     if (stepType === 'summary') {
       return (
-        <div className="flex flex-col items-center justify-center text-center space-y-8 py-10 animate-in zoom-in-95 duration-500">
+        <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 animate-in zoom-in-95 duration-500 h-full">
           <div className="w-24 h-24 bg-orange-600 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_40px_rgba(234,88,12,0.3)]">
             <CheckCircle2 size={48} />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-3xl font-black text-chef-text uppercase tracking-tighter italic">평가 완료</h3>
-            <p className="text-chef-text opacity-40 font-black tracking-widest uppercase text-xs">모든 진단 항목을 확인했습니다.<br />지금 제출하여 창작자에게 의견을 전달하시겠습니까?</p>
+          <div className="space-y-4">
+            <h3 className="text-4xl font-black text-chef-text uppercase tracking-tighter italic">평가 완료!</h3>
+            <p className="text-chef-text opacity-60 font-bold leading-relaxed">
+              모든 진단이 완료되었습니다.<br />
+              참여해 주셔서 감사합니다.
+            </p>
           </div>
-          <div className="w-full p-6 bg-chef-panel rounded-2xl border border-chef-border space-y-3">
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-              <span className="text-chef-text opacity-40">평가 항목</span>
-              <span className="text-orange-600">완료</span>
-            </div>
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-              <span className="text-chef-text opacity-40">스티커 판정</span>
-              <span className="text-orange-600">완료</span>
-            </div>
-          </div>
+          <Button onClick={() => router.push('/')} className="h-14 px-10 rounded-2xl bevel-cta bg-chef-text text-chef-bg text-lg font-black mt-8">
+             메인으로 돌아가기
+          </Button>
         </div>
       );
     }
@@ -270,9 +329,22 @@ function ViewerContent() {
   };
 
   return (
-    <main className="h-screen w-full bg-background flex flex-col md:flex-row overflow-hidden transition-colors duration-500">
+    <main className="h-screen w-full bg-background flex flex-col md:flex-row overflow-hidden transition-colors duration-500 relative">
+      {/* Intro Overlay */}
+      <AnimatePresence>
+        {showIntro && (
+          <motion.div 
+            initial={{ opacity: 1 }} 
+            exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }} 
+            className="absolute inset-0 z-50"
+          >
+            <ReviewIntro onStart={() => setShowIntro(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Left Area: Project Preview */}
-      <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border">
+      <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border bg-[#0f0f0f]">
         {/* Top Header for Control */}
         <div className="h-14 bg-chef-card border-b border-chef-border px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
@@ -293,10 +365,13 @@ function ViewerContent() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-background flex items-center justify-center p-4 md:p-8 overflow-hidden relative transition-colors">
+        <div className="flex-1 bg-neutral-900/50 flex items-center justify-center p-4 md:p-8 overflow-hidden relative transition-colors">
+          {/* Background Grid Pattern */}
+          <div className="absolute inset-0 z-0 opacity-10 bg-[url('/grid-pattern.svg')] pointer-events-none" />
+          
           <div className={cn(
-            "transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-[0_40px_100px_rgba(0,0,0,0.3)] bg-chef-card relative",
-            viewerMode === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-[12px] border-chef-border" : "w-full h-full rounded-2xl"
+            "transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-[0_40px_100px_rgba(0,0,0,0.5)] bg-white relative z-10 overflow-hidden",
+            viewerMode === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-[12px] border-chef-border" : "w-full h-full rounded-xl border border-white/10"
           )}>
             <MediaPreview type={auditType as any} data={mediaData} />
           </div>
@@ -311,28 +386,30 @@ function ViewerContent() {
         {/* Resize Handle */}
         <div 
           onMouseDown={() => setIsResizing(true)} 
-          className="hidden md:flex absolute top-0 left-0 bottom-0 w-1 cursor-col-resize hover:bg-orange-500/50 transition-colors group items-center justify-center" 
+          className="hidden md:flex absolute top-0 left-0 bottom-0 w-1 cursor-col-resize hover:bg-orange-500/50 transition-colors group items-center justify-center z-30" 
         >
           <div className="w-[1px] h-20 bg-chef-border group-hover:bg-orange-500 transition-colors" />
         </div>
 
         {/* Panel Header */}
-        <div className="p-6 md:p-8 border-b border-chef-border flex items-center justify-between shrink-0">
+        <div className="p-6 md:p-8 border-b border-chef-border flex items-center justify-between shrink-0 bg-chef-card relative z-10">
           <div>
-            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full mb-3 inline-block">Evaluation Step {currentStep + 1}</span>
-            <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic">제 평가는요?</h3>
+            <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic flex items-center gap-2">
+               <ChefHat className="text-orange-500 w-6 h-6" /> 제 평가는요?
+            </h3>
           </div>
           <button onClick={() => router.back()} className="text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
         </div>
 
         {/* Panel Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar relative">
            <AnimatePresence mode="wait">
              <motion.div
                key={currentStep}
                initial={{ opacity: 0, x: 20 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: -20 }}
+               transition={{ duration: 0.3 }}
                className="h-full"
              >
                {renderCurrentStep()}
@@ -340,47 +417,27 @@ function ViewerContent() {
            </AnimatePresence>
         </div>
 
-        {/* Panel Footer */}
-        <div className="p-6 md:p-8 border-t border-chef-border flex gap-4 shrink-0 bg-chef-card">
-          {currentStep > 0 && (
+        {/* Panel Footer - Hide on Summary step */}
+        {currentStep < steps.length - 1 && (
+          <div className="p-6 md:p-8 border-t border-chef-border flex gap-4 shrink-0 bg-chef-card relative z-10">
+            {currentStep > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={handlePrevStep} 
+                className="h-14 px-6 rounded-2xl bevel-sm border-chef-border bg-chef-panel text-chef-text opacity-50 hover:opacity-100 transition-all font-black"
+              >
+                <ChevronLeft />
+              </Button>
+            )}
             <Button 
-              variant="outline" 
-              onClick={handlePrevStep} 
-              className="h-14 px-6 rounded-2xl border-chef-border bg-chef-panel text-chef-text opacity-50 hover:opacity-100 transition-all font-black"
+              onClick={handleNextStep}
+              className="flex-1 h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-500 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
             >
-              <ChevronLeft />
+              {currentStep < steps.length - 2 ? "NEXT STEP" : "SUBMIT AUDIT"}
             </Button>
-          )}
-          <Button 
-            onClick={handleNextStep}
-            className="flex-1 h-16 rounded-[1.5rem] bg-orange-600 hover:bg-orange-500 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
-          >
-            {currentStep < steps.length - 1 ? "NEXT STEP" : "SUBMIT AUDIT"}
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
-
-      {/* Completion Modal */}
-      {isSubmitted && (
-         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-              className="bg-[#0f0f0f] border border-white/10 rounded-[3rem] p-10 md:p-16 max-w-lg w-full text-center space-y-8 shadow-[0_40px_100px_rgba(255,165,0,0.1)]"
-            >
-              <div className="w-20 h-20 bg-orange-600 rounded-[2rem] flex items-center justify-center mx-auto text-white shadow-2xl">
-                <CheckCircle2 size={40} />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-3xl font-black text-white leading-tight">진단이 성공적으로<br />제출되었습니다</h3>
-                <p className="text-white/40 font-medium leading-relaxed">당신의 냉철한 피드백이 창작자에게 전달되었습니다.<br />수고하셨습니다, 셰프.</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <Button onClick={() => router.push('/')} className="h-14 rounded-2xl bg-white text-black font-black">홈으로</Button>
-                 <Button variant="outline" className="h-14 rounded-2xl border-white/10 text-white font-black hover:bg-white/5">이력 확인</Button>
-              </div>
-            </motion.div>
-         </div>
-      )}
     </main>
   );
 }
