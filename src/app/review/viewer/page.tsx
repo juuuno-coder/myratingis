@@ -117,8 +117,8 @@ function ViewerContent() {
   
   // Review State
   const [currentStep, setCurrentStep] = useState(0); 
-  // Simplified Steps: 1. Rating (All), 2. Voting, 3. Subjective -> Submit
-  const steps = ['rating_all', 'voting', 'subjective', 'summary'];
+  // 1. Michelin (Quantitative), 2. Sticker (Poll), 3. Depth Questions (Subjective) -> Summary
+  const steps = ['rating', 'voting', 'subjective', 'summary'];
   
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -258,46 +258,65 @@ function ViewerContent() {
   const renderCurrentStep = () => {
     const stepType = steps[currentStep];
     
-    // Step 1: All Ratings
-    if (stepType === 'rating_all') {
+    // Step 1: All Ratings (Michelin)
+    if (stepType === 'rating') {
       return (
-        <div className="space-y-6">
-           <div className="text-center space-y-2 mb-8">
-             <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 1</span>
-             <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">정량적 평가</h3>
-             <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-xs">각 항목을 슬라이드하여 점수를 매겨주세요</p>
+        <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+           <div className="text-center space-y-3 mb-8 shrink-0">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-600/10 border border-orange-600/20">
+                <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse" />
+                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Stage 01. Star Rating</span>
+             </div>
+             <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">정량적 항목 평가</h3>
+             <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-[10px]">각 지표별 슬라이더를 조절하여 점수를 매겨주세요</p>
            </div>
-           {/* activeCategoryIndex를 전달하지 않으면 전체 리스트 뷰 렌더링 */}
-           <MichelinRating projectId={projectId!} guestId={guestId || undefined} />
+           
+           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+              <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
+                 <MichelinRating projectId={projectId!} guestId={guestId || undefined} />
+              </div>
+           </div>
         </div>
       );
     }
 
-    // Step 2: Voting
+    // Step 2: Voting (Sticker)
     if (stepType === 'voting') {
       return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-          <div className="text-center space-y-2">
-            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 2</span>
-            <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">최종 판정</h3>
-            <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">{project?.custom_data?.audit_config?.poll?.desc || "당신의 선택은 무엇입니까?"}</p>
+        <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="text-center space-y-3 mb-8 shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-600/10 border border-indigo-600/20">
+                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Stage 02. Sticker Decision</span>
+            </div>
+            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">최종 판정 투표</h3>
+            <p className="text-sm text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "이 프로젝트에 대한 당신의 최종 선택은?"}</p>
           </div>
-          <FeedbackPoll projectId={projectId!} guestId={guestId || undefined} />
+          
+          <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+            <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
+               <FeedbackPoll projectId={projectId!} guestId={guestId || undefined} />
+            </div>
+          </div>
         </div>
       );
     }
 
-    // Step 3: Subjective
+    // Step 3: Subjective (Questions)
     if (stepType === 'subjective') {
       const questions = project?.custom_data?.audit_config?.questions || [];
       return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-          <div className="text-center space-y-2">
-            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em] bg-orange-600/10 px-3 py-1 rounded-full inline-block">Step 3</span>
-            <h3 className="text-2xl font-black text-chef-text uppercase tracking-tighter italic">심층 질문</h3>
-            <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">프로젝트에 대한 당신의 세심한 의견을 남겨주세요.</p>
+        <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="text-center space-y-3 mb-8 shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-600/10 border border-emerald-600/20">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Stage 03. Depth Feedback</span>
+            </div>
+            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">심층 의견 기록</h3>
+            <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">작가를 위해 더 날카롭고 따뜻한 조언을 남겨주세요.</p>
           </div>
-          <div className="space-y-8">
+          
+          <div className="flex-1 space-y-10 overflow-y-auto px-1 py-4 no-scrollbar pb-20">
             {questions.length > 0 ? questions.map((q: string, i: number) => (
               <div key={i} className="space-y-3">
                 <div className="flex gap-3">
@@ -322,20 +341,30 @@ function ViewerContent() {
     // Step 4: Summary (Completion)
     if (stepType === 'summary') {
       return (
-        <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 animate-in zoom-in-95 duration-500 h-full">
-          <div className="w-24 h-24 bg-orange-600 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_40px_rgba(234,88,12,0.3)]">
-            <CheckCircle2 size={48} />
+        <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 animate-in zoom-in-95 duration-700 h-full">
+          <div className="relative">
+            <div className="w-24 h-24 bg-orange-600 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_40px_rgba(234,88,12,0.3)] animate-bounce">
+              <CheckCircle2 size={48} />
+            </div>
+            <div className="absolute -top-4 -right-4 w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg animate-pulse border-4 border-chef-card">
+               <Star size={20} fill="currentColor" />
+            </div>
           </div>
+          
           <div className="space-y-4">
-            <h3 className="text-4xl font-black text-chef-text uppercase tracking-tighter italic">평가 완료!</h3>
-            <p className="text-chef-text opacity-60 font-bold leading-relaxed">
-              모든 진단이 완료되었습니다.<br />
-              참여해 주셔서 감사합니다.
+            <h3 className="text-4xl font-black text-chef-text uppercase tracking-tighter italic">Evaluation Complete</h3>
+            <p className="text-chef-text opacity-60 font-bold leading-relaxed max-w-sm mx-auto">
+              당신의 날카로운 시선과 정성스러운 조언이<br />
+              창작자에게 가장 맛있는 성장의 밑거름이 될 것입니다.
             </p>
           </div>
-          <Button onClick={() => router.push('/')} className="h-14 px-10 rounded-2xl bevel-cta bg-chef-text text-chef-bg text-lg font-black mt-8">
-             메인으로 돌아가기
-          </Button>
+          
+          <div className="pt-8 w-full max-w-xs space-y-3">
+             <Button onClick={() => router.push('/projects')} className="w-full h-16 rounded-2xl bevel-cta bg-orange-600 text-white text-lg font-black hover:bg-orange-700 shadow-xl transition-all hover:scale-105">
+                다른 요리 둘러보기
+             </Button>
+             <button onClick={() => router.push('/')} className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest hover:opacity-100 transition-opacity">Return to Studio</button>
+          </div>
         </div>
       );
     }
@@ -361,21 +390,31 @@ function ViewerContent() {
       {/* Left Area: Project Preview */}
       <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border bg-[#0f0f0f]">
         {/* Top Header for Control */}
-        <div className="h-14 bg-chef-card border-b border-chef-border px-6 flex items-center justify-between shrink-0">
+        <div className="h-16 bg-chef-card border-b border-chef-border px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-             <div className="flex gap-1.5 opacity-40">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
+             <div className="flex gap-1.5 ">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
              </div>
-             <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-2">Live Diagnostic Preview</span>
+             <div className="flex flex-col ml-2">
+                <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.3em] leading-none">Diagnostic Subject</span>
+                <h2 className="text-sm font-black text-chef-text uppercase tracking-tight italic">Main Dish: {project?.title || "Project Preview"}</h2>
+             </div>
           </div>
-          <div className="flex items-center gap-2">
-             <div className="flex bg-chef-panel p-0.5 rounded-lg border border-chef-border">
-                <button onClick={() => setViewerMode('desktop')} className={cn("p-2 rounded-md transition-all", viewerMode === 'desktop' ? "bg-chef-card text-chef-text shadow-sm" : "text-chef-text opacity-20")}><Monitor size={14} /></button>
-                <button onClick={() => setViewerMode('mobile')} className={cn("p-2 rounded-md transition-all", viewerMode === 'mobile' ? "bg-chef-card text-chef-text shadow-sm" : "text-chef-text opacity-20")}><Smartphone size={14} /></button>
+          <div className="flex items-center gap-4">
+             <div className="flex bg-chef-panel p-1 rounded-sm border border-chef-border scale-90">
+                <button onClick={() => setViewerMode('desktop')} title="Desktop View" className={cn("p-2 rounded-sm transition-all", viewerMode === 'desktop' ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-20")}><Monitor size={14} /></button>
+                <button onClick={() => setViewerMode('mobile')} title="Mobile View" className={cn("p-2 rounded-sm transition-all", viewerMode === 'mobile' ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-20")}><Smartphone size={14} /></button>
              </div>
-             <Button variant="ghost" size="sm" className="h-8 px-3 text-chef-text opacity-40 hover:opacity-100 rounded-lg gap-2 text-[10px] font-black" onClick={() => window.open(previewUrl || '', '_blank')}><Maximize2 size={12} /> OPEN IN NEW TAB</Button>
+             <Button 
+               variant="outline" 
+               size="sm" 
+               className="h-9 px-4 text-chef-text border-chef-border bg-chef-panel/50 hover:bg-chef-panel rounded-sm gap-2 text-[10px] font-black tracking-widest uppercase" 
+               onClick={() => window.open(previewUrl || '', '_blank')}
+             >
+               <Maximize2 size={12} /> Open Dish
+             </Button>
           </div>
         </div>
 
@@ -407,25 +446,49 @@ function ViewerContent() {
         </div>
 
         {/* Panel Header */}
-        <div className="p-6 md:p-8 border-b border-chef-border flex items-center justify-between shrink-0 bg-chef-card relative z-10">
-          <div>
-            <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic flex items-center gap-2">
-               <ChefHat className="text-orange-500 w-6 h-6" /> 제 평가는요?
-            </h3>
+        <div className="border-b border-chef-border shrink-0 bg-chef-card relative z-10">
+          <div className="p-6 md:px-8 md:pt-8 md:pb-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic flex items-center gap-2">
+                 <ChefHat className="text-orange-500 w-6 h-6" /> 제 평가는요?
+              </h3>
+            </div>
+            <button onClick={() => router.back()} className="text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
           </div>
-          <button onClick={() => router.back()} className="text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
+          
+          {/* Progress Indicator */}
+          {currentStep < steps.length - 1 && (
+            <div className="px-6 md:px-8 pb-4">
+              <div className="flex gap-1.5 h-1 w-full bg-chef-panel rounded-full overflow-hidden">
+                {[0, 1, 2].map((s) => (
+                  <div 
+                    key={s} 
+                    className={cn(
+                      "flex-1 transition-all duration-500 rounded-full",
+                      currentStep === s ? "bg-orange-600 shadow-[0_0_8px_rgba(234,88,12,0.5)]" : 
+                      currentStep > s ? "bg-chef-text opacity-40" : "bg-chef-text opacity-5"
+                    )} 
+                  />
+                ))}
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest">Process Progress</span>
+                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">{currentStep + 1} / 3</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Panel Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar relative">
+        <div className="flex-1 overflow-hidden p-6 md:p-10 custom-scrollbar relative">
            <AnimatePresence mode="wait">
              <motion.div
                key={currentStep}
                initial={{ opacity: 0, x: 20 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: -20 }}
-               transition={{ duration: 0.3 }}
-               className="h-full"
+               transition={{ duration: 0.4, ease: "easeOut" }}
+               className="h-full scroll-smooth"
              >
                {renderCurrentStep()}
              </motion.div>
@@ -446,9 +509,9 @@ function ViewerContent() {
             )}
             <Button 
               onClick={handleNextStep}
-              className="flex-1 h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-500 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
+              className="flex-1 h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
             >
-              {currentStep < steps.length - 2 ? "NEXT STEP" : "SUBMIT AUDIT"}
+              {currentStep < steps.length - 2 ? "Next Process" : "Submit Final Audit"}
             </Button>
           </div>
         )}
