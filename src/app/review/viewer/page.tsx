@@ -125,14 +125,9 @@ function ViewerContent() {
   const [guestId, setGuestId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-        let gid = localStorage.getItem('guest_id');
-        if (!gid) {
-            gid = crypto.randomUUID();
-            localStorage.setItem('guest_id', gid);
-        }
-        setGuestId(gid);
-    }
+    const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
+    if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
+    setGuestId(gid);
 
     if (!projectId) {
       router.push('/');
@@ -141,6 +136,9 @@ function ViewerContent() {
 
     const fetchProject = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        // [Auth Guard] We can check here, but let's do it on 'Start' button for smoother intro
+        
         const { data, error } = await supabase
           .from('Project')
           .select('*')
@@ -164,6 +162,23 @@ function ViewerContent() {
 
     fetchProject();
   }, [projectId, router]);
+
+  const handleStartReview = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+        toast.error("진단에 참여하려면 로그인이 필요합니다.", {
+            description: "로그인 후 당신의 소중한 의견을 들려주세요!",
+            action: {
+                label: "로그인하러 가기",
+                onClick: () => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)
+            }
+        });
+        return;
+    }
+    
+    setShowIntro(false);
+  };
 
   // Resizing Logic
   useEffect(() => {
@@ -338,7 +353,7 @@ function ViewerContent() {
             exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }} 
             className="absolute inset-0 z-50"
           >
-            <ReviewIntro onStart={() => setShowIntro(false)} />
+            <ReviewIntro onStart={handleStartReview} />
           </motion.div>
         )}
       </AnimatePresence>

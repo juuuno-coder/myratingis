@@ -17,45 +17,45 @@
 
 @layer base {
   :root {
-    /* 트렌디한 Vibe 테마 (Clean & Modern Ver.) */
-    --background: 0 0% 100%; /* Pure White */
-    --foreground: 222 47% 11%; /* Dark Navy Black (#0F172A) */
+    /* 트렌디한 Vibe 테마 (Refined & Premium Ver.) */
+    --background: 0 0% 98.4%; /* Slightly Warm White (#FAFAFA) */
+    --foreground: 24 9.8% 10%; /* Very Dark Stone (#1A1918) */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 24 9.8% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 24 9.8% 10%;
 
-    /* Primary: Brand Orange (#ea580c) */
-    --primary: 24.6 95% 53.1%;
+    /* Primary: Brand Premium Orange (#E04E00) - Slightly deeper for light mode */
+    --primary: 21 100% 43.9%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%; 
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 24 5.4% 90%; 
+    --secondary-foreground: 24 9.8% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 24 5.4% 94%;
+    --muted-foreground: 25 5.3% 44.7%;
 
-    /* Accent: Bright Orange (#f97316) */
-    --accent: 24.6 95% 60%;
+    /* Accent: Sophisticated Orange (#F97316) */
+    --accent: 24.6 95% 53.1%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214 32% 91%; 
-    --input: 214 32% 91%;
-    --ring: 24.6 95% 53.1%;
+    --border: 24 5.9% 90%; 
+    --input: 24 5.9% 90%;
+    --ring: 21 100% 43.9%;
 
     --radius: 0.75rem;
 
-    /* MyRatingIs 전용 변수 (Orange Theme) */
-    --vibe-orange: 24.6 95% 53.1%;
+    /* MyRatingIs 전용 변수 (Orange Theme Remastered) */
+    --vibe-orange: 21 100% 43.9%;
     --vibe-amber: 37.7 92.1% 50.2%;
-    --vibe-hover: 210 40% 96.1%;
+    --vibe-hover: 24 5.4% 96%;
 
-    --divider: 214 32% 91%;
+    --divider: 24 5.9% 90%;
   }
 
   .dark {
@@ -413,13 +413,13 @@
   /* ============================================ */
 
   :root {
-    --chef-bg: #fdfdfd;
+    --chef-bg: #FDFBFA; /* Extremely subtle warm tint */
     --chef-card-bg: #ffffff;
-    --chef-text: #000000;
-    --chef-border: rgba(0, 0, 0, 0.12); /* 대비 상향 */
-    --chef-frame: rgba(0, 0, 0, 0.8);
-    --chef-panel: #f2f2f2; /* 조금 더 구분되게 */
-    --header-bg: rgba(255, 255, 255, 0.9);
+    --chef-text: #171614; /* Softer black */
+    --chef-border: rgba(23, 22, 20, 0.08);
+    --chef-frame: rgba(23, 22, 20, 0.9);
+    --chef-panel: #F5F4F0; /* Linen-like warm grey */
+    --header-bg: rgba(255, 255, 255, 0.85);
   }
 
   .dark {

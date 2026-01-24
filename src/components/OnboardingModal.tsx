@@ -12,6 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { cn } from "@/lib/utils";
 
 import { GENRE_CATEGORIES_WITH_ICONS as GENRE_CATEGORIES, FIELD_CATEGORIES_WITH_ICONS as FIELD_CATEGORIES } from "@/lib/ui-constants";
 
@@ -31,8 +32,11 @@ export function OnboardingModal({
   onComplete,
 }: OnboardingModalProps) {
   const { refreshUserProfile } = useAuth();
-  const [step, setStep] = useState(0); // 0: 환영, 1: 닉네임, 2: 장르/분야, 3: 축하
+  const [step, setStep] = useState(0); // 0: 환영, 1: 닉네임, 2: 정보(성별/연령/직업), 3: 장르/분야, 4: 전문가, 5: 축하
   const [nickname, setNickname] = useState("");
+  const [gender, setGender] = useState("");
+  const [ageRange, setAgeRange] = useState("");
+  const [occupation, setOccupation] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
   const [fields, setFields] = useState<string[]>([]);
   const [expertFields, setExpertFields] = useState<string[]>([]);
@@ -101,7 +105,14 @@ export function OnboardingModal({
        }
     }
 
-    if (step === 2 && genres.length === 0) {
+    if (step === 2) {
+       if (!gender || !ageRange || !occupation) {
+         setError("모든 항목을 선택해주세요.");
+         return;
+       }
+    }
+
+    if (step === 3 && genres.length === 0) {
       setError("최소 1개의 장르를 선택해주세요.");
       return;
     }
@@ -153,11 +164,13 @@ export function OnboardingModal({
         .from('profiles')
         .upsert({
           id: userId,
-          // email: userEmail, // DB에 컬럼이 없어 에러 발생으로 제거
-          username: nickname, // 닉네임을 username으로 저장
-          interests: { genres, fields }, // 관심사 정보 저장
-          expertise: { fields: expertFields }, // 전문 분야 정보 저장
-          avatar_url: '/globe.svg', // 기본 아바타 설정 (없을 경우)
+          username: nickname, 
+          gender,
+          age_range: ageRange,
+          occupation,
+          interests: { genres, fields },
+          expertise: { fields: expertFields }, 
+          avatar_url: '/globe.svg',
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
 
@@ -178,7 +191,7 @@ export function OnboardingModal({
       
       // 2. 축하 화면으로 이동 (모달 닫지 않음)
       setLoading(false);
-      setStep(3); // 3: 완료 축하 화면
+      setStep(5); // 5: 완료 축하 화면
       // onComplete(); // onComplete는 최종 확인 버튼 클릭 시 호출
       // onOpenChange(false);
       console.log("[Onboarding] 축하 화면으로 이동");
@@ -270,17 +283,120 @@ export function OnboardingModal({
           </div>
         )}
 
-        {/* 스텝 2: 장르/분야 선택 */}
+        {/* 스텝 2: 성별/연령/직업 (New) */}
         {step === 2 && (
+          <div className="p-8 space-y-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div className="text-center mb-2">
+              <div className="inline-flex items-center gap-2 text-sm text-orange-600 font-medium mb-1">
+                <span className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs">2</span>
+                / 4
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 border-none">
+                조만간 더 정확한 리포트를 위해<br />기본 정보를 알려주세요
+              </h2>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {/* 성별 */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">성별</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: '남성', value: 'male' },
+                    { label: '여성', value: 'female' },
+                    { label: '기타/비공개', value: 'secret' }
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setGender(opt.value)}
+                      className={cn(
+                        "h-11 rounded-xl text-sm font-bold border-2 transition-all",
+                        gender === opt.value ? "bg-orange-50 border-orange-600 text-orange-600" : "bg-white border-gray-100 text-gray-500 hover:border-orange-200"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 연령대 */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">연령대</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['10대', '20대', '30대', '40대', '50대 이상'].map(label => {
+                    const val = label.replace('대', 's').replace(' 이상', '+');
+                    return (
+                      <button
+                        key={val}
+                        onClick={() => setAgeRange(val)}
+                        className={cn(
+                          "h-11 rounded-xl text-xs font-bold border-2 transition-all",
+                          ageRange === val ? "bg-orange-50 border-orange-600 text-orange-600" : "bg-white border-gray-100 text-gray-500 hover:border-orange-200"
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 직업/본캐 */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-gray-400">나의 본캐 (직업)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: '개발자', value: 'dev' },
+                    { label: '디자이너', value: 'designer' },
+                    { label: '기획자/PM', value: 'pm' },
+                    { label: '마케터', value: 'marketer' },
+                    { label: '학생', value: 'student' },
+                    { label: '기타 전직원', value: 'other' }
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setOccupation(opt.value)}
+                      className={cn(
+                        "h-11 px-4 text-left rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-between",
+                        occupation === opt.value ? "bg-orange-50 border-orange-600 text-orange-600 shadow-sm" : "bg-white border-gray-100 text-gray-500 hover:border-orange-200"
+                      )}
+                    >
+                      {opt.label}
+                      {occupation === opt.value && <FontAwesomeIcon icon={faCheck} className="w-3 h-3" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleNextStep}
+              className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl mt-4 font-black shadow-lg"
+            >
+              다음으로
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* 스텝 3: 장르/분야 선택 */}
+        {step === 3 && (
           <div className="p-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
             <div className="text-center mb-6">
               <button 
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 className="inline-flex items-center gap-2 text-sm text-orange-600 font-medium mb-2 hover:bg-orange-50 px-3 py-1 rounded-full transition-colors"
-                title="이전 단계로 돌아가기 (닉네임 수정)"
+                title="이전 단계로 돌아가기"
               >
-                <span className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs">2</span>
-                / 3
+                <span className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs">3</span>
+                / 4
                 <span className="text-xs text-gray-400 ml-1 font-normal">← 이전</span>
               </button>
               <h2 className="text-xl font-bold text-gray-900">
@@ -397,16 +513,16 @@ export function OnboardingModal({
           </div>
         )}
 
-        {/* 스텝 3: 전문 분야 선택 (자부심 뱃지) */}
-        {step === 3 && (
+        {/* 스텝 4: 전문 분야 선택 (자부심 뱃지) */}
+        {step === 4 && (
           <div className="p-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
             <div className="text-center mb-6">
               <button 
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 className="inline-flex items-center gap-2 text-sm text-blue-600 font-medium mb-2 hover:bg-blue-50 px-3 py-1 rounded-full transition-colors"
               >
-                <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">3</span>
-                / 3
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">4</span>
+                / 4
                 <span className="text-xs text-gray-400 ml-1 font-normal">← 이전</span>
               </button>
               <h2 className="text-xl font-bold text-gray-900">
@@ -486,8 +602,8 @@ export function OnboardingModal({
           </div>
         )}
 
-        {/* 스텝 4: 완료 축하 */}
-        {step === 4 && (
+       {/* 스텝 5: 완료 축하 */}
+        {step === 5 && (
           <div className="p-8 text-center">
             <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <FontAwesomeIcon icon={faCheck} className="w-10 h-10 text-orange-500" />

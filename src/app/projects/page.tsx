@@ -4,14 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
-import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight } from 'lucide-react';
+import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 export default function ProjectsPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -72,6 +74,31 @@ export default function ProjectsPage() {
               ))}
            </div>
         </div>
+
+        {/* Auth Inducement Banner */}
+        {!isAuthenticated && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-12 p-8 rounded-[2rem] bg-gradient-to-r from-orange-600 to-orange-500 text-white relative overflow-hidden shadow-2xl"
+          >
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+               <ChefHat size={120} />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+               <div className="text-center md:text-left space-y-2">
+                  <h3 className="text-2xl font-black italic uppercase tracking-tight flex items-center gap-2 justify-center md:justify-start">
+                     <Sparkles className="w-6 h-6" /> Join the Kitchen
+                  </h3>
+                  <p className="text-white/80 font-bold">로그인하고 셰프가 되어 프로젝트를 진단해보세요. <br className="hidden md:block" />참여 시 다양한 리워드와 전문성 배지가 제공됩니다.</p>
+               </div>
+               <div className="flex gap-3">
+                  <Button onClick={() => router.push('/login')} variant="secondary" className="h-14 px-8 rounded-2xl font-black bg-white text-orange-600 hover:bg-white/90">로그인하기</Button>
+                  <Button onClick={() => router.push('/signup')} variant="outline" className="h-14 px-8 rounded-2xl font-black border-white/20 text-white hover:bg-white/10">회원가입</Button>
+               </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Project Grid */}
         {loading ? (
