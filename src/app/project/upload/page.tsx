@@ -22,15 +22,25 @@ import { ChefHat } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
+import { OnboardingModal } from "@/components/OnboardingModal"; // Import 추가
+
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth(); // loading, userProfile 받아오기
   
   const mode = searchParams.get('mode') || 'audit'; 
   
   const [auditStep, setAuditStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false); // 온보딩 상태 추가
+
+  useEffect(() => {
+    // 로딩이 끝났고, 유저는 있는데 프로필이 없으면 온보딩 실행
+    if (!authLoading && user && !userProfile) {
+      setShowOnboarding(true);
+    }
+  }, [authLoading, user, userProfile]);
 
   // --- State ---
   const [title, setTitle] = useState("");
@@ -502,6 +512,16 @@ export default function ProjectUploadPage() {
           </AnimatePresence>
         </main>
       </div>
+
+      {user && (
+        <OnboardingModal 
+          open={showOnboarding}
+          onOpenChange={setShowOnboarding}
+          userId={user.id}
+          userEmail={user.email || ""}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
     </div>
   );
 }
