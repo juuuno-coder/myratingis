@@ -637,21 +637,8 @@
     box-shadow: inset 4px 0 0 0 currentColor;
   }
 
-  /* Bevel cut corners style */
+  /* Bevel cut corners style (Smoother) */
   .bevel-cta {
-    clip-path: polygon(
-      12px 0, 
-      calc(100% - 12px) 0, 
-      100% 12px, 
-      100% calc(100% - 12px), 
-      calc(100% - 12px) 100%, 
-      12px 100%, 
-      0 calc(100% - 12px), 
-      0 12px
-    );
-  }
-
-  .bevel-sm {
     clip-path: polygon(
       6px 0, 
       calc(100% - 6px) 0, 
@@ -664,16 +651,29 @@
     );
   }
 
+  .bevel-sm {
+    clip-path: polygon(
+      3px 0, 
+      calc(100% - 3px) 0, 
+      100% 3px, 
+      100% calc(100% - 3px), 
+      calc(100% - 3px) 100%, 
+      3px 100%, 
+      0 calc(100% - 3px), 
+      0 3px
+    );
+  }
+
   .bevel-section {
     clip-path: polygon(
-      24px 0, 
-      calc(100% - 24px) 0, 
-      100% 24px, 
-      100% calc(100% - 24px), 
-      calc(100% - 24px) 100%, 
-      24px 100%, 
-      0 calc(100% - 24px), 
-      0 24px
+      12px 0, 
+      calc(100% - 12px) 0, 
+      100% 12px, 
+      100% calc(100% - 12px), 
+      calc(100% - 12px) 100%, 
+      12px 100%, 
+      0 calc(100% - 12px), 
+      0 12px
     );
   }
 }
