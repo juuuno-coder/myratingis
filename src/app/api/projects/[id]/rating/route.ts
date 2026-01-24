@@ -108,8 +108,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
+  
+  if (!projectId || isNaN(Number(projectId))) {
+      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400 });
+  }
   
   try {
       const authHeader = req.headers.get('Authorization');
