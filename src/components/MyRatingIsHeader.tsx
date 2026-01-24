@@ -25,14 +25,11 @@ export function MyRatingIsHeader() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-            <img 
-              src="/myratingis-logo.png" 
-              alt="제 평가는요?" 
-              className={cn(
-                "h-8 w-auto object-contain transition-all duration-300",
-                theme === "dark" ? "invert brightness-[10]" : "brightness-0"
-              )}
-            />
+            {theme === 'dark' ? (
+              <img src="/myratingis-logo.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300 brightness-[100] invert" />
+            ) : (
+              <img src="/myratingis-logo.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300 brightness-0" />
+            )}
         </Link>
 
         {/* Desktop Navigation */}

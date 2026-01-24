@@ -621,7 +621,7 @@ export default function MyPage() {
                         {/* [New] V-Audit Status Badge */}
                         {(project.custom_data?.audit_config || project.audit_deadline) && (
                           <div className="absolute top-4 left-4 z-10">
-                             <div className="bg-orange-600/90 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-tighter shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                             <div className="bg-orange-600/90 text-white px-3 py-1.5 bevel-sm text-[10px] font-black tracking-tighter shadow-lg flex items-center gap-1.5 backdrop-blur-md">
                                 <ChefHat size={14} />
                                 전문 진단 진행 중
                              </div>
@@ -668,12 +668,12 @@ export default function MyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-gray-200 border-dashed">
-                  {activeTab === 'likes' ? <Heart className="w-16 h-16 text-gray-300 mb-4" /> : <Folder className="w-16 h-16 text-gray-300 mb-4" />}
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {activeTab === 'likes' ? '좋아요한 프로젝트가 없습니다' : '컬렉션이 비어있습니다'}
+                <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
+                  {activeTab === 'likes' ? <Heart className="w-16 h-16 text-chef-text opacity-10 mb-4" /> : <Folder className="w-16 h-16 text-chef-text opacity-10 mb-4" />}
+                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">
+                    {activeTab === 'likes' ? 'NO LIKED ITEMS' : 'COLLECTION EMPTY'}
                   </h3>
-                  <Button variant="outline" onClick={() => router.push('/')} className="mt-4">둘러보기</Button>
+                  <Button onClick={() => router.push('/projects')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-12 mt-6 font-black uppercase tracking-widest text-[10px]">Explore More</Button>
                 </div>
               )
             )}
@@ -687,9 +687,9 @@ export default function MyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-gray-200 border-dashed">
-                  <Send className="w-16 h-16 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">받은 제안이나 평가 의견이 없습니다</h3>
+                <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
+                  <Send className="w-16 h-16 text-chef-text opacity-10 mb-4" />
+                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">NO PROPOSALS</h3>
                 </div>
               )
             )}
@@ -718,9 +718,9 @@ export default function MyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-gray-200 border-dashed">
-                  <MessageCircle className="w-16 h-16 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">작성한 댓글이 없습니다</h3>
+                <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
+                  <MessageCircle className="w-16 h-16 text-chef-text opacity-10 mb-4" />
+                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">NO COMMENTS</h3>
                 </div>
               )
             )}

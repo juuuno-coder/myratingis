@@ -46,7 +46,7 @@ dayjs.locale("ko");
 const notificationStyles = {
   like: { icon: Heart, color: "text-red-500", bg: "bg-red-50" },
   comment: { icon: MessageCircle, color: "text-blue-500", bg: "bg-blue-50" },
-  follow: { icon: UserPlus, color: "text-green-600", bg: "bg-green-50" },
+  follow: { icon: UserPlus, color: "text-orange-600", bg: "bg-orange-50" },
   mention: { icon: AtSign, color: "text-purple-500", bg: "bg-purple-50" },
   system: { icon: Info, color: "text-gray-500", bg: "bg-gray-50" },
 };
@@ -129,7 +129,7 @@ function NotificationItem({ notification, onRead }: NotificationItemProps) {
       </div>
 
       {!notification.read && (
-        <div className="absolute top-4 right-4 w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+        <div className="absolute top-4 right-4 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_rgba(234,88,12,0.6)]" />
       )}
     </div>
   );

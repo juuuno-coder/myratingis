@@ -279,7 +279,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                     <Settings className="w-6 h-6" />
                     기본 설정
                 </h2>
-                <Button onClick={handleSave} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={handleSave} disabled={loading} className="bg-orange-600 hover:bg-orange-700">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "변경사항 저장"}
                 </Button>
             </div>
@@ -288,7 +288,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                 {/* 공개 여부 */}
                 <div className="col-span-full bg-gray-50 p-6 rounded-xl border border-gray-200 flex items-center justify-between">
                      <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-full ${isPublic ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                        <div className={`p-3 rounded-full ${isPublic ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-500'}`}>
                             {isPublic ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
                         </div>
                         <div>
@@ -318,7 +318,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                             />
                             <div className="absolute right-3 top-3">
                                 {checking ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> :
-                                 usernameAvailable === true ? <Check className="w-4 h-4 text-green-500" /> :
+                                 usernameAvailable === true ? <Check className="w-4 h-4 text-orange-500" /> :
                                  usernameAvailable === false ? <X className="w-4 h-4 text-red-500" /> : null}
                             </div>
                         </div>
@@ -365,7 +365,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                 onClick={() => toggleGenre(g.value)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
                                     interests.genres.includes(g.value)
-                                    ? 'bg-green-50 border-green-500 text-green-700'
+                                    ? 'bg-orange-50 border-orange-500 text-orange-700'
                                     : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                             >
@@ -511,7 +511,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
             {/* 새 키 발급 알림 */}
             {newKey && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 animate-in zoom-in-95 duration-300">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 animate-in zoom-in-95 duration-300">
                     <h4 className="font-bold text-green-800 mb-2 flex items-center gap-2">
                         <Check className="w-5 h-5" /> 새 API Key가 발급되었습니다!
                     </h4>

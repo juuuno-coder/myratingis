@@ -55,19 +55,19 @@ export default function ProjectUploadPage() {
 
   const STICKER_PRESETS: Record<string, any[]> = {
     professional: [
-      { id: 'pr1', label: '당장 계약하시죠! 탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼 압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
-      { id: 'pr2', label: '좋긴 한데... 한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나 디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
-      { id: 'pr3', label: '기획부터 다시! 싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한 전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
+      { id: 'pr1', label: '당장 계약하시죠!\n탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
+      { id: 'pr2', label: '좋긴 한데...\n한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나\n디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
+      { id: 'pr3', label: '기획부터 다시!\n싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한\n전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
     ],
     michelin: [
-      { id: 'mi1', label: '3스타급 완성도! 완벽한 미식 경험', desc: '예술성과 상업성을 모두 잡은, 누구나 소유하고 싶어 할 만큼 가치가 뛰어난 프로젝트', image_url: '/review/a1.jpeg' },
-      { id: 'mi2', label: '훌륭한 요리, 하지만 향신료가 부족함', desc: '기본기는 탄탄하지만 이 프로젝트만의 확실한 개성(Kick)을 더 보여줄 필요가 있는 상태', image_url: '/review/a2.jpeg' },
-      { id: 'mi3', label: '재료 선택부터 다시 고민해야 할 맛', desc: '타겟과 목적이 불분명하여 근본적인 기획 의도부터 다시 정립해야 하는 프로젝트', image_url: '/review/a3.jpeg' }
+      { id: 'mi1', label: '3스타급 완성도!\n완벽한 미식 경험', desc: '예술성과 상업성을 모두 잡은,\n누구나 소유하고 싶어 할 만큼 가치가 뛰어난 프로젝트', image_url: '/review/a1.jpeg' },
+      { id: 'mi2', label: '훌륭한 요리,\n하지만 향신료가 부족함', desc: '기본기는 탄탄하지만 이 프로젝트만의\n확실한 개성(Kick)을 더 보여줄 필요가 있는 상태', image_url: '/review/a2.jpeg' },
+      { id: 'mi3', label: '재료 선택부터\n다시 고민해야 할 맛', desc: '타겟과 목적이 불분명하여 근본적인\n기획 의도부터 다시 정립해야 하는 프로젝트', image_url: '/review/a3.jpeg' }
     ],
     mz: [
-      { id: 'mz1', label: '폼 미쳤다! 그대로 입사하세요', desc: '더 이상 설명이 필요 없는 압승! 즉각적인 실행이 가능한 수준의 고퀄리티', image_url: '/review/a1.jpeg' },
-      { id: 'mz2', label: '예쁜데 뭔가... 묘하게 2% 부족함', desc: '비주얼은 좋으나 사용성이나 실용성 측면에서 한 단계 업그레이드가 필요한 단계', image_url: '/review/a2.jpeg' },
-      { id: 'mz3', label: '길을 잃었습니다... GPS 재탐색 필요', desc: '무엇을 말하려는지 잘 모르겠어요. 핵심 기능과 타겟을 다시 정의해 보세요.', image_url: '/review/a3.jpeg' }
+      { id: 'mz1', label: '폼 미쳤다!\n그대로 입사하세요', desc: '더 이상 설명이 필요 없는 압승!\n즉각적인 실행이 가능한 수준의 고퀄리티', image_url: '/review/a1.jpeg' },
+      { id: 'mz2', label: '예쁜데 뭔가...\n묘하게 2% 부족함', desc: '비주얼은 좋으나 사용성이나 실용성 측면에서\n한 단계 업그레이드가 필요한 단계', image_url: '/review/a2.jpeg' },
+      { id: 'mz3', label: '길을 잃었습니다...\nGPS 재탐색 필요', desc: '무엇을 말하려는지 잘 모르겠어요.\n핵심 기능과 타겟을 다시 정의해 보세요.', image_url: '/review/a3.jpeg' }
     ]
   };
 
@@ -225,26 +225,28 @@ export default function ProjectUploadPage() {
              </div>
           ) : (
             <div className="space-y-4">
-              <input 
-                value={typeof mediaData === 'string' ? mediaData : ''} 
-                onChange={async e => {
-                  const val = e.target.value;
-                  setMediaData(val);
-                  if (auditType === 'link' && val.includes('.')) {
-                    setIsLoadingPreview(true);
-                    try {
-                      const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
-                      const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
-                      if (response.ok) {
-                        const data = await response.json();
-                        setLinkPreview(data.title || data.image ? data : null);
-                      }
-                    } catch (e) { console.error(e); } finally { setIsLoadingPreview(false); }
-                  } else { setLinkPreview(null); }
-                }} 
-                placeholder={auditType === 'link' ? "wayo.co.kr" : "YouTube 영상 주소..."} 
-                className="w-full h-16 bg-chef-panel border border-chef-border text-chef-text font-black px-8 text-lg bevel-sm placeholder:text-chef-text/10 focus:border-orange-500 transition-colors outline-none"
-              />
+              <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
+                <input 
+                  value={typeof mediaData === 'string' ? mediaData : ''} 
+                  onChange={async e => {
+                    const val = e.target.value;
+                    setMediaData(val);
+                    if (auditType === 'link' && val.includes('.')) {
+                      setIsLoadingPreview(true);
+                      try {
+                        const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
+                        const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
+                        if (response.ok) {
+                          const data = await response.json();
+                          setLinkPreview(data.title || data.image ? data : null);
+                        }
+                      } catch (e) { console.error(e); } finally { setIsLoadingPreview(false); }
+                    } else { setLinkPreview(null); }
+                  }} 
+                  placeholder={auditType === 'link' ? "wayo.co.kr" : "YouTube 영상 주소..."} 
+                  className="w-full h-16 bg-chef-panel border-none text-chef-text font-black px-8 text-lg bevel-sm placeholder:text-chef-text/30 outline-none transition-colors chef-input-high-v rounded-sm"
+                />
+              </div>
               
               {linkPreview && (
                  <div className="chef-black-panel bevel-section p-6 border border-chef-border space-y-4 animate-in fade-in slide-in-from-top-2">
@@ -388,7 +390,7 @@ export default function ProjectUploadPage() {
                       next[idx].label = e.target.value;
                       setPollOptions(next);
                     }} 
-                    className="w-full font-black text-chef-text outline-none bg-transparent text-center text-lg placeholder:text-chef-text/10 mb-2 resize-none h-16 chef-input-high-v overflow-hidden" 
+                    className="w-full font-black text-chef-text outline-none bg-transparent text-center text-lg placeholder:text-chef-text/10 mb-2 resize-none h-16 chef-input-high-v overflow-hidden whitespace-pre-wrap leading-tight" 
                     placeholder="메뉴 명칭" 
                     rows={2}
                   />
@@ -400,7 +402,7 @@ export default function ProjectUploadPage() {
                       next[idx].desc = e.target.value;
                       setPollOptions(next);
                     }} 
-                    className="w-full text-[10px] text-chef-text opacity-40 bg-transparent resize-none outline-none font-black uppercase tracking-widest text-center h-20 placeholder:text-chef-text/5 chef-input-high-v" 
+                    className="w-full text-[10px] text-chef-text opacity-40 bg-transparent resize-none outline-none font-black uppercase tracking-widest text-center h-20 placeholder:text-chef-text/5 chef-input-high-v whitespace-pre-wrap leading-relaxed" 
                     placeholder="메뉴 설명 입력..." 
                     rows={3} 
                   />

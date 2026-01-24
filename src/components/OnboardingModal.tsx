@@ -206,7 +206,7 @@ export function OnboardingModal({
         {/* 스텝 0: 환영 */}
         {step === 0 && (
           <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <FontAwesomeIcon icon={faStar} className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -218,7 +218,7 @@ export function OnboardingModal({
             </p>
             <Button
               onClick={() => setStep(1)}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-full"
+              className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-full"
             >
               시작하기
               <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
@@ -230,8 +230,8 @@ export function OnboardingModal({
         {step === 1 && (
           <div className="p-8">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 text-sm text-green-600 font-medium mb-2">
-                <span className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-xs">1</span>
+              <div className="inline-flex items-center gap-2 text-sm text-orange-600 font-medium mb-2">
+                <span className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs">1</span>
                 / 2
               </div>
               <h2 className="text-xl font-bold text-gray-900">
@@ -262,7 +262,7 @@ export function OnboardingModal({
             <Button
               onClick={handleNextStep}
               disabled={!nickname.trim()}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-full mt-6"
+              className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-full mt-6"
             >
               다음
               <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
@@ -276,10 +276,10 @@ export function OnboardingModal({
             <div className="text-center mb-6">
               <button 
                 onClick={() => setStep(1)}
-                className="inline-flex items-center gap-2 text-sm text-green-600 font-medium mb-2 hover:bg-green-50 px-3 py-1 rounded-full transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-orange-600 font-medium mb-2 hover:bg-orange-50 px-3 py-1 rounded-full transition-colors"
                 title="이전 단계로 돌아가기 (닉네임 수정)"
               >
-                <span className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-xs">2</span>
+                <span className="w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs">2</span>
                 / 3
                 <span className="text-xs text-gray-400 ml-1 font-normal">← 이전</span>
               </button>
@@ -314,14 +314,14 @@ export function OnboardingModal({
                       disabled={isDisabled}
                       className={`relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
                         isSelected
-                          ? "bg-green-50 border-green-600 text-green-600"
+                          ? "bg-orange-50 border-orange-600 text-orange-600"
                           : isDisabled
                           ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-green-600 hover:text-green-600"
+                          : "bg-white border-gray-200 text-gray-600 hover:border-orange-600 hover:text-orange-600"
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-1 right-1 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                        <div className="absolute top-1 right-1 w-4 h-4 bg-orange-600 rounded-full flex items-center justify-center">
                           <FontAwesomeIcon icon={faCheck} className="w-2 h-2 text-white" />
                         </div>
                       )}
@@ -353,10 +353,10 @@ export function OnboardingModal({
                       disabled={isDisabled}
                       className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all flex items-center gap-1 ${
                         isSelected
-                          ? "bg-green-600 border-green-600 text-white"
+                          ? "bg-orange-600 border-orange-600 text-white"
                           : isDisabled
                           ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-500"
+                          : "bg-white border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600"
                       }`}
                     >
                       {field.label}
@@ -373,7 +373,7 @@ export function OnboardingModal({
             <Button
               onClick={handleNextStep}
               disabled={loading || genres.length === 0}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-full mt-4"
+              className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-full mt-4"
             >
               다음 단계로
               <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
@@ -489,8 +489,8 @@ export function OnboardingModal({
         {/* 스텝 4: 완료 축하 */}
         {step === 4 && (
           <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FontAwesomeIcon icon={faCheck} className="w-10 h-10 text-green-500" />
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FontAwesomeIcon icon={faCheck} className="w-10 h-10 text-orange-500" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               설정이 완료되었습니다! 🎉
@@ -504,7 +504,7 @@ export function OnboardingModal({
                 onComplete();
                 onOpenChange(false);
               }}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-full"
+              className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-full"
             >
               서비스 시작하기
             </Button>
