@@ -14,6 +14,7 @@ import { FeedbackReportModal } from "@/components/FeedbackReportModal";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { cn } from "@/lib/utils";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import {
   Dialog,
   DialogContent,
@@ -453,23 +454,26 @@ export default function MyPage() {
   }
 
   const tabs = [
-    { id: 'projects' as TabType, label: '내 프로젝트', icon: Grid, color: 'text-green-600', bgColor: 'bg-green-600' },
-    { id: 'audit_requests' as TabType, label: '내 평가 의뢰', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
-    { id: 'likes' as TabType, label: '좋아요', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
-    { id: 'collections' as TabType, label: '컬렉션', icon: Folder, color: 'text-blue-500', bgColor: 'bg-blue-500' },
-    { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-green-500', bgColor: 'bg-green-500' },
-    { id: 'comments' as TabType, label: '내 댓글', icon: MessageCircle, color: 'text-orange-500', bgColor: 'bg-orange-500' },
-    { id: 'settings' as TabType, label: '설정', icon: Settings, color: 'text-gray-700', bgColor: 'bg-gray-700' },
+    { id: 'projects' as TabType, label: '나의 요리', icon: Grid, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'audit_requests' as TabType, label: '진단 의뢰함', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
+    { id: 'likes' as TabType, label: '찜해둔 메뉴', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
+    { id: 'collections' as TabType, label: '시리즈 레시피', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
+    { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'comments' as TabType, label: '내가 남긴 한 마디', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'settings' as TabType, label: '셰프 설정', icon: Settings, color: 'text-chef-text', bgColor: 'bg-chef-text' },
   ];
 
   return (
-    <div className="w-full min-h-screen bg-background pt-20 pb-12 transition-colors duration-300">
-      <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="w-full min-h-screen bg-background pb-20 transition-colors duration-300">
+      <MyRatingIsHeader />
+      
+      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-10 pt-24">
         
         {/* 프로필 섹션 */}
-        <div className="bg-chef-card rounded-xl mb-6 border border-chef-border shadow-sm overflow-hidden transition-colors">
-          {/* 커버 이미지 (hover 시 변경 버튼 노출) */}
-          <div className="h-40 md:h-56 bg-gradient-to-r from-green-500 to-green-600 relative group">
+        <div className="bg-chef-card rounded-2xl mb-10 border border-chef-border shadow-xl overflow-hidden transition-colors">
+          {/* 커버 이미지 */}
+          <div className="h-48 md:h-64 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 relative group">
+            <div className="absolute inset-0 bg-black/20" />
             {userProfile?.cover_image_url && (
               <img src={userProfile.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
             )}

@@ -22,7 +22,9 @@ export function RootLayoutContent({
   const isProjectUpload = pathname?.startsWith('/project/upload');
   const isLogin = pathname === '/login';
   const isSignup = pathname === '/signup';
-  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isProjectUpload || isLogin || isSignup;
+  const isMyPage = pathname?.startsWith('/mypage');
+  const isProjectsList = pathname === '/projects';
+  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isProjectUpload || isLogin || isSignup || isMyPage || isProjectsList;
 
   return (
     <div className="flex min-h-screen flex-col relative w-full overflow-x-hidden">
