@@ -251,7 +251,13 @@ function ViewerContent() {
     </div>
   );
 
-  const previewUrl = project?.custom_data?.audit_config?.mediaA || project?.primary_url || project?.preview_url || project?.url;
+  const previewUrl = 
+    project?.custom_data?.audit_config?.mediaA || 
+    project?.primary_url || 
+    project?.url || 
+    project?.preview_url || 
+    (typeof project?.content_text === 'string' && project?.content_text.startsWith('http') ? project.content_text : '');
+
   const auditType = project?.custom_data?.audit_config?.type || 'link';
   const mediaData = previewUrl;
 

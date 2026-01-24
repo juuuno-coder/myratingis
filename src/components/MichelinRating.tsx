@@ -46,6 +46,11 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
   const [isEditing, setIsEditing] = useState(false);
   const [analysis, setAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 현재 내 점수들의 평균 계산 (실시간)
   const currentTotalAvg = useMemo(() => {
@@ -328,12 +333,12 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
 
   return (
     <div className="w-full relative overflow-hidden group">
-      {/* Header Section */}
-      <div className="flex flex-col gap-12 items-center">
+      <div className="flex flex-col gap-12 items-center w-full">
         {/* Radar Chart Visual with Recharts */}
-        <div className="relative w-full max-w-[400px] h-[400px] min-h-[400px] flex justify-center items-center py-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+        <div className="relative w-full max-w-[420px] aspect-square flex justify-center items-center py-8">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
                 <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                 <PolarAngleAxis 
                   dataKey="subject" 
@@ -372,6 +377,9 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                 />
               </RadarChart>
             </ResponsiveContainer>
+            ) : (
+                <div className="w-full h-full bg-chef-panel/20 animate-pulse rounded-full" />
+            )}
            
            {/* Center Score Badge */}
            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none scale-110">

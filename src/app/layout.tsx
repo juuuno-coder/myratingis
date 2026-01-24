@@ -129,8 +129,6 @@ export default function RootLayout({
       >
         <Script
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-          integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2txfLEH92VRGWkpM1PZ+j"
-          crossOrigin="anonymous"
           strategy="afterInteractive"
         />
         {/* Google Analytics (GA4) */}
