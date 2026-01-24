@@ -153,20 +153,20 @@ export default function ProjectUploadPage() {
         </div>
         
         <div className="space-y-4">
-          <div className="chef-black-panel p-1 rounded-sm">
+          <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
             <input 
               placeholder="진단받을 제목 (예: 커피 배달 매칭 MVP)" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              className="w-full h-16 bg-chef-panel border-none text-xl font-black text-chef-text px-8 placeholder:text-chef-text/20 outline-none chef-input-high-v"
+              className="w-full h-16 bg-chef-panel border-none text-xl font-black text-chef-text px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
             />
           </div>
-          <div className="chef-black-panel p-1 rounded-sm">
+          <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
             <input 
               placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" 
               value={summary} 
               onChange={e => setSummary(e.target.value)} 
-              className="w-full h-12 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-8 placeholder:text-chef-text/20 outline-none chef-input-high-v"
+              className="w-full h-12 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
             />
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function ProjectUploadPage() {
                 </div>
               </div>
               {customCategories.length > 3 && (
-                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-chef-text opacity-10 hover:text-red-500 transition-all">
+                <button onClick={() => setCustomCategories(customCategories.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 text-chef-text hover:text-red-500 transition-all">
                   <FontAwesomeIcon icon={faTrash} size="xs" />
                 </button>
               )}
