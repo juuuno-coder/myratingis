@@ -118,7 +118,7 @@ export default function ProjectUploadPage() {
         content_text: summary || title,
         description: summary || title,
         category_id: 1,
-        visibility: 'unlisted',
+        visibility: 'public',
         audit_deadline: auditDeadline,
         is_growth_requested: true,
         custom_data: {
