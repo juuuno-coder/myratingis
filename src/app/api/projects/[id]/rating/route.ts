@@ -135,7 +135,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
         .upsert({
-          project_id: projectId,
+          project_id: Number(projectId),
           user_id: userId, // Can be null
           guest_id: userId ? null : guest_id, // Store guest_id if no user
           score,
@@ -155,9 +155,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // 2. Check if first time rating? 
       // User asked for comment when feed back is left.
       
-      const nickname = userId 
-          ? (await supabaseAdmin.from('profiles').select('nickname').eq('id', userId).single()).data?.nickname || 'User'
-          : 'Guest';
+      const { data: profile } = userId 
+          ? await supabaseAdmin.from('profiles').select('username, nickname').eq('id', userId).single()
+          : { data: null };
+      
+      const nickname = profile?.username || profile?.nickname || 'User';
           
       const maskedName = userId 
         ? (nickname.length > 2 
@@ -194,7 +196,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       const { data: projectData } = await supabaseAdmin
         .from('Project')
         .select('user_id, title')
-        .eq('project_id', projectId)
+        .eq('project_id', Number(projectId))
         .single();
         
       if (projectData && (userId ? projectData.user_id !== userId : true)) {
