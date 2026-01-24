@@ -687,3 +687,31 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--chef-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Michelin Slider Custom Styles */
+.michelin-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 4px solid var(--vibe-orange);
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.michelin-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(234, 88, 12, 0.3);
+}
+
+.michelin-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 4px solid var(--vibe-orange);
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}

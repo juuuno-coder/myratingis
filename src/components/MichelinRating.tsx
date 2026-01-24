@@ -268,42 +268,55 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
         </div>
 
         <div className="bg-chef-card rounded-[3rem] p-10 border border-chef-border shadow-xl space-y-8">
-           <div className="flex justify-between items-end">
-              <div className="flex gap-2">
-                 {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} className={cn("w-6 h-6", (scores[activeCategory.id] || 0) >= i ? "text-amber-400 fill-current" : "text-chef-text opacity-5")} />
-                 ))}
-              </div>
-              <div className="text-right">
-                 <span className="text-6xl font-black tabular-nums tracking-tighter" style={{ color: activeCategory.color || '#f59e0b' }}>
-                    {(scores[activeCategory.id] || 0).toFixed(1)}
-                 </span>
-                 <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest">Score / 5.0</p>
-              </div>
-           </div>
+            <div className="flex justify-between items-end relative">
+               <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map(i => (
+                     <Star key={i} className={cn("w-6 h-6 transition-all duration-300", (scores[activeCategory.id] || 0) >= i ? "text-amber-400 fill-current scale-110" : "text-chef-text opacity-5")} />
+                  ))}
+               </div>
+               <div className="text-right">
+                  <span className={cn("text-7xl font-black tabular-nums tracking-tighter transition-all", (scores[activeCategory.id] || 0) > 0 ? "opacity-100 scale-105" : "opacity-20")} style={{ color: activeCategory.color || '#f59e0b' }}>
+                     {(scores[activeCategory.id] || 0).toFixed(1)}
+                  </span>
+                  <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest">Score / 5.0</p>
+               </div>
+            </div>
 
-           <div className="relative h-12 flex items-center">
-              <input 
-                 type="range" 
-                 min="0" 
-                 max="5" 
-                 step="0.1" 
-                 value={scores[activeCategory.id] || 0} 
-                 onChange={(e) => { 
-                   setScores(prev => ({ ...prev, [activeCategory.id]: parseFloat(e.target.value) })); 
-                   setIsEditing(true); 
-                 }} 
-                 className="w-full h-4 bg-slate-100 rounded-full appearance-none cursor-pointer accent-amber-500 hover:accent-amber-600 transition-all z-10" 
-              />
-              <div className="absolute inset-0 flex justify-between px-1 pointer-events-none items-center">
-                 {[0, 1, 2, 3, 4, 5].map(v => (
-                   <div key={v} className="flex flex-col items-center gap-2">
-                      <div className="w-1 h-3 bg-slate-200 mt-8" />
-                      <span className="text-[10px] font-bold text-slate-300">{v}</span>
-                   </div>
-                 ))}
-              </div>
-           </div>
+            <div className="relative h-12 flex items-center group/slider">
+               {/* Background Track */}
+               <div className="absolute inset-x-0 h-4 bg-chef-panel rounded-full overflow-hidden">
+                  {/* Active Filled Track */}
+                  <div 
+                    className="h-full transition-all duration-100 ease-out shadow-[0_0_15px_rgba(234,88,12,0.3)]" 
+                    style={{ 
+                      width: `${((scores[activeCategory.id] || 0) / 5) * 100}%`,
+                      backgroundColor: activeCategory.color || '#f59e0b'
+                    }} 
+                  />
+               </div>
+               
+               <input 
+                  type="range" 
+                  min="0" 
+                  max="5" 
+                  step="0.1" 
+                  value={scores[activeCategory.id] || 0} 
+                  onChange={(e) => { 
+                    setScores(prev => ({ ...prev, [activeCategory.id]: parseFloat(e.target.value) })); 
+                    setIsEditing(true); 
+                  }} 
+                  className="absolute inset-x-0 w-full h-12 appearance-none bg-transparent cursor-pointer z-20 michelin-slider" 
+               />
+               
+               {/* Markers */}
+               <div className="absolute inset-0 flex justify-between px-1 pointer-events-none items-center z-10">
+                  {[0, 1, 2, 3, 4, 5].map(v => (
+                    <div key={v} className="flex flex-col items-center gap-2">
+                       <div className={cn("w-[2px] h-3 transition-colors", (scores[activeCategory.id] || 0) >= v ? "bg-white" : "bg-chef-text opacity-10")} />
+                    </div>
+                  ))}
+               </div>
+            </div>
         </div>
 
         <div className="p-6 bg-chef-panel rounded-2xl border border-chef-border italic text-chef-text opacity-40 text-sm text-center font-medium">

@@ -397,9 +397,9 @@ function ViewerContent() {
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
              </div>
-             <div className="flex flex-col ml-2">
-                <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.3em] leading-none">Diagnostic Subject</span>
-                <h2 className="text-sm font-black text-chef-text uppercase tracking-tight italic">Main Dish: {project?.title || "Project Preview"}</h2>
+             {/* Address Bar Mockup */}
+             <div className="hidden lg:flex items-center bg-chef-panel/50 px-4 py-1.5 rounded-full border border-chef-border w-80 truncate ml-4">
+                <span className="text-[9px] font-bold text-chef-text opacity-20 truncate">{previewUrl || "connecting..."}</span>
              </div>
           </div>
           <div className="flex items-center gap-4">
@@ -435,14 +435,21 @@ function ViewerContent() {
       {/* Right Area: Evaluation Panel */}
       <div 
         className="fixed bottom-0 right-0 top-0 md:relative z-20 bg-chef-card flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.2)] dark:shadow-[-40px_0_80px_rgba(0,0,0,0.5)] h-[60vh] md:h-full w-full border-l border-chef-border transition-colors duration-500"
-        style={{ width: (typeof window !== 'undefined' && window.innerWidth > 768) ? panelWidth : '100%' }}
+        style={{ width: (typeof window !== 'undefined' && window.innerWidth > 768) ? panelWidth : '100%', minWidth: '400px' }}
       >
-        {/* Resize Handle */}
+        {/* Resize Handle (Draggable Bar) */}
         <div 
           onMouseDown={() => setIsResizing(true)} 
-          className="hidden md:flex absolute top-0 left-0 bottom-0 w-1 cursor-col-resize hover:bg-orange-500/50 transition-colors group items-center justify-center z-30" 
+          className="hidden md:flex absolute top-0 -left-3 bottom-0 w-6 cursor-col-resize group items-center justify-center z-30 touch-none" 
         >
-          <div className="w-[1px] h-20 bg-chef-border group-hover:bg-orange-500 transition-colors" />
+          {/* Visual Bar */}
+          <div className="w-[4px] h-32 bg-chef-border group-hover:bg-orange-500 transition-all rounded-full flex flex-col items-center justify-center gap-1.5 shadow-sm group-active:scale-x-150">
+             {[...Array(6)].map((_, i) => (
+                <div key={i} className="w-1 h-1 rounded-full bg-chef-card opacity-30" />
+             ))}
+          </div>
+          {/* Tooltip hint */}
+          <div className="absolute left-8 bg-chef-text text-chef-bg text-[8px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap uppercase tracking-widest">Resize Panel</div>
         </div>
 
         {/* Panel Header */}
