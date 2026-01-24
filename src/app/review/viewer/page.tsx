@@ -251,9 +251,18 @@ function ViewerContent() {
     </div>
   );
 
-  const previewUrl = project?.primary_url || project?.preview_url || project?.url;
+  const previewUrl = project?.custom_data?.audit_config?.mediaA || project?.primary_url || project?.preview_url || project?.url;
   const auditType = project?.custom_data?.audit_config?.type || 'link';
-  const mediaData = project?.custom_data?.audit_config?.mediaA || previewUrl;
+  const mediaData = previewUrl;
+
+  const ensureProtocol = (url: string) => {
+    if (!url) return '';
+    if (typeof url !== 'string') return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+  };
+
+  const finalDisplayUrl = ensureProtocol(previewUrl);
 
   const renderCurrentStep = () => {
     const stepType = steps[currentStep];
@@ -398,8 +407,8 @@ function ViewerContent() {
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
              </div>
              {/* Address Bar Mockup */}
-             <div className="hidden lg:flex items-center bg-chef-panel/50 px-4 py-1.5 rounded-full border border-chef-border w-80 truncate ml-4">
-                <span className="text-[9px] font-bold text-chef-text opacity-20 truncate">{previewUrl || "connecting..."}</span>
+             <div className="hidden lg:flex items-center bg-chef-panel/80 px-4 py-1.5 rounded-full border border-chef-border w-96 truncate ml-4 shadow-inner">
+                <span className="text-[10px] font-black text-chef-text opacity-40 truncate uppercase tracking-tight">{finalDisplayUrl || "preparing dish..."}</span>
              </div>
           </div>
           <div className="flex items-center gap-4">
@@ -410,8 +419,8 @@ function ViewerContent() {
              <Button 
                variant="outline" 
                size="sm" 
-               className="h-9 px-4 text-chef-text border-chef-border bg-chef-panel/50 hover:bg-chef-panel rounded-sm gap-2 text-[10px] font-black tracking-widest uppercase" 
-               onClick={() => window.open(previewUrl || '', '_blank')}
+               className="h-9 px-4 text-white border-none bg-orange-600 hover:bg-orange-700 rounded-sm gap-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all active:scale-95" 
+               onClick={() => window.open(finalDisplayUrl || '', '_blank')}
              >
                <Maximize2 size={12} /> Open Dish
              </Button>
