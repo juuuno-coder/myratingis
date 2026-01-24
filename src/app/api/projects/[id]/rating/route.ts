@@ -198,18 +198,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         .single();
         
       if (projectData && (userId ? projectData.user_id !== userId : true)) {
-          await supabaseAdmin
-            .from('notifications')
-            .insert({
-                user_id: projectData.user_id,
-                type: 'rating',
-                title: '새로운 미슐랭 평가 도착! 📊',
-                message: `${maskedName}님이 '${projectData.title}' 프로젝트를 평가했습니다. (평균 ${score}점)`,
-                link: `/projects/${projectId}`,
-                action_label: '분석 리포트 보기',
-                action_url: `/projects/${projectId}#rating-section`,
-                sender_id: userId // Can be null
-            });
+          try {
+              // Notification Insert may fail if table doesn't exist yet
+              await supabaseAdmin
+                .from('notifications')
+                .insert({
+                    user_id: projectData.user_id,
+                    type: 'rating',
+                    title: '새로운 미슐랭 평가 도착! 📊',
+                    message: `${maskedName}님이 '${projectData.title}' 프로젝트를 평가했습니다. (평균 ${score}점)`,
+                    link: `/projects/${projectId}`,
+                    read: false, // Changed from default value to explicit
+                    sender_id: userId // Can be null
+                });
+          } catch (notiError) {
+              console.warn('[API] Failed to send notification (Table might be missing):', notiError);
+          }
       }
 
       // [Point System] Reward for Evaluating (100 Points)
