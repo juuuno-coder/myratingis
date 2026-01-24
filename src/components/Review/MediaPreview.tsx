@@ -100,13 +100,50 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
   }
 
   // Default: Link (Iframe)
+  const ensureProtocol = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+  };
+
+  const finalUrl = ensureProtocol(data);
+
   return (
-    <div className="w-full h-full bg-white">
-      {data ? (
-        <iframe src={data} className="w-full h-full border-none" title="Link Preview" />
-      ) : (
-        <Placeholder text="URL Missing" />
-      )}
+    <div className="w-full h-full bg-white flex flex-col group/browser">
+      {/* Browser Styled Top Bar (Fixed) */}
+      <div className="h-10 bg-[#f1f3f4] dark:bg-[#202124] border-b border-chef-border flex items-center px-4 gap-4 shrink-0 transition-colors">
+         <div className="flex gap-1.5 ">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] opacity-80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] opacity-80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f] opacity-80" />
+         </div>
+         <div className="flex-1 flex items-center bg-white dark:bg-[#35363a] h-7 rounded-md border border-chef-border/50 px-3 overflow-hidden shadow-sm transition-colors">
+            <span className="text-[10px] font-bold text-chef-text opacity-30 truncate uppercase tracking-widest">{finalUrl}</span>
+         </div>
+         <div className="flex gap-2">
+            <button onClick={() => window.open(finalUrl, '_blank')} className="text-chef-text opacity-20 hover:opacity-100 transition-opacity p-1" title="Open in New Tab">
+               <Maximize2 size={12} />
+            </button>
+         </div>
+      </div>
+      
+      {/* Actual Content Area */}
+      <div className="flex-1 relative bg-white overflow-hidden">
+        {data ? (
+          <iframe 
+            src={finalUrl} 
+            className="w-full h-full border-none" 
+            title="Link Preview"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <Placeholder text="URL Missing" />
+        )}
+        
+        {/* Transparent Overlay for Drag Handle Support (Optional, disabled for interaction) */}
+        {/* <div className="absolute inset-0 z-50 pointer-events-none border-4 border-orange-500/0 group-hover/browser:border-orange-500/10 transition-all" /> */}
+      </div>
     </div>
   );
 }
