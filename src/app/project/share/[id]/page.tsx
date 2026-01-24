@@ -60,7 +60,7 @@ export default function ProjectSharePage() {
              </div>
              <Button 
                onClick={handleCopy}
-               className="h-12 px-6 rounded-2xl bg-white text-black font-black hover:bg-gray-200 transition-colors"
+               className="h-12 px-6 bevel-sm border-none bg-white text-black font-black hover:bg-gray-200 transition-colors"
              >
                {copied ? <Check size={18} /> : <Copy size={18} />}
              </Button>
@@ -74,13 +74,13 @@ export default function ProjectSharePage() {
            <Button 
              variant="outline" 
              onClick={() => router.push(`/report/${projectId}`)}
-             className="h-16 rounded-2xl border-white/10 bg-transparent text-white hover:bg-white/5 font-bold"
+             className="h-16 bevel-section border-white/10 bg-transparent text-white hover:bg-white/5 font-bold"
            >
              결과 리포트 미리보기
            </Button>
            <Button 
              onClick={() => router.push(`/review/viewer?projectId=${projectId}`)}
-             className="h-16 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-black"
+             className="h-16 bevel-section bg-orange-600 hover:bg-orange-500 text-white font-black"
            >
              내 프로젝트 평가하기 <ArrowRight className="ml-2 w-4 h-4" />
            </Button>
