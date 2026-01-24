@@ -256,13 +256,25 @@ function ViewerContent() {
     ? JSON.parse(project.custom_data) 
     : (project?.custom_data || {});
 
-  const previewUrl = 
-    customData?.audit_config?.mediaA || 
-    project?.primary_url || 
-    project?.url || 
-    project?.preview_url || 
-    (typeof project?.content_text === 'string' && project?.content_text.startsWith('http') ? project.content_text : '');
+  const extractUrl = (proj: any) => {
+    // 1. New Audit Config
+    if (customData?.audit_config?.mediaA) return customData.audit_config.mediaA;
+    // 2. Standard URL fields
+    const standardUrl = proj?.primary_url || proj?.url || proj?.preview_url;
+    if (standardUrl) return standardUrl;
+    // 3. Smart extraction from content_text (Legacy or wayo.co.kr case)
+    const text = proj?.content_text;
+    if (typeof text === 'string' && text.trim()) {
+        const trimmed = text.trim();
+        // If starts with http or contains a dot and no spaces (likely a domain)
+        if (trimmed.startsWith('http') || (trimmed.includes('.') && !trimmed.includes(' '))) {
+            return trimmed;
+        }
+    }
+    return '';
+  };
 
+  const previewUrl = extractUrl(project);
   const auditType = customData?.audit_config?.type || 'link';
   const mediaData = previewUrl;
 
