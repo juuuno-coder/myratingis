@@ -189,7 +189,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
     setIsSubmitting(true);
     try {
       // Guest logic merged into main flow
-      const res = await fetch(`/api/projects/${projectId}/rating`, {
+      const res = await fetch(`/api/projects/${Number(projectId)}/rating`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       {/* Header Section */}
       <div className="flex flex-col gap-12 items-center">
         {/* Radar Chart Visual with Recharts */}
-        <div className="relative w-full max-w-[400px] h-[400px] flex justify-center items-center py-8">
+        <div className="relative w-full max-w-[400px] h-[400px] min-h-[400px] flex justify-center items-center py-8">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
                 <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
