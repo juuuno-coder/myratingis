@@ -161,9 +161,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
-        .upsert(updateData, { onConflict: userId ? 'project_id, user_id' : 'project_id, guest_id' });
+        .upsert(updateData, { 
+            onConflict: userId ? 'project_id,user_id' : 'project_id,guest_id' 
+        });
 
-      if (ratingError) throw ratingError;
+      if (ratingError) {
+          console.error('[API] Upsert Rating Error:', ratingError);
+          return NextResponse.json({ success: false, error: ratingError.message }, { status: 500 });
+      }
 
       // 2. Check if first time rating? 
       // User asked for comment when feed back is left.

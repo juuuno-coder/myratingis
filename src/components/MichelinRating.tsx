@@ -336,12 +336,10 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
   return (
     <div className="w-full relative overflow-hidden group">
       <div className="flex flex-col gap-12 items-center w-full min-h-[460px]">
-        {/* Radar Chart Visual with Recharts */}
-        <div className="relative w-full max-w-[420px] min-w-[320px] h-[400px] flex justify-center items-center py-4 overflow-visible">
+        {/* Radar Chart Visual with Recharts - Fixed size to avoid Responsive JS errors */}
+        <div className="relative w-full max-w-[420px] min-w-[320px] h-[400px] flex justify-center items-center py-4">
             {mounted ? (
-              <div className="w-full h-full relative flex items-center justify-center" style={{ minHeight: '350px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+                <RadarChart width={400} height={380} cx="50%" cy="50%" outerRadius="75%" data={chartData}>
                     <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                     <PolarAngleAxis 
                       dataKey="subject" 
@@ -378,9 +376,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                       animationBegin={0}
                       animationDuration={500}
                     />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
+                </RadarChart>
             ) : (
                 <div className="w-full h-full bg-chef-panel/20 animate-pulse rounded-full" />
             )}
