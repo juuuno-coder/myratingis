@@ -106,7 +106,8 @@ type ViewerMode = 'desktop' | 'mobile';
 function ViewerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const projectId = searchParams.get('projectId');
+  // Case-insensitive query param handling
+  const projectId = searchParams.get('projectId') || searchParams.get('projectid');
   
   const [viewerMode, setViewerMode] = useState<ViewerMode>('desktop');
   const [panelWidth, setPanelWidth] = useState(600); // Default wider for better view
@@ -257,20 +258,25 @@ function ViewerContent() {
     : (project?.custom_data || {});
 
   const extractUrl = (proj: any) => {
+    if (!proj) return '';
+    
     // 1. New Audit Config
     if (customData?.audit_config?.mediaA) return customData.audit_config.mediaA;
+    
     // 2. Standard URL fields
     const standardUrl = proj?.primary_url || proj?.url || proj?.preview_url;
     if (standardUrl) return standardUrl;
-    // 3. Smart extraction from content_text (Legacy or wayo.co.kr case)
-    const text = proj?.content_text;
-    if (typeof text === 'string' && text.trim()) {
-        const trimmed = text.trim();
-        // If starts with http or contains a dot and no spaces (likely a domain)
-        if (trimmed.startsWith('http') || (trimmed.includes('.') && !trimmed.includes(' '))) {
-            return trimmed;
-        }
+    
+    // 3. Regex search in content_text or summary
+    const searchText = `${proj?.content_text || ''} ${proj?.summary || ''} ${proj?.description || ''}`;
+    // Improved Regex: matches http/https OR domain-like strings without spaces
+    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/gi;
+    const match = searchText.match(urlRegex);
+    
+    if (match && match.length > 0) {
+        return match[0]; // Return first found URL/Domain
     }
+    
     return '';
   };
 

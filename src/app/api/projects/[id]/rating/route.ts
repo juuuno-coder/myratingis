@@ -135,24 +135,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           return NextResponse.json({ error: 'Guest ID or Login required' }, { status: 400 });
       }
 
-      // 1. Upsert Rating
+      // 1. Fetch existing rating to prevent overwriting
+      const { data: existingRating } = await supabaseAdmin
+        .from('ProjectRating')
+        .select('*')
+        .eq('project_id', Number(projectId))
+        .filter(userId ? 'user_id' : 'guest_id', 'eq', userId || guest_id)
+        .maybeSingle();
+
+      const updateData = {
+          project_id: Number(projectId),
+          user_id: userId,
+          guest_id: userId ? null : guest_id,
+          score: score !== undefined ? score : existingRating?.score,
+          score_1: scores.score_1 !== undefined ? scores.score_1 : existingRating?.score_1 || 0,
+          score_2: scores.score_2 !== undefined ? scores.score_2 : existingRating?.score_2 || 0,
+          score_3: scores.score_3 !== undefined ? scores.score_3 : existingRating?.score_3 || 0,
+          score_4: scores.score_4 !== undefined ? scores.score_4 : existingRating?.score_4 || 0,
+          score_5: scores.score_5 !== undefined ? scores.score_5 : existingRating?.score_5 || 0,
+          score_6: scores.score_6 !== undefined ? scores.score_6 : existingRating?.score_6 || 0,
+          proposal: proposal !== undefined ? proposal : existingRating?.proposal,
+          custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
+          updated_at: new Date().toISOString()
+      };
+
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
-        .upsert({
-          project_id: Number(projectId),
-          user_id: userId, // Can be null
-          guest_id: userId ? null : guest_id, // Store guest_id if no user
-          score,
-          score_1: scores.score_1 || 0,
-          score_2: scores.score_2 || 0,
-          score_3: scores.score_3 || 0,
-          score_4: scores.score_4 || 0,
-          score_5: scores.score_5 || 0,
-          score_6: scores.score_6 || 0,
-          proposal: proposal,
-          custom_answers: custom_answers,
-          updated_at: new Date().toISOString()
-        }, { onConflict: userId ? 'project_id, user_id' : 'project_id, guest_id' }); // Conflict target depends on user type
+        .upsert(updateData, { onConflict: userId ? 'project_id, user_id' : 'project_id, guest_id' });
 
       if (ratingError) throw ratingError;
 
