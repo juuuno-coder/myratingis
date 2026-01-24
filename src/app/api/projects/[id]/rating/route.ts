@@ -7,8 +7,8 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const searchParams = req.nextUrl.searchParams;
   const guestId = searchParams.get('guest_id');
 
@@ -26,14 +26,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const { data: project } = await supabaseAdmin
       .from('Project')
       .select('*, user_id, title, category, custom_data')
-      .eq('project_id', projectId)
+      .eq('project_id', Number(projectId))
       .single();
 
     // 2. Fetch All Ratings
     const { data: allRatings, error } = await supabaseAdmin
       .from('ProjectRating')
       .select('*')
-      .eq('project_id', projectId);
+      .eq('project_id', Number(projectId));
 
     if (error) throw error;
 
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             const { data: collaborator } = await supabaseAdmin
                 .from('project_collaborators')
                 .select('id')
-                .eq('project_id', projectId)
+                .eq('project_id', Number(projectId))
                 .eq('user_id', userId)
                 .single();
             if (collaborator) isAuthorized = true;

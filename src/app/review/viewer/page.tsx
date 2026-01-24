@@ -223,7 +223,7 @@ function ViewerContent() {
       // FeedbackPoll also handles its own.
       // We just need to submit the final proposal/answers if any.
       
-      const res = await fetch(`/api/projects/${projectId}/rating`, {
+      const res = await fetch(`/api/projects/${Number(projectId)}/rating`, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
