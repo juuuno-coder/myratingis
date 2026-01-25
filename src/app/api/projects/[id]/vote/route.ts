@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 // GET: 투표 현황 조회
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: projectId } = await params;
+  const projectId = params.id;
   const searchParams = req.nextUrl.searchParams;
   const guestId = searchParams.get('guest_id');
 
@@ -74,9 +74,9 @@ export async function GET(
 // POST: 투표하기
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: projectId } = await params;
+  const projectId = params.id;
   
   // Auth Check (Optional now)
   const authHeader = req.headers.get('authorization');

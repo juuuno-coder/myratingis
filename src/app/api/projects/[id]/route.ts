@@ -11,9 +11,9 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const id = params.id;
   try {
     // [Application-Level Security]
     // RLS Context issues in Next.js API Routes can cause "load failed" errors even for owners.
@@ -110,9 +110,9 @@ const ADMIN_EMAILS = [
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const id = params.id;
   try {
     // [Strict Auth] 1. Identify User (API Key OR Session)
     let authenticatedUser: { id: string, email?: string } | null = null;
@@ -330,9 +330,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const id = params.id;
   try {
      // [Strict Auth] 1. Identify User
     let authenticatedUser: { id: string, email?: string } | null = null;

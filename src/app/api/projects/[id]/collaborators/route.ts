@@ -8,8 +8,8 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: projectId } = await params;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const projectId = params.id;
 
   try {
     const { data, error } = await supabaseAdmin
@@ -42,8 +42,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: projectId } = await params;
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const projectId = params.id;
   
   try {
     // Check authentication of requester (must be owner) using header
@@ -127,8 +127,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: projectId } = await params;
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const projectId = params.id;
   try {
      const { searchParams } = new URL(req.url);
      const userId = searchParams.get('userId');

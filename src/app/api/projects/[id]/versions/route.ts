@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: projectId } = await params;
+  const projectId = params.id;
   
   // 1. Auth Check (Token based)
   const authHeader = req.headers.get('authorization');
