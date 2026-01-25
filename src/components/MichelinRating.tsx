@@ -203,14 +203,15 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
           ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
         },
         body: JSON.stringify({
-          ...scores,
+          scores: scores, // Wrap scores in an object
           score: currentTotalAvg,
           rating_id: ratingId ? Number(ratingId) : undefined,
-          guest_id: !session ? currentGuestId : undefined // 게스트일 때만 전송
+          guest_id: !session ? currentGuestId : undefined 
         })
       });
 
-      if (!res.ok) throw new Error('Failed to submit rating');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit rating');
       
       setIsEditing(false);
       toast.success(ratingId ? "평가가 수정되었습니다!" : "평가가 등록되었습니다!");
