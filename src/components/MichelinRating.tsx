@@ -293,16 +293,16 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
 
             <div className="relative h-12 flex items-center group/slider">
                {/* Background Track */}
-               <div className="absolute inset-x-0 h-4 bg-chef-panel rounded-full overflow-hidden">
-                  {/* Active Filled Track */}
-                  <div 
-                    className="h-full transition-all duration-100 ease-out shadow-[0_0_15px_rgba(234,88,12,0.3)]" 
-                    style={{ 
-                      width: `${((scores[activeCategory.id] || 0) / 5) * 100}%`,
-                      backgroundColor: activeCategory.color || '#f59e0b'
-                    }} 
-                  />
-               </div>
+                <div className="absolute inset-x-0 h-4 bg-chef-panel border border-chef-border/50 rounded-full overflow-hidden shadow-inner">
+                   {/* Active Filled Track */}
+                   <div 
+                     className="h-full transition-all duration-100 ease-out shadow-[0_0_15px_rgba(0,0,0,0.1)]" 
+                     style={{ 
+                       width: `${((scores[activeCategory.id] || 0) / 5) * 100}%`,
+                       backgroundColor: activeCategory.color || '#f59e0b'
+                     }} 
+                   />
+                </div>
                
                <input 
                   type="range" 
@@ -418,25 +418,37 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
                   </div>
                 </div>
                 
-                <div className="relative h-6 flex items-center">
-                   <div className="absolute inset-0 flex justify-between px-1 pointer-events-none">
-                     {[0, 1, 2, 3, 4, 5].map(v => (
-                       <div key={v} className="w-0.5 h-1 bg-chef-text opacity-10 mt-5" />
-                     ))}
-                   </div>
-                   <input 
-                     type="range" 
-                     min="0" 
-                     max="5" 
-                     step="0.1" 
-                     value={scores[cat.id] || 0} 
-                     onChange={(e) => { 
-                       setScores(prev => ({ ...prev, [cat.id]: parseFloat(e.target.value) })); 
-                       setIsEditing(true); 
-                     }} 
-                     className="w-full h-2 bg-chef-panel rounded-full appearance-none cursor-pointer accent-amber-500 hover:accent-amber-600 transition-all z-10" 
-                   />
-                </div>
+                 <div className="relative h-6 flex items-center group/slider-box">
+                    {/* Visual Track */}
+                    <div className="absolute inset-x-0 h-2 bg-chef-panel border border-chef-border/50 rounded-full shadow-inner overflow-hidden">
+                      <div 
+                        className="h-full transition-all duration-100 ease-out opacity-40" 
+                        style={{ 
+                          width: `${((scores[cat.id] || 0) / 5) * 100}%`,
+                          backgroundColor: cat.color || '#f59e0b'
+                        }} 
+                      />
+                    </div>
+
+                    <div className="absolute inset-0 flex justify-between px-1 pointer-events-none items-center">
+                      {[0, 1, 2, 3, 4, 5].map(v => (
+                        <div key={v} className={cn("w-[1.5px] h-2 transition-colors", (scores[cat.id] || 0) >= v ? "bg-white/40" : "bg-chef-text/10")} />
+                      ))}
+                    </div>
+
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="5" 
+                      step="0.1" 
+                      value={scores[cat.id] || 0} 
+                      onChange={(e) => { 
+                        setScores(prev => ({ ...prev, [cat.id]: parseFloat(e.target.value) })); 
+                        setIsEditing(true); 
+                      }} 
+                      className="w-full h-4 appearance-none bg-transparent cursor-pointer z-10 michelin-slider-small" 
+                    />
+                 </div>
               </div>
             ))}
           </div>

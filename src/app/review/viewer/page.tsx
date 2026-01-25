@@ -139,22 +139,27 @@ function ViewerContent() {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        // [Reliability Fix] Use our API route instead of direct Supabase call 
-        // to bypass RLS issues and use Admin-level data fetching
         const response = await fetch(`/api/projects/${projectId}`);
         const result = await response.json();
 
         if (!response.ok || !result.project) throw new Error(result.error || "Loading failed");
         
         const data = result.project;
-        let customData: any = data.custom_data;
-        if (typeof customData === 'string') {
-            try { customData = JSON.parse(customData); } catch (e) { customData = {}; }
+        
+        // Smart Data Normalization
+        let parsedCustom = data.custom_data;
+        if (typeof parsedCustom === 'string') {
+            try { parsedCustom = JSON.parse(parsedCustom); } catch (e) { parsedCustom = {}; }
         }
-        setProject({ ...data, custom_data: customData });
+        
+        const normalizedProject = { 
+          ...data, 
+          custom_data: parsedCustom || {}
+        };
+        
+        setProject(normalizedProject);
       } catch (e) {
         console.error("Failed to load project via API", e);
-        // Fallback or handle error
       } finally {
         setLoading(false);
       }
@@ -275,31 +280,32 @@ function ViewerContent() {
   const extractUrl = (proj: any) => {
     if (!proj) return '';
     
-    // 1. New Audit Config (Most reliable)
-    const auditUrl = customData?.audit_config?.mediaA;
-    if (auditUrl && typeof auditUrl === 'string' && auditUrl.trim()) return auditUrl.trim();
+    const cData = proj.custom_data || {};
     
-    // 2. Standard URL fields
-    const standardUrl = proj?.primary_url || proj?.url || proj?.preview_url;
-    if (standardUrl && typeof standardUrl === 'string' && standardUrl.trim()) return standardUrl.trim();
+    // 1. Audit Config specific field (Priority)
+    const auditA = cData.audit_config?.mediaA;
+    if (auditA && typeof auditA === 'string' && auditA.trim()) return auditA.trim();
     
-    // 3. Deep search in text fields using Regex
-    // This handles wayo.co.kr case in content_text or any other field
-    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/gi;
+    // 2. Direct URL fields
+    const directFields = [proj.primary_url, proj.url, proj.preview_url, proj.site_url];
+    for (const d of directFields) {
+        if (d && typeof d === 'string' && d.trim()) return d.trim();
+    }
     
-    const fieldsToSearch = [
-        customData?.audit_config?.mediaA,
-        proj?.content_text,
-        proj?.description,
-        proj?.summary,
-        proj?.title,
-        ...(proj?.assets?.map((a:any) => typeof a === 'string' ? a : a.url) || [])
+    // 3. Robust Regex Search in project content
+    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+    const contentPool = [
+        proj.content_text,
+        proj.description,
+        proj.summary,
+        proj.title,
+        ...(Array.isArray(proj.assets) ? proj.assets.map((a:any) => typeof a === 'string' ? a : a.url) : [])
     ];
 
-    for (const text of fieldsToSearch) {
+    for (const text of contentPool) {
         if (typeof text === 'string' && text.trim()) {
-            const match = text.match(urlRegex);
-            if (match && match.length > 0) return match[0].trim();
+            const matches = text.match(urlRegex);
+            if (matches && matches.length > 0) return matches[0].trim();
         }
     }
     
