@@ -21,11 +21,12 @@ import { FeedbackPoll } from '@/components/FeedbackPoll';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { MediaPreview } from '@/components/Review/MediaPreview';
+import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 
 // --- Review Intro Component (Overlay) ---
 function ReviewIntro({ onStart }: { onStart: () => void }) {
   return (
-    <div className="absolute inset-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute inset-x-0 bottom-0 top-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
@@ -438,19 +439,22 @@ function ViewerContent() {
   };
 
   return (
-    <main className="h-screen w-full bg-background flex flex-col md:flex-row overflow-hidden transition-colors duration-500 relative">
-      {/* Intro Overlay */}
-      <AnimatePresence>
-        {showIntro && (
-          <motion.div 
-            initial={{ opacity: 1 }} 
-            exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }} 
-            className="absolute inset-0 z-50"
-          >
-            <ReviewIntro onStart={handleStartReview} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <main className="h-screen w-full bg-background flex flex-col overflow-hidden transition-colors duration-500 relative">
+      <MyRatingIsHeader />
+      
+      <div className="flex-1 flex flex-col md:flex-row mt-16 overflow-hidden relative">
+        {/* Intro Overlay */}
+        <AnimatePresence>
+          {showIntro && (
+            <motion.div 
+              initial={{ opacity: 1 }} 
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }} 
+              className="absolute inset-0 z-50"
+            >
+              <ReviewIntro onStart={handleStartReview} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* Left Area: Project Preview */}
       <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border bg-[#0f0f0f]">
@@ -587,6 +591,7 @@ function ViewerContent() {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </main>
   );

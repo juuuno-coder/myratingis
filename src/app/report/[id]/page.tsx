@@ -12,7 +12,8 @@ import {
   ChefHat,
   Trophy,
   Rocket,
-  Download
+  Download,
+  ChevronRight
 } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 
 export default function ReportPage() {
   const params = useParams();
@@ -162,25 +164,9 @@ export default function ReportPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-pretendard">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
-         <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <button onClick={() => router.back()} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
-               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-               <span className="text-sm font-bold uppercase tracking-widest">Back</span>
-            </button>
-            <div className="flex items-center gap-3">
-               <Button variant="outline" className="h-10 rounded-xl border-white/10 bg-white/5 text-xs font-black gap-2">
-                  <Download className="w-3 h-3" /> 스토리 이미지 생성
-               </Button>
-               <Button className="h-10 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-black gap-2">
-                  <Share2 className="w-3 h-3" /> 리포트 공유
-               </Button>
-            </div>
-         </div>
-      </header>
+      <MyRatingIsHeader />
 
-      <main className="max-w-7xl mx-auto px-6 pt-32 pb-24 space-y-20">
+      <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
          {/* Hero Title */}
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
