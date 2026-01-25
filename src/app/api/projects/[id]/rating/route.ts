@@ -138,24 +138,33 @@ export async function POST(
           return NextResponse.json({ error: 'Guest ID or Login required' }, { status: 400 });
       }
 
-      // 1. Prepare Update Data
+      // 1. Fetch existing rating to merge data (The standard way to handle partial updates in JS)
+      const { data: existingRating } = await supabaseAdmin
+        .from('ProjectRating')
+        .select('*')
+        .eq('project_id', Number(projectId))
+        .filter(userId ? 'user_id' : 'guest_id', 'eq', userId || guest_id)
+        .maybeSingle();
+
+      // 2. Prepare Balanced Update Data (Merge)
       const updateData = {
           project_id: Number(projectId),
           user_id: userId,
           guest_id: userId ? null : guest_id,
-          score: score,
-          score_1: scores?.score_1 ?? body.score_1 ?? 0,
-          score_2: scores?.score_2 ?? body.score_2 ?? 0,
-          score_3: scores?.score_3 ?? body.score_3 ?? 0,
-          score_4: scores?.score_4 ?? body.score_4 ?? 0,
-          score_5: scores?.score_5 ?? body.score_5 ?? 0,
-          score_6: scores?.score_6 ?? body.score_6 ?? 0,
-          proposal: proposal,
-          custom_answers: custom_answers,
+          score: score !== undefined ? score : existingRating?.score,
+          // Merge logic: use new value if provided, else keep existing, else default to 0
+          score_1: (scores?.score_1 ?? body.score_1) ?? existingRating?.score_1 ?? 0,
+          score_2: (scores?.score_2 ?? body.score_2) ?? existingRating?.score_2 ?? 0,
+          score_3: (scores?.score_3 ?? body.score_3) ?? existingRating?.score_3 ?? 0,
+          score_4: (scores?.score_4 ?? body.score_4) ?? existingRating?.score_4 ?? 0,
+          score_5: (scores?.score_5 ?? body.score_5) ?? existingRating?.score_5 ?? 0,
+          score_6: (scores?.score_6 ?? body.score_6) ?? existingRating?.score_6 ?? 0,
+          proposal: proposal !== undefined ? proposal : existingRating?.proposal,
+          custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
           updated_at: new Date().toISOString()
       };
 
-      // 2. Atomic UPSERT (The standard way in Supabase/PostgREST)
+      // 3. Atomic UPSERT (Matches the UNIQUE constraints we added to DB)
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
         .upsert(updateData, { 
@@ -163,7 +172,7 @@ export async function POST(
         });
 
       if (ratingError) {
-          console.error('[API] Upsert Rating Error:', ratingError);
+          console.error('[API] Save Rating Error:', ratingError);
           return NextResponse.json({ success: false, error: ratingError.message }, { status: 500 });
       }
 
