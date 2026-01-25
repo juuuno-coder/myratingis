@@ -7,6 +7,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import Image from 'next/image';
 
+export interface FeedbackPollRef {
+  submit: () => Promise<boolean>;
+}
+
 interface FeedbackPollProps {
   projectId: string;
   initialCounts?: {
@@ -19,11 +23,11 @@ interface FeedbackPollProps {
   guestId?: string; // [New] 게스트 식별자
 }
 
-export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = false, guestId }: FeedbackPollProps) {
+export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>(
+  ({ projectId, initialCounts, userVote, isDemo = false, guestId }, ref) => {
   const [selected, setSelected] = useState<string | null>(userVote || null);
   const [counts, setCounts] = useState<Record<string, number>>(initialCounts || { launch: 0, research: 0, more: 0 });
   const [isVoting, setIsVoting] = useState(false);
-
   const [projectData, setProjectData] = useState<any>(null);
 
   // Fetch Poll Data on Mount
@@ -53,54 +57,29 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
     fetchPoll();
   }, [projectId, isDemo, guestId]);
 
-  const handleVote = async (type: string) => {
-    if (isVoting) return;
-    
-    // Optimistic UI / Demo Logic Base is same
+  const handleVoteLocal = (type: string) => {
     const prevSelected = selected;
-    const prevCounts = { ...counts };
-    let newVoteType: string | null = type;
-
-    // Toggle logic
     if (selected === type) {
       setSelected(null);
-      newVoteType = null;
-      setCounts(prev => {
-          const newC = { ...prev };
-          newC[type] = Math.max(0, (newC[type] || 0) - 1);
-          return newC;
-      });
     } else {
       setSelected(type);
-      setCounts(prev => {
-        const newCounts = { ...prev };
-        newCounts[type] = (newCounts[type] || 0) + 1;
-        if (prevSelected) {
-            newCounts[prevSelected] = Math.max(0, (newCounts[prevSelected] || 0) - 1);
-        }
-        return newCounts;
-      });
     }
+  };
 
+  const handleVoteSubmit = async (): Promise<boolean> => {
     if (isDemo) {
-        toast.success(newVoteType ? "[데모] 소중한 의견 감사합니다! 🎉" : "[데모] 투표를 취소했습니다.");
-        return;
+        toast.info(`[데모] 투표 정보가 준비되었습니다.`);
+        return true;
     }
 
     setIsVoting(true);
     try {
        const { data: { session } } = await supabase.auth.getSession();
-       
-       // Guest check
        const currentGuestId = guestId || localStorage.getItem('guest_id');
        
        if (!session && !currentGuestId) {
-           toast.error(newVoteType ? "[안내] 로그인이 필요합니다." : "취소 불가");
-           // Revert UI
-           setSelected(prevSelected);
-           setCounts(prevCounts);
-           setIsVoting(false);
-           return;
+           toast.error("투표를 저장하려는데 본인 확인이 안 됩니다.");
+           return false;
        }
 
        const res = await fetch(`/api/projects/${projectId}/vote`, {
@@ -110,24 +89,24 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
                ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
            },
            body: JSON.stringify({ 
-               voteType: newVoteType,
+               voteType: selected,
                guest_id: !session ? currentGuestId : undefined
            })
        });
        if (!res.ok) throw new Error('Vote Failed');
-       
-       if (!newVoteType) toast.info("투표를 취소했습니다.");
-       else toast.success("참여해주셔서 감사합니다! 🎉");
-
-    } catch (error) {
+       return true;
+    } catch (error: any) {
       console.error(error);
-      toast.error("투표에 실패했습니다.");
-      setSelected(prevSelected);
-      setCounts(prevCounts);
+      toast.error(`투표 저장 실패: ${error.message}`);
+      return false;
     } finally {
       setIsVoting(false);
     }
   };
+
+  React.useImperativeHandle(ref, () => ({
+    submit: handleVoteSubmit
+  }));
 
   // Dynamic Options Base
   const DEFAULT_OPTIONS = [
@@ -180,7 +159,7 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
             return (
               <button
                 key={opt.id}
-                onClick={() => handleVote(opt.id)}
+                onClick={() => handleVoteLocal(opt.id)}
                 disabled={isVoting}
                 className={cn(
                   "relative group flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-500 overflow-hidden min-h-[200px]",
@@ -251,4 +230,6 @@ export function FeedbackPoll({ projectId, initialCounts, userVote, isDemo = fals
       </div>
     </div>
   );
-}
+});
+
+FeedbackPoll.displayName = 'FeedbackPoll';

@@ -16,12 +16,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { MichelinRating } from '@/components/MichelinRating';
-import { FeedbackPoll } from '@/components/FeedbackPoll';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { MediaPreview } from '@/components/Review/MediaPreview';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
+import { MichelinRating, MichelinRatingRef } from '@/components/MichelinRating';
+import { FeedbackPoll, FeedbackPollRef } from '@/components/FeedbackPoll';
 
 // --- Review Intro Component (Overlay) ---
 function ReviewIntro({ onStart }: { onStart: () => void }) {
@@ -126,6 +126,10 @@ function ViewerContent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [guestId, setGuestId] = useState<string | null>(null);
 
+  // Refs for manual submission
+  const michelinRef = React.useRef<MichelinRatingRef>(null);
+  const pollRef = React.useRef<FeedbackPollRef>(null);
+
   useEffect(() => {
     const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
     if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
@@ -206,8 +210,20 @@ function ViewerContent() {
     };
   }, [isResizing]);
 
-  const handleNextStep = () => {
-    if (currentStep < steps.length - 2) { // summary 전까지는 next
+  const handleNextStep = async () => {
+    // Stage 1: Michelin Rating Save
+    if (currentStep === 0 && michelinRef.current) {
+        const success = await michelinRef.current.submit();
+        if (!success) return; 
+    }
+    
+    // Stage 2: Voting/Poll Save
+    if (currentStep === 1 && pollRef.current) {
+        const success = await pollRef.current.submit();
+        if (!success) return;
+    }
+    
+    if (currentStep < steps.length - 2) { 
       setCurrentStep(prev => prev + 1);
     } else {
       handleFinalSubmit();
@@ -282,18 +298,25 @@ function ViewerContent() {
     
     const cData = proj.custom_data || {};
     
-    // 1. Audit Config specific field (Priority)
-    const auditA = cData.audit_config?.mediaA;
-    if (auditA && typeof auditA === 'string' && auditA.trim()) return auditA.trim();
-    
-    // 2. Direct URL fields
-    const directFields = [proj.primary_url, proj.url, proj.preview_url, proj.site_url];
-    for (const d of directFields) {
-        if (d && typeof d === 'string' && d.trim()) return d.trim();
+    // 1. Priority Fields from custom_data
+    const candidates = [
+        cData.audit_config?.mediaA,
+        cData.site_url,
+        cData.preview_url,
+        proj.primary_url, 
+        proj.url, 
+        proj.preview_url, 
+        proj.site_url
+    ];
+
+    for (const urlCandidate of candidates) {
+        if (urlCandidate && typeof urlCandidate === 'string' && urlCandidate.trim() && urlCandidate.includes('.')) {
+            return urlCandidate.trim();
+        }
     }
     
-    // 3. Robust Regex Search in project content
-    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+    // 2. Deep Regex Search in all text content (Improved for co.kr etc)
+    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
     const contentPool = [
         proj.content_text,
         proj.description,
@@ -305,7 +328,12 @@ function ViewerContent() {
     for (const text of contentPool) {
         if (typeof text === 'string' && text.trim()) {
             const matches = text.match(urlRegex);
-            if (matches && matches.length > 0) return matches[0].trim();
+            if (matches && matches.length > 0) {
+                // Return the longest match that looks like a domain to be safe
+                const sorted = [...matches].sort((a,b) => b.length - a.length);
+                const found = sorted.find(m => m.includes('.'));
+                if (found) return found.trim();
+            }
         }
     }
     
@@ -345,8 +373,8 @@ function ViewerContent() {
            
            <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
               <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-                 <MichelinRating projectId={projectId!} guestId={guestId || undefined} />
-              </div>
+               <MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} />
+            </div>
            </div>
         </div>
       );
@@ -367,7 +395,7 @@ function ViewerContent() {
           
           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
             <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-               <FeedbackPoll projectId={projectId!} guestId={guestId || undefined} />
+               <FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} />
             </div>
           </div>
         </div>

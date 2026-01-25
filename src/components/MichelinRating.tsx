@@ -16,6 +16,10 @@ import {
   Text
 } from 'recharts';
 
+export interface MichelinRatingRef {
+  submit: () => Promise<boolean>;
+}
+
 interface MichelinRatingProps {
   projectId: string;
   ratingId?: string; 
@@ -35,7 +39,8 @@ const ICON_MAP: Record<string, any> = {
   Lightbulb, Zap, Target, TrendingUp, Star, Info, Sparkles, MessageSquareQuote
 };
 
-export function MichelinRating({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId }: MichelinRatingProps) {
+export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRatingProps>(
+  ({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId }, ref) => {
   const [projectData, setProjectData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -167,27 +172,16 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
     }
   }, [projectId, guestId]); // guestId 변경 시에도 다시 로드
 
-  useEffect(() => {
-    const hasValues = Object.values(scores).some(v => v > 0);
-    if (!hasValues) return;
+  // Auto-submit removed to prevent annoying interruptions and resets.
+  // Now parent controls submission via Ref.
 
-    const timer = setTimeout(() => {
-      handleRatingSubmit();
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [scores]);
-
-  const handleRatingSubmit = async () => {
+  const handleRatingSubmit = async (): Promise<boolean> => {
     if (isDemo) {
-        toast.success(`[데모] 평가가 반영되었습니다! (평균 ${currentTotalAvg}점)`);
-        setIsEditing(false);
-        // fetchAIAnalysis(scores);
-        return;
+        toast.success(`[데모] 평가 정보가 준비되었습니다.`);
+        return true;
     }
     const { data: { session } } = await supabase.auth.getSession();
     
-    // [Guest ID Logic] - Use prop if available, otherwise local storage fallback (legacy)
     let currentGuestId = guestId;
     if (!currentGuestId) {
         currentGuestId = localStorage.getItem('guest_id') || undefined;
@@ -195,7 +189,6 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
     
     setIsSubmitting(true);
     try {
-      // Guest logic merged into main flow
       const res = await fetch(`/api/projects/${Number(projectId)}/rating`, {
         method: 'POST',
         headers: { 
@@ -203,7 +196,7 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
           ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
         },
         body: JSON.stringify({
-          scores: scores, // Wrap scores in an object
+          scores: scores,
           score: currentTotalAvg,
           rating_id: ratingId ? Number(ratingId) : undefined,
           guest_id: !session ? currentGuestId : undefined 
@@ -214,17 +207,21 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       if (!res.ok) throw new Error(data.error || 'Failed to submit rating');
       
       setIsEditing(false);
-      toast.success(ratingId ? "평가가 수정되었습니다!" : "평가가 등록되었습니다!");
-      fetchRatingData(); // Re-fetch to update averages
-      
+      // Removed immediate fetchRatingData() to keep UI state stable during wizard
+      // fetchRatingData(); 
+      return true;
     } catch (e: any) {
       console.error(e);
-      const errorMsg = e.message || "평가 등록에 실패했습니다.";
-      toast.error(`평가 등록 실패: ${errorMsg}`);
+      toast.error(`평가 저장 실패: ${e.message}`);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  React.useImperativeHandle(ref, () => ({
+    submit: handleRatingSubmit
+  }));
 
   // Recharts Data Transformation
   const chartData = useMemo(() => {
@@ -461,4 +458,6 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       </div>
     </div>
   );
-}
+});
+
+MichelinRating.displayName = 'MichelinRating';
