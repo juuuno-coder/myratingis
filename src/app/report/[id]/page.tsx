@@ -185,9 +185,9 @@ export default function ReportPage() {
          {/* Summary Stats */}
          <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: '참여 전문가', value: reportStats?.participantCount, icon: Users, color: 'text-blue-400' },
-              { label: '종합 미슐랭 지수', value: reportStats?.overallAvg, icon: Star, color: 'text-orange-400' },
-              { label: '최고 평가 항목', value: reportStats?.radarData.sort((a:any, b:any) => b.value - a.value)[0]?.subject || '-', icon: Trophy, color: 'text-amber-300' },
+              { label: '참여 전문가', value: reportStats?.participantCount || 0, icon: Users, color: 'text-blue-400' },
+              { label: '종합 미슐랭 지수', value: reportStats?.overallAvg || '0.0', icon: Star, color: 'text-orange-400' },
+              { label: '최고 평가 항목', value: reportStats?.radarData ? [...reportStats.radarData].sort((a:any, b:any) => b.value - a.value)[0]?.subject : '-', icon: Trophy, color: 'text-amber-300' },
               { label: '바이럴 점수', value: 'TOP 5%', icon: Rocket, color: 'text-emerald-400' },
             ].map((stat, i) => (
               <motion.div key={i} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i*0.1 }} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] hover:bg-white/[0.08] transition-colors group">
