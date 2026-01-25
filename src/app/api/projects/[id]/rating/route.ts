@@ -108,8 +108,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: projectId } = await params;
+export async function POST(
+  req: NextRequest, 
+  { params }: { params: any }
+) {
+  // Graceful handling for both Next.js 14 (object) and 15 (promise)
+  const resolvedParams = params instanceof Promise ? await params : params;
+  const projectId = resolvedParams.id;
   
   if (!projectId || isNaN(Number(projectId))) {
       return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400 });
@@ -135,7 +140,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           return NextResponse.json({ error: 'Guest ID or Login required' }, { status: 400 });
       }
 
-      // 1. Fetch existing rating to prevent overwriting
+      // 1. Fetch existing rating manually to avoid ON CONFLICT index issues with filtered indexes
       const { data: existingRating } = await supabaseAdmin
         .from('ProjectRating')
         .select('*')
@@ -148,25 +153,36 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           user_id: userId,
           guest_id: userId ? null : guest_id,
           score: score !== undefined ? score : existingRating?.score,
-          score_1: scores?.score_1 !== undefined ? scores.score_1 : existingRating?.score_1 || 0,
-          score_2: scores?.score_2 !== undefined ? scores.score_2 : existingRating?.score_2 || 0,
-          score_3: scores?.score_3 !== undefined ? scores.score_3 : existingRating?.score_3 || 0,
-          score_4: scores?.score_4 !== undefined ? scores.score_4 : existingRating?.score_4 || 0,
-          score_5: scores?.score_5 !== undefined ? scores.score_5 : existingRating?.score_5 || 0,
-          score_6: scores?.score_6 !== undefined ? scores.score_6 : existingRating?.score_6 || 0,
+          // Handle both direct score_1 OR scores.score_1 payload formats
+          score_1: (scores?.score_1 ?? body.score_1) ?? existingRating?.score_1 ?? 0,
+          score_2: (scores?.score_2 ?? body.score_2) ?? existingRating?.score_2 ?? 0,
+          score_3: (scores?.score_3 ?? body.score_3) ?? existingRating?.score_3 ?? 0,
+          score_4: (scores?.score_4 ?? body.score_4) ?? existingRating?.score_4 ?? 0,
+          score_5: (scores?.score_5 ?? body.score_5) ?? existingRating?.score_5 ?? 0,
+          score_6: (scores?.score_6 ?? body.score_6) ?? existingRating?.score_6 ?? 0,
           proposal: proposal !== undefined ? proposal : existingRating?.proposal,
           custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
           updated_at: new Date().toISOString()
       };
 
-      const { error: ratingError } = await supabaseAdmin
-        .from('ProjectRating')
-        .upsert(updateData, { 
-            onConflict: userId ? 'project_id,user_id' : 'project_id,guest_id' 
-        });
+      let ratingError;
+      if (existingRating?.id) {
+          // UPDATE
+          const { error } = await supabaseAdmin
+            .from('ProjectRating')
+            .update(updateData)
+            .eq('id', existingRating.id);
+          ratingError = error;
+      } else {
+          // INSERT
+          const { error } = await supabaseAdmin
+            .from('ProjectRating')
+            .insert(updateData);
+          ratingError = error;
+      }
 
       if (ratingError) {
-          console.error('[API] Upsert Rating Error:', ratingError);
+          console.error('[API] Save Rating Error:', ratingError);
           return NextResponse.json({ success: false, error: ratingError.message }, { status: 500 });
       }
 

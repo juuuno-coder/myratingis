@@ -137,25 +137,23 @@ function ViewerContent() {
 
     const fetchProject = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        // [Auth Guard] We can check here, but let's do it on 'Start' button for smoother intro
-        
-        const { data, error } = await supabase
-          .from('Project')
-          .select('*')
-          .eq('project_id', Number(projectId))
-          .single();
+        setLoading(true);
+        // [Reliability Fix] Use our API route instead of direct Supabase call 
+        // to bypass RLS issues and use Admin-level data fetching
+        const response = await fetch(`/api/projects/${projectId}`);
+        const result = await response.json();
 
-        if (error) throw error;
+        if (!response.ok || !result.project) throw new Error(result.error || "Loading failed");
         
+        const data = result.project;
         let customData: any = data.custom_data;
         if (typeof customData === 'string') {
             try { customData = JSON.parse(customData); } catch (e) { customData = {}; }
         }
         setProject({ ...data, custom_data: customData });
       } catch (e) {
-        console.error("Failed to load project", e);
-        router.push('/');
+        console.error("Failed to load project via API", e);
+        // Fallback or handle error
       } finally {
         setLoading(false);
       }
