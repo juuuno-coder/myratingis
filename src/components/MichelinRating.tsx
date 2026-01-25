@@ -216,9 +216,10 @@ export function MichelinRating({ projectId, ratingId, isDemo = false, activeCate
       toast.success(ratingId ? "평가가 수정되었습니다!" : "평가가 등록되었습니다!");
       fetchRatingData(); // Re-fetch to update averages
       
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toast.error("평가 등록에 실패했습니다.");
+      const errorMsg = e.message || "평가 등록에 실패했습니다.";
+      toast.error(`평가 등록 실패: ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }

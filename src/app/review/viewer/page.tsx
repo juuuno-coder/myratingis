@@ -243,13 +243,28 @@ function ViewerContent() {
       toast.success("평가가 제출되었습니다! 🎉");
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "제출 중 오류가 발생했습니다.");
+      const errorMsg = e.message || "평가 등록에 실패했습니다.";
+      toast.error(`평가 등록 실패: ${errorMsg}`);
     }
   };
 
   if (loading) return (
-    <div className="h-screen bg-background flex items-center justify-center">
+    <div className="h-screen bg-background flex flex-col items-center justify-center gap-4">
       <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" />
+      <p className="text-orange-600 font-black uppercase tracking-widest text-[10px] animate-pulse">Loading Project Data...</p>
+    </div>
+  );
+
+  if (!project) return (
+    <div className="h-screen bg-background flex flex-col items-center justify-center gap-6">
+      <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+        <X size={40} />
+      </div>
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-black text-chef-text tracking-tighter italic">PROJECT NOT FOUND</h2>
+        <p className="text-chef-text opacity-40 font-medium">프로젝트 정보를 불러올 수 없거나 삭제된 프로젝트입니다.</p>
+      </div>
+      <Button onClick={() => router.push('/')} variant="outline" className="rounded-full border-chef-border">홈으로 돌아가기</Button>
     </div>
   );
 
@@ -299,8 +314,10 @@ function ViewerContent() {
   const ensureProtocol = (url: string) => {
     if (!url) return '';
     if (typeof url !== 'string') return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    // Special handling for common domains if no protocol
+    return `https://${trimmed}`;
   };
 
   const finalDisplayUrl = ensureProtocol(previewUrl);
