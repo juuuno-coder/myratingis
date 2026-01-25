@@ -83,7 +83,16 @@ export async function GET(
       }
     }
 
-    // 5. Update Views (Admin)
+    // 5. Fetch Rating Stats (Counts, My Rating status)
+    const { data: ratingsData } = await (supabaseAdmin as any)
+      .from('ProjectRating')
+      .select('user_id')
+      .eq('project_id', Number(id));
+
+    data.rating_count = ratingsData?.length || 0;
+    data.has_rated = user ? ratingsData?.some((r: any) => r.user_id === user.id) : false;
+
+    // 6. Update Views (Admin)
     await supabaseAdmin
       .from('Project')
       .update({ views: (data.views || 0) + 1 })

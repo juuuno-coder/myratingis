@@ -138,9 +138,12 @@ export default function ProjectsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                       
                       {/* Badge Tags */}
-                      <div className="absolute top-4 left-4 flex gap-2">
-                        <span className="bg-orange-600 text-white px-3 py-1 text-[8px] font-black uppercase tracking-widest bevel-sm">Audit Active</span>
-                      </div>
+                       <div className="absolute top-4 left-4 flex gap-2">
+                         <span className="bg-orange-600 text-white px-3 py-1 text-[8px] font-black uppercase tracking-widest bevel-sm">Audit Active</span>
+                         {p.has_rated && (
+                           <span className="bg-green-600 text-white px-3 py-1 text-[8px] font-black uppercase tracking-widest bevel-sm animate-in zoom-in duration-300">내 평가 완료</span>
+                         )}
+                       </div>
 
                       {/* Content info on hover-like appearance */}
                       <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -149,16 +152,16 @@ export default function ProjectsPage() {
                             <span className="text-[10px] text-white font-black uppercase tracking-[0.2em]">{p.category_name || "New Kitchen"}</span>
                          </div>
                          <h3 className="text-2xl font-black text-white tracking-tight line-clamp-1 mb-2 italic">{p.title}</h3>
-                         <div className="flex items-center gap-4 text-white opacity-0 group-hover:opacity-60 transition-opacity">
-                            <div className="flex items-center gap-1.5 ">
-                               <Eye className="w-3 h-3" />
-                               <span className="text-[10px] font-bold">{p.views_count}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                               <MessageSquare className="w-3 h-3" />
-                               <span className="text-[10px] font-bold">{p.likes_count}</span>
-                            </div>
-                         </div>
+                          <div className="flex items-center gap-4 text-white opacity-0 group-hover:opacity-60 transition-opacity">
+                             <div className="flex items-center gap-1.5 ">
+                                <Eye className="w-3 h-3" />
+                                <span className="text-[10px] font-bold">{p.views_count || 0}</span>
+                             </div>
+                             <div className="flex items-center gap-1.5">
+                                <Sparkles className="w-3 h-3" />
+                                <span className="text-[10px] font-bold">{p.rating_count || 0}</span>
+                             </div>
+                          </div>
                       </div>
 
                       {/* Arrow Icon */}
@@ -181,7 +184,23 @@ export default function ProjectsPage() {
                          </span>
                       </div>
                    </div>
-                </motion.div>
+
+                    {p.has_rated && (
+                      <div className="mt-4 px-2">
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          className="w-full rounded-xl font-black text-[10px] h-10 uppercase tracking-widest bg-green-600/10 text-green-600 hover:bg-green-600 hover:text-white border-none transition-all duration-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/report/${p.project_id}`);
+                          }}
+                        >
+                          내 리포트 보기 <ArrowRight className="ml-2 w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                 </motion.div>
               );
             })}
           </div>

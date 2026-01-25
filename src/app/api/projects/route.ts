@@ -37,13 +37,17 @@ export async function GET(request: NextRequest) {
     // Check Authorization header to see if the requester is the owner of the requested userId profile
     const authHeader = request.headers.get('Authorization');
     let isOwner = false;
+    let currentAuthenticatedUserId: string | null = null;
     
-    if (userId && authHeader) {
+    if (authHeader) {
         try {
-            const token = authHeader.replace('Bearer ', '');
+            const token = authHeader.replace(/^Bearer\s+/i, '');
             const { data: { user } } = await supabaseAnon.auth.getUser(token);
-            if (user && user.id === userId) {
-                isOwner = true;
+            if (user) {
+                currentAuthenticatedUserId = user.id;
+                if (userId && user.id === userId) {
+                    isOwner = true;
+                }
             }
         } catch (e) {}
     }
@@ -113,18 +117,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 사용자 정보 병합 (Dual Fetching)
+    // 4. Populate User Info & Audit Stats (Counts, My Rating status)
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((p: any) => p.user_id).filter(Boolean))] as string[];
+      const projectIds = data.map((p: any) => p.project_id);
 
+      // [Dual Fetching] - Fetch Audit Counts & User Info
+      const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
+      
+      const [ratingsData, myRatingsData] = await Promise.all([
+          // 1. All rating records for these projects to count them
+          (targetClient.from('ProjectRating' as any) as any).select('project_id').in('project_id', projectIds),
+          // 2. Ratings by current user (if logged in)
+          currentAuthenticatedUserId 
+            ? (targetClient.from('ProjectRating' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds)
+            : Promise.resolve({ data: null })
+      ]);
+
+      const ratingCountMap = new Map();
+      ratingsData.data?.forEach((r: any) => {
+          ratingCountMap.set(r.project_id, (ratingCountMap.get(r.project_id) || 0) + 1);
+      });
+
+      const myRatingsSet = new Set(myRatingsData.data?.map((r: any) => r.project_id) || []);
+
+      const userMap = new Map();
       if (userIds.length > 0) {
-        // users 테이블 조회 (일반 클라이언트 사용 - Admin 키 없을 때 대비)
-        const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
-        
-        // 가능한 테이블 이름들 (프로젝트마다 다를 수 있음)
+        // users 테이블 조회
         const possibleTables = ['users', 'profiles', 'User'];
         let usersData: any[] | null = null;
-        let usersError: any = null;
 
         for (const tableName of possibleTables) {
           const result = await (targetClient
@@ -134,15 +155,9 @@ export async function GET(request: NextRequest) {
           
           if (!result.error && result.data && result.data.length > 0) {
             usersData = result.data;
-            console.log(`[API] Successfully fetched users from table: ${tableName}`);
             break;
-          } else {
-            console.log(`[API] Failed to fetch from ${tableName}:`, result.error?.message || 'No data');
-            usersError = result.error;
           }
         }
-
-        const userMap = new Map();
 
         if (usersData && usersData.length > 0) {
           usersData.forEach((u: any) => {
@@ -152,15 +167,14 @@ export async function GET(request: NextRequest) {
               expertise: u.expertise || null,
             });
           });
-        } else {
-          console.warn('[API] No user data found from any table. Users will show as Unknown.');
         }
-
-        data.forEach((project: any) => {
-          project.users = userMap.get(project.user_id) || { username: 'Unknown', avatar_url: '/globe.svg' };
-          project.User = project.users; 
-        });
       }
+
+      data.forEach((project: any) => {
+        project.User = userMap.get(project.user_id) || { username: 'Unknown', avatar_url: '/globe.svg' };
+        project.rating_count = ratingCountMap.get(project.project_id) || 0;
+        project.has_rated = myRatingsSet.has(project.project_id);
+      });
     }
 
     return NextResponse.json({
