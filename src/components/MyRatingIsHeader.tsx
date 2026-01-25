@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { ChefHat, User, LogOut, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function MyRatingIsHeader() {
   const router = useRouter();
@@ -122,56 +123,94 @@ export function MyRatingIsHeader() {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-chef-card border-t border-chef-border py-4 px-4 shadow-xl animate-in slide-in-from-top-full duration-300">
-          {isAuthenticated && user ? (
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => {
-                  router.push("/project/upload");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-xl h-12 font-black text-sm uppercase tracking-widest"
-              >
-                진단 의뢰하기
-              </Button>
-              <Button
-                onClick={() => {
-                  router.push("/mypage");
-                  setIsMenuOpen(false);
-                }}
-                variant="outline"
-                className="w-full rounded-xl h-12 font-black text-chef-text border-chef-border text-sm uppercase tracking-widest"
-              >
-                마이페이지
-              </Button>
-              <Button
-                onClick={() => {
-                  handleLogout();
-                  setIsMenuOpen(false);
-                }}
-                variant="ghost"
-                className="w-full text-red-500 rounded-xl h-12 font-black text-sm uppercase tracking-widest"
-              >
-                로그아웃
-              </Button>
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden bg-chef-card/95 backdrop-blur-2xl border-t border-chef-border overflow-hidden shadow-2xl"
+          >
+            <div className="p-6 flex flex-col gap-4">
+              {isAuthenticated && user ? (
+                <>
+                  <div className="flex items-center gap-4 py-2 border-b border-chef-border/50 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center font-black text-white shadow-lg">
+                       {userProfile?.username?.charAt(0) || "U"}
+                    </div>
+                    <div className="flex-1">
+                       <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest">Signed in as</p>
+                       <p className="text-sm font-black text-chef-text">{userProfile?.username || "CHEF"}</p>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={() => {
+                      router.push("/project/upload");
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-2xl h-14 font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-600/20"
+                  >
+                    <ChefHat className="w-5 h-5 mr-3" />
+                    진단 의뢰하기
+                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={() => {
+                        router.push("/mypage");
+                        setIsMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full rounded-2xl h-14 font-black text-chef-text border-chef-border text-[11px] uppercase tracking-widest bg-white/5"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      마이 스튜디오
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      variant="ghost"
+                      className="w-full text-red-500 rounded-2xl h-14 font-black text-[11px] uppercase tracking-widest hover:bg-red-500/10"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      로그아웃
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link href="/login" onClick={() => setIsMenuOpen(false)} className="w-full">
+                    <Button variant="outline" className="w-full rounded-2xl h-14 font-black text-chef-text border-chef-border text-sm uppercase tracking-widest bg-white/5">
+                      로그인
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setIsMenuOpen(false)} className="w-full">
+                    <Button className="w-full bg-chef-text text-chef-bg rounded-2xl h-14 font-black text-sm uppercase tracking-widest">
+                      회원가입
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              
+              {/* Theme Toggle in Mobile */}
+              <div className="pt-4 mt-2 border-t border-chef-border/30 flex items-center justify-between">
+                 <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest italic">Appearance Mode</span>
+                 <button 
+                    onClick={toggleTheme}
+                    className="flex items-center gap-3 px-4 py-2 rounded-full bg-chef-panel border border-chef-border text-xs font-black text-chef-text"
+                  >
+                    {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+                    {theme === 'dark' ? 'LIGHT' : 'DARK'}
+                  </button>
+              </div>
             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <Link href="/login" onClick={() => setIsMenuOpen(false)} className="w-full">
-                <Button variant="outline" className="w-full rounded-xl h-12 font-black text-chef-text border-chef-border text-sm uppercase tracking-widest">
-                  로그인
-                </Button>
-              </Link>
-              <Link href="/signup" onClick={() => setIsMenuOpen(false)} className="w-full">
-                <Button className="w-full bg-chef-text text-chef-bg rounded-xl h-12 font-black text-sm uppercase tracking-widest">
-                  회원가입
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
