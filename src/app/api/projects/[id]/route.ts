@@ -44,7 +44,7 @@ export async function GET(
     const { data, error } = await (supabaseAdmin as any)
       .from('Project')
       .select('*')
-      .eq('project_id', id)
+      .eq('project_id', Number(id))
       .single();
 
     if (error || !data) {
@@ -87,7 +87,7 @@ export async function GET(
     await supabaseAdmin
       .from('Project')
       .update({ views: (data.views || 0) + 1 })
-      .eq('project_id', id);
+      .eq('project_id', Number(id));
 
     return NextResponse.json({ project: data });
   } catch (error: any) {
@@ -177,7 +177,7 @@ export async function PUT(
     const { data: existingProject, error: fetchError } = await (supabaseAdmin as any)
       .from('Project')
       .select('user_id, custom_data')
-      .eq('project_id', id)
+      .eq('project_id', Number(id))
       .single();
 
     if (fetchError || !existingProject) {
@@ -263,7 +263,7 @@ export async function PUT(
     let { data, error } = await (supabaseAdmin as any)
       .from('Project')
       .update(updatePayload)
-      .eq('project_id', id)
+      .eq('project_id', Number(id))
       .select('*')
       .single();
 
@@ -280,7 +280,7 @@ export async function PUT(
              const fieldSlugs = finalCustomData.fields; 
 
             // 기존 매핑 삭제
-            await (supabaseAdmin as any).from('project_fields').delete().eq('project_id', id);
+            await (supabaseAdmin as any).from('project_fields').delete().eq('project_id', Number(id));
 
             if (Array.isArray(fieldSlugs) && fieldSlugs.length > 0) {
                 const { data: fieldRecords } = await (supabaseAdmin as any)
@@ -288,7 +288,7 @@ export async function PUT(
 
                 if (fieldRecords && fieldRecords.length > 0) {
                     const mappings = fieldRecords.map((f: any) => ({
-                        project_id: id,
+                        project_id: Number(id),
                         field_id: f.id,
                     }));
                     await (supabaseAdmin as any).from('project_fields').insert(mappings);
@@ -304,7 +304,7 @@ export async function PUT(
         try {
             const genres = finalCustomData.genres || [];
             
-            await (supabaseAdmin as any).from('project_categories').delete().eq('project_id', id);
+            await (supabaseAdmin as any).from('project_categories').delete().eq('project_id', Number(id));
 
             if (Array.isArray(genres) && genres.length > 0) {
                 const categoryMappings = genres.map((genreSlug: string) => {
@@ -378,7 +378,7 @@ export async function DELETE(
 
     // 프로젝트 조회
     const { data: project, error: fetchError } = await (supabaseAdmin as any)
-      .from('Project').select('user_id').eq('project_id', id).single();
+      .from('Project').select('user_id').eq('project_id', Number(id)).single();
 
     if (fetchError || !project) return NextResponse.json({ error: '프로젝트를 찾을 수 없습니다.' }, { status: 404 });
 
@@ -388,7 +388,7 @@ export async function DELETE(
 
     // 삭제 (Soft Delete)
     const { error } = await (supabaseAdmin as any)
-      .from('Project').update({ deleted_at: new Date().toISOString() }).eq('project_id', id);
+      .from('Project').update({ deleted_at: new Date().toISOString() }).eq('project_id', Number(id));
 
     if (error) return NextResponse.json({ error: '삭제 실패', details: error.message }, { status: 500 });
 

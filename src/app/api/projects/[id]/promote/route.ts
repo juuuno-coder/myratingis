@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 // 피드백 요청 (프로모션) API
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const projectId = params.id;
+  const { id: projectId } = await params;
   
   // 1. Auth Check
   const authHeader = req.headers.get('authorization');

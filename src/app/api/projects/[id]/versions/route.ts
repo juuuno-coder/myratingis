@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const projectId = params.id;
+  const { id: projectId } = await params;
   
   // 1. Auth Check (Token based)
   const authHeader = req.headers.get('authorization');
@@ -134,7 +134,7 @@ export async function POST(
                created_at: new Date().toISOString()
            }));
 
-           const { error: notiError } = await (supabaseAdmin as any).from('Notification').insert(notifications);
+           const { error: notiError } = await (supabaseAdmin as any).from('notifications').insert(notifications);
            if (notiError) console.error("Failed to send notifications:", notiError);
            else console.log(`Sent version notifications to ${targetUserIds.size} users.`);
        }

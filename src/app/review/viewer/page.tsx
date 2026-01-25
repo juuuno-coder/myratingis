@@ -235,14 +235,15 @@ function ViewerContent() {
         })
       });
 
-      if (!res.ok) throw new Error("Submission failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Submission failed");
       
       setIsSubmitted(true);
       setCurrentStep(steps.length - 1); // Go to summary
       toast.success("평가가 제출되었습니다! 🎉");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toast.error("제출 중 오류가 발생했습니다.");
+      toast.error(e.message || "제출 중 오류가 발생했습니다.");
     }
   };
 
@@ -273,9 +274,10 @@ function ViewerContent() {
     const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/gi;
     
     const fieldsToSearch = [
+        customData?.audit_config?.mediaA,
         proj?.content_text,
-        proj?.summary,
         proj?.description,
+        proj?.summary,
         proj?.title,
         ...(proj?.assets?.map((a:any) => typeof a === 'string' ? a : a.url) || [])
     ];

@@ -7,8 +7,8 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
 
   try {
     // 1. Fetch Ratings

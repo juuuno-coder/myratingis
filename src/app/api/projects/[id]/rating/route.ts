@@ -148,12 +148,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           user_id: userId,
           guest_id: userId ? null : guest_id,
           score: score !== undefined ? score : existingRating?.score,
-          score_1: scores.score_1 !== undefined ? scores.score_1 : existingRating?.score_1 || 0,
-          score_2: scores.score_2 !== undefined ? scores.score_2 : existingRating?.score_2 || 0,
-          score_3: scores.score_3 !== undefined ? scores.score_3 : existingRating?.score_3 || 0,
-          score_4: scores.score_4 !== undefined ? scores.score_4 : existingRating?.score_4 || 0,
-          score_5: scores.score_5 !== undefined ? scores.score_5 : existingRating?.score_5 || 0,
-          score_6: scores.score_6 !== undefined ? scores.score_6 : existingRating?.score_6 || 0,
+          score_1: scores?.score_1 !== undefined ? scores.score_1 : existingRating?.score_1 || 0,
+          score_2: scores?.score_2 !== undefined ? scores.score_2 : existingRating?.score_2 || 0,
+          score_3: scores?.score_3 !== undefined ? scores.score_3 : existingRating?.score_3 || 0,
+          score_4: scores?.score_4 !== undefined ? scores.score_4 : existingRating?.score_4 || 0,
+          score_5: scores?.score_5 !== undefined ? scores.score_5 : existingRating?.score_5 || 0,
+          score_6: scores?.score_6 !== undefined ? scores.score_6 : existingRating?.score_6 || 0,
           proposal: proposal !== undefined ? proposal : existingRating?.proposal,
           custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
           updated_at: new Date().toISOString()
@@ -191,8 +191,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (userId) {
           const { data: existingComments } = await supabaseAdmin
             .from('Comment')
-            .select('id')
-            .eq('project_id', projectId)
+            .select('comment_id')
+            .eq('project_id', Number(projectId))
             .eq('user_id', userId)
             .eq('content', commentContent);
             
@@ -201,10 +201,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
               await supabaseAdmin
                 .from('Comment')
                 .insert({
-                    project_id: projectId,
+                    project_id: Number(projectId),
                     user_id: userId, 
                     content: commentContent,
-                    is_secret: false // Public comment
                 });
           }
       }
@@ -219,7 +218,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         
       if (projectData && (userId ? projectData.user_id !== userId : true)) {
           try {
-              // Notification Insert may fail if table doesn't exist yet
               await supabaseAdmin
                 .from('notifications')
                 .insert({
@@ -228,11 +226,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                     title: '새로운 미슐랭 평가 도착! 📊',
                     message: `${maskedName}님이 '${projectData.title}' 프로젝트를 평가했습니다. (평균 ${score}점)`,
                     link: `/projects/${projectId}`,
-                    read: false, // Changed from default value to explicit
-                    sender_id: userId // Can be null
+                    read: false, 
+                    sender_id: userId 
                 });
           } catch (notiError) {
-              console.warn('[API] Failed to send notification (Table might be missing):', notiError);
+              console.warn('[API] Failed to send notification:', notiError);
           }
       }
 

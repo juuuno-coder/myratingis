@@ -3,9 +3,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const projectId = params.id;
+  const { id: projectId } = await params;
   const authHeader = req.headers.get('Authorization');
   let userId: string | null = null;
   
