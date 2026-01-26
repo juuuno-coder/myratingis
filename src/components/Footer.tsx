@@ -19,17 +19,16 @@ export function Footer({ className }: { className?: string }) {
         
         <div className="flex flex-col gap-3 items-center md:items-start">
           {/* 페이지 링크들 */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs text-gray-500">
-            <Link href="/service" className="hover:text-gray-900 transition-colors">서비스 소개</Link>
-            <Link href="/policy/terms" className="hover:text-gray-900 transition-colors">이용약관</Link>
-            <Link href="/policy/privacy" className="font-bold hover:text-gray-900 transition-colors">개인정보처리방침</Link>
-            <Link href="/faq" className="hover:text-gray-900 transition-colors">자주 묻는 질문</Link>
-            <Link href="/contact" className="hover:text-gray-900 transition-colors">문의하기</Link>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs text-secondary-foreground opacity-60">
+            <Link href="/about/features" className="hover:text-primary transition-colors">서비스 소개</Link>
+            <Link href="/faq" className="hover:text-primary transition-colors">자주 묻는 질문</Link>
+            <Link href="/policy/terms" className="hover:text-primary transition-colors">이용약관</Link>
+            <Link href="/policy/privacy" className="font-bold hover:text-primary transition-colors">개인정보처리방침</Link>
           </div>
           
           {/* 저작권 문구 */}
-          <p className="text-[11px] text-gray-400 font-medium">
-            © 2025 VIBEFOLIO. All rights reserved.
+          <p className="text-[11px] text-secondary-foreground opacity-40 font-black uppercase tracking-widest">
+            © 2026 MYRATINGIS. Beyond the Star.
           </p>
         </div>
         

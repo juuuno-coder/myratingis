@@ -638,7 +638,6 @@ export default function ProjectUploadPage() {
 
   return (
     <div className="min-h-screen chef-bg-page selection:bg-orange-500/30">
-      <MyRatingIsHeader />
       
       {/* Dynamic Stepper Header */}
       <div className="fixed top-16 left-0 right-0 z-40 chef-header-dark border-b border-chef-border">

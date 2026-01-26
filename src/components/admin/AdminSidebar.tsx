@@ -92,10 +92,10 @@ export function AdminSidebar() {
       <div className="h-16 flex items-center px-6 border-b border-slate-100">
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span className="text-white font-black text-xl italic">V</span>
+            <span className="text-white font-black text-xl italic">M</span>
           </div>
-          <span className="font-black text-lg tracking-tighter">VIBEFOLIO</span>
-          <span className="text-[10px] font-bold bg-slate-900 text-white px-1.5 py-0.5 rounded ml-1">ADMIN</span>
+          <span className="font-black text-lg tracking-tighter">MYRATINGIS</span>
+          <span className="text-[10px] font-bold bg-orange-600 text-white px-1.5 py-0.5 rounded ml-1">ADMIN</span>
         </Link>
       </div>
 

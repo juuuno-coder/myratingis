@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Header } from "@/components/Header";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { Footer } from "@/components/Footer";
 import { Suspense } from "react";
 
@@ -19,16 +19,15 @@ export function RootLayoutContent({
   
   const isHome = pathname === '/';
   const isReport = pathname?.startsWith('/report');
-  const isProjectUpload = pathname?.startsWith('/project/upload');
   const isLogin = pathname === '/login';
   const isSignup = pathname === '/signup';
-  const isMyPage = pathname?.startsWith('/mypage');
-  const isProjectsList = pathname === '/projects';
-  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isProjectUpload || isLogin || isSignup || isMyPage || isProjectsList;
+  
+  // Only hide the global layout for very specific specialized views
+  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isLogin || isSignup;
 
   return (
     <div className="flex min-h-screen flex-col relative w-full overflow-x-hidden">
-      {!hideLayout && <Header />}
+      {!hideLayout && <MyRatingIsHeader />}
       <main className={`flex-1 w-full max-w-[1920px] mx-auto ${hideLayout ? "" : "pt-[60px] pb-20"} fade-in`}>
         <Suspense fallback={null}>
           {children}

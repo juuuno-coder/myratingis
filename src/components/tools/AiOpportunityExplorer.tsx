@@ -149,7 +149,7 @@ export function AiOpportunityExplorer({
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-4xl font-bold text-gray-900 mb-2"
             >
-                Vibefolio AI Intelligence
+                MyRatingIs Intelligence
             </motion.h1>
             </div>
         )}
@@ -304,7 +304,7 @@ export function AiOpportunityExplorer({
                     
                     <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                         <span className="text-[10px] text-gray-300">
-                           Source: {item.sourceUrl?.includes('haebojago') ? 'Haebojago MCP' : 'Vibefolio'}
+                           Source: {item.sourceUrl?.includes('haebojago') ? 'Haebojago MCP' : 'MyRatingIs'}
                         </span>
                         {item.link && (
                             <a 

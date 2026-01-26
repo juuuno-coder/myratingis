@@ -305,7 +305,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                     <div className="space-y-2">
                         <Label>아이디 (URL)</Label>
                         <div className="relative">
-                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">vibefolio.net/</span>
+                            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">myratingis.vercel.app/</span>
                             <Input 
                                 value={formData.username} 
                                 onChange={e => {
@@ -313,7 +313,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     setFormData({...formData, username: val});
                                     checkUsername(val);
                                 }}
-                                className="pl-[105px] h-12 rounded-xl"
+                                className="pl-[145px] h-12 rounded-xl"
                                 placeholder="username"
                             />
                             <div className="absolute right-3 top-3">
@@ -499,7 +499,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                         Developer API
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                        외부 애플리케이션에서 Vibefolio 프로젝트를 업로드할 수 있는 API Key입니다.
+                        외부 애플리케이션에서 MyRatingIs 프로젝트를 업로드할 수 있는 API Key입니다.
                         <br/>
                         <span className="text-red-500 font-medium">* API Key는 타인에게 절대 노출하지 마세요.</span>
                     </p>
@@ -574,7 +574,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             
             <div className="bg-slate-50 p-4 rounded-lg text-xs font-mono text-slate-600 space-y-1">
                 <div className="font-bold mb-2 text-slate-900">[API Usage Example]</div>
-                <div>POST https://vibefolio.net/api/projects</div>
+                <div>POST https://myratingis.vercel.app/api/projects</div>
                 <div>Authorization: Bearer {'<YOUR_API_KEY>'}</div>
                 <div>Content-Type: application/json</div>
             </div>

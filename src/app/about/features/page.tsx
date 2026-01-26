@@ -62,8 +62,6 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen chef-bg-page selection:bg-orange-500/30">
-      <MyRatingIsHeader />
-
       <main className="pt-40 pb-32">
         {/* Hero Section */}
         <div className="max-w-6xl mx-auto px-6 mb-32">

@@ -69,8 +69,7 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="min-h-screen chef-bg-page selection:bg-orange-500/30 pb-32">
-      <MyRatingIsHeader />
+    <div className="min-h-screen chef-bg-page selection:bg-orange-500/30">
       
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none opacity-5">
