@@ -97,11 +97,11 @@ function IntroContent() {
                   transition={{ delay: 0.3 }}
                   className="space-y-4"
                 >
-                  <h2 className="text-xl md:text-3xl font-bold text-white/90">
-                    "{project?.title}"
+                  <h2 className="text-xl md:text-3xl font-bold text-white/90 px-6">
+                    "{project?.summary || "심사위원을 기다리는 새로운 창작물"}"
                   </h2>
-                  <p className="text-sm md:text-lg text-white/40 max-w-lg mx-auto font-medium leading-relaxed">
-                    {project?.summary || "창작자의 정성이 담긴 프로젝트가 준비되었습니다."}
+                  <p className="text-[10px] md:text-xs text-white/20 max-w-lg mx-auto font-black uppercase tracking-[0.4em] italic">
+                    Unknown Dish Under the Cloche
                   </p>
                 </motion.div>
               ) : (

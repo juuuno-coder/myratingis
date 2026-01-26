@@ -117,8 +117,8 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
                transition={{ delay: 0.6 }}
                className="space-y-2 md:space-y-3"
              >
-                <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight">
-                  {project.title}
+                <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-lg mx-auto px-4">
+                  {project.summary || project.description || "당신을 위해 준비된 미지의 과제"}
                 </h4>
              </motion.div>
            )}
@@ -487,7 +487,7 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Stage 03. Depth Feedback</span>
             </div>
-            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">심층 의견 기록</h3>
+            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">종합 의견</h3>
             <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">작가를 위해 더 날카롭고 따뜻한 조언을 남겨주세요.</p>
           </div>
           
@@ -527,7 +527,7 @@ function ViewerContent() {
           </div>
           
           <div className="space-y-4">
-            <h3 className="text-4xl font-black text-chef-text uppercase tracking-tighter italic">Evaluation Complete</h3>
+            <h3 className="text-4xl font-black text-chef-text uppercase tracking-tighter italic">{project?.title || "Evaluation Complete"}</h3>
             <p className="text-chef-text opacity-60 font-bold leading-relaxed max-w-sm mx-auto">
               당신의 날카로운 시선과 정성스러운 조언이<br />
               창작자에게 가장 맛있는 성장의 밑거름이 될 것입니다.
