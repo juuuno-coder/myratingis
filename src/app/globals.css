@@ -18,8 +18,8 @@
 @layer base {
   :root {
     /* High Contrast Monochrome Light Mode */
-    --background: 0 0% 5%; /* Very dark gray/black */
-    --foreground: 0 0% 100%; /* Pure White */
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 0 0% 0%; /* Pure Black */
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
@@ -28,8 +28,8 @@
     --popover-foreground: 0 0% 0%;
 
     /* Primary: Sharp Black or Brand Orange */
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%; 
     --secondary-foreground: 0 0% 0%;
@@ -44,7 +44,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 100%; /* White Borders for dark mode */
+    --border: 0 0% 0%; /* Sharp Black Borders */
     --input: 0 0% 94%;
     --ring: 0 0% 0%;
 
@@ -426,13 +426,13 @@
   /* ============================================ */
 
   :root {
-    --chef-bg: #050505;
-    --chef-card-bg: #111111;
-    --chef-text: #FFFFFF;
-    --chef-border: rgba(255, 255, 255, 0.12);
-    --chef-frame: rgba(255, 255, 255, 0.5);
-    --chef-panel: #1a1a1a;
-    --header-bg: rgba(10, 10, 10, 0.95);
+    --chef-bg: #FFFFFF;
+    --chef-card-bg: #FFFFFF;
+    --chef-text: #000000;
+    --chef-border: #000000;
+    --chef-frame: #000000;
+    --chef-panel: #F2F2F2;
+    --header-bg: rgba(255, 255, 255, 0.95);
   }
 
   .dark {
