@@ -17,45 +17,45 @@
 
 @layer base {
   :root {
-    /* 트렌디한 Vibe 테마 (Refined & Premium Ver.) */
-    --background: 0 0% 98.4%; /* Slightly Warm White (#FAFAFA) */
-    --foreground: 24 9.8% 10%; /* Very Dark Stone (#1A1918) */
+    /* High Contrast Monochrome Light Mode */
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 0 0% 0%; /* Pure Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 24 9.8% 10%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 24 9.8% 10%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Primary: Brand Premium Orange (#E04E00) - Slightly deeper for light mode */
-    --primary: 21 100% 43.9%;
+    /* Primary: Sharp Black or Brand Orange */
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 24 5.4% 90%; 
-    --secondary-foreground: 24 9.8% 10%;
+    --secondary: 0 0% 96%; 
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 24 5.4% 94%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --muted: 0 0% 98%;
+    --muted-foreground: 0 0% 40%;
 
-    /* Accent: Sophisticated Orange (#F97316) */
+    /* Accent: Brand Orange (#F97316) */
     --accent: 24.6 95% 53.1%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 24 5.9% 90%; 
-    --input: 24 5.9% 90%;
-    --ring: 21 100% 43.9%;
+    --border: 0 0% 0%; /* Sharp Black Borders */
+    --input: 0 0% 94%;
+    --ring: 0 0% 0%;
 
-    --radius: 0.75rem;
+    --radius: 0rem; /* Hard Edges for B&W Vibe */
 
-    /* MyRatingIs 전용 변수 (Orange Theme Remastered) */
+    /* MyRatingIs 전용 변수 (High Contrast) */
     --vibe-orange: 21 100% 43.9%;
     --vibe-amber: 37.7 92.1% 50.2%;
-    --vibe-hover: 24 5.4% 96%;
+    --vibe-hover: 0 0% 0%;
 
-    --divider: 24 5.9% 90%;
+    --divider: 0 0% 0%;
   }
 
   .dark {
@@ -372,6 +372,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
+    line-clamp: 1;
     overflow: hidden;
   }
 
@@ -379,6 +380,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
     overflow: hidden;
   }
 
@@ -386,6 +388,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    line-clamp: 3;
     overflow: hidden;
   }
 
@@ -413,23 +416,23 @@
   /* ============================================ */
 
   :root {
-    --chef-bg: #FDFBFA; /* Extremely subtle warm tint */
-    --chef-card-bg: #ffffff;
-    --chef-text: #171614; /* Softer black */
-    --chef-border: rgba(23, 22, 20, 0.08);
-    --chef-frame: rgba(23, 22, 20, 0.9);
-    --chef-panel: #F5F4F0; /* Linen-like warm grey */
-    --header-bg: rgba(255, 255, 255, 0.85);
+    --chef-bg: #FFFFFF;
+    --chef-card-bg: #FFFFFF;
+    --chef-text: #000000;
+    --chef-border: #000000;
+    --chef-frame: #000000;
+    --chef-panel: #F2F2F2;
+    --header-bg: rgba(255, 255, 255, 0.95);
   }
 
   .dark {
-    --chef-bg: #050505; /* 메인과 동일하게 더 깊은 블랙 */
+    --chef-bg: #050505; 
     --chef-card-bg: #111111;
     --chef-text: #ffffff;
     --chef-border: rgba(255, 255, 255, 0.12);
     --chef-frame: rgba(255, 255, 255, 0.5);
     --chef-panel: #1a1a1a;
-    --header-bg: rgba(10, 10, 10, 0.9);
+    --header-bg: rgba(10, 10, 10, 0.95);
   }
 
   /* 배경 테마 적용 */
@@ -461,14 +464,14 @@
     background: var(--header-bg) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--chef-border);
+    border-bottom: 2px solid var(--chef-border);
   }
 
   /* 강한 대비 패널 */
   .chef-black-panel {
     background: var(--chef-card-bg);
     color: var(--chef-text);
-    border: 1px solid var(--chef-border);
+    border: 2px solid var(--chef-border);
   }
 
   /* 입력 필드 시인성 개선 */

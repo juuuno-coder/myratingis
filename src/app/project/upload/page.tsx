@@ -229,7 +229,7 @@ export default function ProjectUploadPage() {
                 auditType === t ? "bg-chef-text text-chef-bg" : "bg-chef-bg text-chef-text opacity-40 hover:opacity-100"
               )}
             >
-              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지" : t === 'video' ? "유튜브" : "문서(PDF/HWP)"}
+              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지" : t === 'video' ? "유튜브" : "문서(PDF/HWP/DOC)"}
             </button>
           ))}
         </div>
@@ -266,7 +266,7 @@ export default function ProjectUploadPage() {
                    <input 
                      type="file" 
                      multiple 
-                     accept={auditType === 'image' ? "image/*" : ".pdf,.hwp"} 
+                     accept={auditType === 'image' ? "image/*" : ".pdf,.hwp,.doc,.docx"} 
                      className="hidden" 
                      onChange={async e => {
                        if (e.target.files) {
@@ -284,7 +284,7 @@ export default function ProjectUploadPage() {
                  </label>
                </div>
                {auditType === 'document' && (
-                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest px-2">* PDF와 HWP 파일만 지원합니다.</p>
+                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest px-2">* PDF, HWP, DOC 파일만 지원합니다.</p>
                )}
              </div>
           ) : (

@@ -35,7 +35,8 @@ import {
 import { AlertCircle } from 'lucide-react';
 
 // --- Review Intro Component (Overlay) ---
-function ReviewIntro({ onStart }: { onStart: () => void }) {
+// --- Review Intro Component (Overlay) ---
+function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }) {
   return (
     <div className="absolute inset-x-0 bottom-0 top-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -47,7 +48,7 @@ function ReviewIntro({ onStart }: { onStart: () => void }) {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse delay-1000" />
 
-      <main className="relative z-10 w-full max-w-lg mx-auto px-6 flex flex-col items-center text-center space-y-10">
+      <main className="relative z-10 w-full max-w-lg mx-auto px-6 flex flex-col items-center text-center space-y-6 md:space-y-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -56,7 +57,7 @@ function ReviewIntro({ onStart }: { onStart: () => void }) {
           <img 
             src="/logo-white.png" 
             alt="제 평가는요?" 
-            className="h-16 md:h-20 w-auto object-contain"
+            className="h-10 md:h-20 w-auto object-contain"
           />
         </motion.div>
 
@@ -67,46 +68,73 @@ function ReviewIntro({ onStart }: { onStart: () => void }) {
           className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
         >
           <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Professional Evaluation
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
+            Professional Evaluation Stage
           </span>
         </motion.div>
 
-        {/* Clickable Cloche area to start */}
-        <motion.div
-          onClick={onStart}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 1, delay: 0.3, type: "spring" }}
-          className="relative w-64 h-64 cursor-pointer group"
-        >
-          <img 
-            src="/review/cloche-cover.png" 
-            alt="Start Review" 
-            className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110"
-          />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-             <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">Click to Open</span>
-          </div>
-        </motion.div>
+        {/* Project Context & Cloche */}
+        <div className="w-full space-y-8 flex flex-col items-center">
+           <motion.div
+             onClick={onStart}
+             initial={{ opacity: 0, scale: 0.8 }}
+             animate={{ opacity: 1, scale: 1 }}
+             whileHover={{ scale: 1.05 }}
+             transition={{ duration: 1, delay: 0.3, type: "spring" }}
+             className="relative w-72 h-72 md:w-64 md:h-64 cursor-pointer group"
+           >
+             <img 
+               src="/review/cloche-cover.png" 
+               alt="Start Review" 
+               className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110"
+             />
+             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">Click to Open</span>
+             </div>
+           </motion.div>
+
+           {/* Project Identity */}
+           {project && (
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               transition={{ delay: 0.5 }}
+               className="space-y-2 md:space-y-3"
+             >
+                <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight">
+                  {project.title}
+                </h4>
+                <p className="text-orange-500 text-xs md:text-sm font-black uppercase tracking-widest max-w-xs mx-auto opacity-80 break-keep">
+                   Chef's One-liner: "{project.summary || project.description || "No description provided."}"
+                </p>
+             </motion.div>
+           )}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="w-full"
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="w-full space-y-6"
         >
+          <div className="space-y-4">
+             <p className="text-sm md:text-lg text-white font-bold leading-relaxed break-keep">
+                당신은 오늘, 이 창작물의 운명을 결정할<br />
+                <span className="text-orange-500 underline underline-offset-8 decoration-2">전문 심사위원</span>으로 초대되었습니다.
+             </p>
+             <p className="text-[10px] md:text-xs text-white/40 font-medium leading-relaxed max-w-[280px] md:max-w-none mx-auto break-keep">
+                냉철하고 객관적인 심미안으로 창작자의 성장을 위해<br />
+                진정성 있는 최고의 평가를 남겨주시겠습니까?
+             </p>
+          </div>
+
           <Button
             onClick={onStart}
-            className="w-full h-16 bg-orange-600 hover:bg-orange-500 text-white text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none"
+            className="w-full h-16 md:h-20 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-2xl font-black shadow-[0_20px_60px_-15px_rgba(234,88,12,0.6)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 bevel-cta border-none rounded-none"
           >
-            <ChefHat className="w-6 h-6" />
-            평가 시작하기
+            <ChefHat className="w-6 h-6 md:w-8 md:h-8" />
+            평가 시작
           </Button>
-          <p className="mt-6 text-white/40 text-xs font-medium leading-relaxed">
-            냉철한 시선과 집요한 디테일로<br />창작자에게 성장의 기회를 선물해주세요.
-          </p>
         </motion.div>
       </main>
     </div>
@@ -530,7 +558,7 @@ function ViewerContent() {
               exit={{ opacity: 0, y: -20, transition: { duration: 0.5 } }} 
               className="absolute inset-0 z-50"
             >
-              <ReviewIntro onStart={handleStartReview} />
+              <ReviewIntro onStart={handleStartReview} project={project} />
             </motion.div>
           )}
         </AnimatePresence>

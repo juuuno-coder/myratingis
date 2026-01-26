@@ -92,7 +92,7 @@ export default function SignupPage() {
         </div>
 
         <div className="w-full max-w-md relative z-10">
-          <div className="bevel-border bevel-section p-10 bg-black/40 backdrop-blur-2xl">
+          <div className="bevel-border bevel-section p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]">
             {/* 로고 영역 */}
             <div className="flex justify-center mb-10">
               <Image
@@ -105,7 +105,7 @@ export default function SignupPage() {
             </div>
 
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
+              <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
                 Register as Chef
               </h2>
               <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
@@ -122,7 +122,7 @@ export default function SignupPage() {
               onClick={handleGoogleSignup}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 bg-white/5 border border-white/10 text-white hover:bg-white/10 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8"
+              className="w-full h-14 bg-transparent border-2 border-chef-border text-chef-text hover:bg-chef-panel bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8"
             >
               <FcGoogle className="h-4 w-4 mr-3" />
               Join with Google
@@ -133,14 +133,14 @@ export default function SignupPage() {
                 <div className="w-full border-t border-white/5" />
               </div>
               <div className="relative flex justify-center text-[8px] font-black uppercase tracking-[0.4em]">
-                <span className="bg-[#0a0a0a] px-4 text-white/20">OR CREATE CHEF ID</span>
+                <span className="bg-chef-card px-4 text-chef-text opacity-20">OR CREATE CHEF ID</span>
               </div>
             </div>
 
             <form className="space-y-5" onSubmit={handleEmailSignup}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                  <label htmlFor="email" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
                     Email Identity
                   </label>
                   <input
@@ -150,13 +150,13 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" name="password" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                  <label htmlFor="password" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
                     Security Key
                   </label>
                   <input
@@ -166,13 +166,13 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password-confirm" className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-1">
+                  <label htmlFor="password-confirm" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
                     Confirm Key
                   </label>
                   <input
@@ -182,7 +182,7 @@ export default function SignupPage() {
                     value={passwordConfirm}
                     onChange={(e) => setPasswordConfirm(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-white/5 border border-white/10 text-white font-bold px-6 bevel-sm focus:border-orange-500 focus:bg-white/10 outline-none transition-all placeholder:text-white/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
@@ -198,17 +198,17 @@ export default function SignupPage() {
             </form>
 
             <div className="mt-10 text-center space-y-4">
-              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest leading-relaxed">
+              <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest leading-relaxed">
                 Already a Chef?{" "}
                 <Link
                   href="/login"
-                  className="text-white hover:text-orange-500 underline underline-offset-4 ml-2"
+                  className="text-chef-text hover:text-orange-500 underline underline-offset-4 ml-2"
                 >
                   Enter Studio
                 </Link>
               </p>
               
-              <p className="text-[8px] font-black text-white/10 uppercase tracking-widest leading-loose max-w-[200px] mx-auto">
+              <p className="text-[8px] font-black text-chef-text opacity-10 uppercase tracking-widest leading-loose max-w-[200px] mx-auto">
                 By joining, you agree to our{" "}
                 <Link href="/policy/terms" className="underline">Terms</Link> &{" "}
                 <Link href="/policy/privacy" className="underline">Privacy Policy</Link>
