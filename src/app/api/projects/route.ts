@@ -412,7 +412,9 @@ export async function POST(request: NextRequest) {
         alt_description,
         thumbnail_url, 
         rendering_type: rendering_type || 'rich_text', 
-        custom_data: finalCustomData, // Send as object, not stringified
+        custom_data: finalCustomData,
+        site_url: finalCustomData?.audit_config?.mediaA || '', // DB 표에서 바로 보이게 추가
+        media_type: finalCustomData?.audit_config?.type || 'link', // DB 표에서 바로 보이게 추가
         allow_michelin_rating: allow_michelin_rating ?? true, 
         allow_stickers: allow_stickers ?? true, 
         allow_secret_comments: allow_secret_comments ?? true,

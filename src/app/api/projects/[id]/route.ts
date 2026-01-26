@@ -261,7 +261,11 @@ export async function PUT(
     if (thumbnail_url !== undefined) updatePayload.thumbnail_url = thumbnail_url;
     if (category_id !== undefined) updatePayload.category_id = category_id;
     if (rendering_type !== undefined) updatePayload.rendering_type = rendering_type;
-    if (finalCustomData !== undefined) updatePayload.custom_data = finalCustomData; // 병합된 결과 적용
+    if (finalCustomData !== undefined) {
+        updatePayload.custom_data = finalCustomData; // 병합된 결과 적용
+        updatePayload.site_url = finalCustomData?.audit_config?.mediaA || ''; // 컬럼 동기화
+        updatePayload.media_type = finalCustomData?.audit_config?.type || 'link'; // 컬럼 동기화
+    }
     
     if (allow_michelin_rating !== undefined) updatePayload.allow_michelin_rating = allow_michelin_rating;
     if (allow_stickers !== undefined) updatePayload.allow_stickers = allow_stickers;

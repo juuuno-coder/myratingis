@@ -298,22 +298,14 @@ function ViewerContent() {
     
     const cData = proj.custom_data || {};
     
-    // 1. Priority Fields from custom_data
-    const candidates = [
-        cData.audit_config?.mediaA,
-        cData.site_url,
-        cData.preview_url,
-        proj.primary_url, 
-        proj.url, 
-        proj.preview_url, 
-        proj.site_url
-    ];
-
-    for (const urlCandidate of candidates) {
-        if (urlCandidate && typeof urlCandidate === 'string' && urlCandidate.trim() && urlCandidate.includes('.')) {
-            return urlCandidate.trim();
-        }
+    // 1. Explicit DB Columns (Highest Priority)
+    if (proj.site_url && typeof proj.site_url === 'string' && proj.site_url.trim()) {
+        return proj.site_url.trim();
     }
+    
+    // 2. Audit Config specific field
+    const auditA = cData.audit_config?.mediaA;
+    if (auditA && typeof auditA === 'string' && auditA.trim()) return auditA.trim();
     
     // 2. Deep Regex Search in all text content (Improved for co.kr etc)
     const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
