@@ -456,6 +456,7 @@
   .text-chef-text { color: var(--chef-text); }
   .bg-chef-bg { background-color: var(--chef-bg); }
   .bg-chef-card { background-color: var(--chef-card-bg); }
+  .bg-chef-panel { background-color: var(--chef-panel); }
   .border-chef-border { border-color: var(--chef-border); }
 
   .dark .chef-bg-dark {
@@ -487,8 +488,9 @@
   /* 입력 필드 시인성 개선 */
   .chef-input-high-v {
     color: var(--chef-text) !important;
-    font-weight: 700 !important;
+    font-weight: 500 !important;
     background-color: var(--chef-panel) !important;
+    border: 1px solid var(--chef-border) !important;
     transition: all 0.2s ease;
   }
 
