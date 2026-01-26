@@ -22,27 +22,25 @@ import { ChefHat } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
-import { OnboardingModal } from "@/components/OnboardingModal"; // Import 추가
+import { OnboardingModal } from "@/components/OnboardingModal";
 
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, userProfile, loading: authLoading } = useAuth(); // loading, userProfile 받아오기
+  const { user, userProfile, loading: authLoading } = useAuth();
   
   const mode = searchParams.get('mode') || 'audit'; 
   
   const [auditStep, setAuditStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false); // 온보딩 상태 추가
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // 로딩이 끝났고, 유저는 있는데 프로필이 없으면 온보딩 실행
     if (!authLoading && user && !userProfile) {
       setShowOnboarding(true);
     }
   }, [authLoading, user, userProfile]);
 
-  // --- State ---
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {
@@ -86,7 +84,6 @@ export default function ProjectUploadPage() {
   const [pollDesc, setPollDesc] = useState("[몰입형] 현업 전문가의 리얼한 반응");
   const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
 
-  // --- Handlers ---
   const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {
     setSelectedPreset(preset);
     setPollOptions(STICKER_PRESETS[preset]);
@@ -154,12 +151,11 @@ export default function ProjectUploadPage() {
     }
   };
 
-  // --- Render Steps ---
   const renderStep1 = () => (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-12">
       <section className="space-y-6">
         <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-4 py-1">
-          <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">? 제 평가는요? 의뢰 정보</h3>
+          <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">평가 의뢰 정보</h3>
         </div>
         
         <div className="space-y-4">
@@ -225,7 +221,7 @@ export default function ProjectUploadPage() {
                         <div className="w-32 h-32 bevel-sm bg-chef-card border border-chef-border flex flex-col items-center justify-center p-2 text-center">
                            <div className="text-2xl mb-1">📄</div>
                            <span className="text-[10px] font-black text-chef-text opacity-50 truncate w-full px-1">
-                              {file.split('/').pop().split('?')[0] || "document.pdf"}
+                              {(file?.split('/')?.pop()?.split('?')?.[0]) || "document.pdf"}
                            </span>
                         </div>
                      )}
@@ -480,20 +476,26 @@ export default function ProjectUploadPage() {
         </p>
         <div className="space-y-4">
           {auditQuestions.map((q, idx) => (
-            <div key={idx} className="flex gap-4 group items-center">
-              <div className="shrink-0 w-16 h-16 bg-chef-text text-chef-bg font-black text-xl flex items-center justify-center bevel-cta">Q{idx+1}</div>
-              <div className="flex-1 relative">
-                <input value={q} onChange={e => {
-                   const next = [...auditQuestions];
-                   next[idx] = e.target.value;
-                   setAuditQuestions(next);
-                }} className="w-full h-16 bg-white/5 border border-chef-border focus:border-orange-500 text-chef-text font-black text-lg px-8 bevel-cta placeholder:text-chef-text/10 outline-none transition-all chef-input-high-v" placeholder="창작자에게 묻고 싶은 질문을 입력하세요." />
+            <div key={idx} className="flex flex-col gap-3 group p-8 bg-chef-panel bevel-section border border-chef-border relative">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] italic">Deep Questionnaire {idx+1}</span>
                 {auditQuestions.length > 1 && (
-                  <button onClick={() => setAuditQuestions(auditQuestions.filter((_, i) => i !== idx))} className="absolute right-6 top-1/2 -translate-y-1/2 text-chef-text opacity-20 hover:text-red-400 hover:opacity-100 transition-all">
-                    <FontAwesomeIcon icon={faTrash} />
+                  <button onClick={() => setAuditQuestions(auditQuestions.filter((_, i) => i !== idx))} className="text-chef-text opacity-20 hover:text-red-400 hover:opacity-100 transition-all p-1">
+                    <FontAwesomeIcon icon={faTrash} size="sm" />
                   </button>
                 )}
               </div>
+              <textarea 
+                value={q} 
+                onChange={e => {
+                   const next = [...auditQuestions];
+                   next[idx] = e.target.value;
+                   setAuditQuestions(next);
+                }} 
+                className="w-full min-h-[100px] bg-white/5 border border-chef-border focus:border-orange-500 text-chef-text font-black text-lg p-6 bevel-cta placeholder:text-chef-text/5 outline-none transition-all chef-input-high-v resize-none leading-relaxed" 
+                placeholder="창작자에게 묻고 싶은 질문을 입력하세요." 
+                rows={3}
+              />
             </div>
           ))}
           <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-16 bevel-cta border border-dashed border-chef-border text-chef-text opacity-20 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 font-black uppercase tracking-widest transition-all">
@@ -520,7 +522,7 @@ export default function ProjectUploadPage() {
          <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-4">
                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-               <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">Audit Request Lab</span>
+               <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">Evaluation Request Lab</span>
             </div>
             <div className="flex items-center gap-3">
                {[1, 2, 3, 4].map(s => (

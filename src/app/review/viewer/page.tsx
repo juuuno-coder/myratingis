@@ -11,7 +11,9 @@ import {
   X,
   Star as StarIcon,
   ChefHat,
-  Star
+  Star,
+  Eye,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -125,6 +127,7 @@ function ViewerContent() {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   
   // Review State
   const [currentStep, setCurrentStep] = useState(0); 
@@ -532,8 +535,8 @@ function ViewerContent() {
           )}
         </AnimatePresence>
 
-      {/* Left Area: Project Preview */}
-      <div className="flex-1 relative flex flex-col min-w-0 h-full border-r border-chef-border bg-[#0f0f0f]">
+      {/* Left Area: Project Preview (Hidden on Mobile) */}
+      <div className="hidden md:flex flex-col flex-1 relative min-w-0 h-full border-r border-chef-border bg-[#0f0f0f]">
         {/* Top Header for Control */}
         <div className="h-16 bg-chef-card border-b border-chef-border px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
@@ -579,8 +582,8 @@ function ViewerContent() {
 
       {/* Right Area: Evaluation Panel */}
       <div 
-        className="fixed bottom-0 right-0 top-0 md:relative z-20 bg-chef-card flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.2)] dark:shadow-[-40px_0_80px_rgba(0,0,0,0.5)] h-[60vh] md:h-full w-full border-l border-chef-border transition-colors duration-500"
-        style={{ width: (typeof window !== 'undefined' && window.innerWidth > 768) ? panelWidth : '100%', minWidth: '400px' }}
+        className="fixed inset-0 md:relative z-20 bg-chef-card flex flex-col h-full w-full md:border-l border-chef-border transition-colors duration-500"
+        style={{ width: (typeof window !== 'undefined' && window.innerWidth > 768) ? panelWidth : '100%', minWidth: (typeof window !== 'undefined' && window.innerWidth > 768) ? '400px' : 'auto' }}
       >
         {/* Resize Handle (Draggable Bar) */}
         <div 
@@ -599,13 +602,32 @@ function ViewerContent() {
 
         {/* Panel Header */}
         <div className="border-b border-chef-border shrink-0 bg-chef-card relative z-10">
+          {/* Mobile Content Control Bar */}
+          <div className="md:hidden flex items-center justify-between p-4 bg-chef-panel border-b border-chef-border">
+             <div className="flex items-center gap-4">
+                <Button 
+                  onClick={() => setIsMobileModalOpen(true)}
+                  className="h-12 px-4 bg-orange-600 text-white font-black text-xs uppercase tracking-widest flex items-center gap-2 bevel-cta"
+                >
+                  <Eye size={16} /> 콘텐츠 보기
+                </Button>
+                <button 
+                  onClick={() => window.open(finalDisplayUrl || '', '_blank')}
+                  className="text-chef-text opacity-40 hover:opacity-100 transition-all flex items-center gap-1.5"
+                >
+                   <ExternalLink size={14} /> <span className="text-[10px] font-black uppercase tracking-widest">새창</span>
+                </button>
+             </div>
+             <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
+          </div>
+
           <div className="p-6 md:px-8 md:pt-8 md:pb-4 flex items-center justify-between">
             <div>
               <h3 className="text-xl md:text-2xl font-black text-chef-text uppercase tracking-tighter italic flex items-center gap-2">
                  <ChefHat className="text-orange-500 w-6 h-6" /> 제 평가는요?
               </h3>
             </div>
-            <button onClick={() => router.back()} className="text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
+            <button onClick={() => router.back()} className="hidden md:block text-chef-text opacity-20 hover:opacity-100 transition-all"><X size={20} /></button>
           </div>
           
           {/* Progress Indicator */}
@@ -698,6 +720,36 @@ function ViewerContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Content Modal */}
+      <AnimatePresence>
+        {isMobileModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 z-[100] bg-black md:hidden pointer-events-auto"
+          >
+             <div className="relative h-full w-full flex flex-col">
+                <div className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-white/10 bg-chef-card">
+                   <div className="flex items-center gap-2">
+                      <Eye className="text-orange-500 w-4 h-4" />
+                      <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest italic">Content View</span>
+                   </div>
+                   <button 
+                     onClick={() => setIsMobileModalOpen(false)}
+                     className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white active:scale-95 transition-transform"
+                   >
+                     <X size={20} />
+                   </button>
+                </div>
+                <div className="flex-1 overflow-hidden bg-white">
+                   <MediaPreview type={auditType as any} data={mediaData} />
+                </div>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
