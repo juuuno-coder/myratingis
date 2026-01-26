@@ -112,6 +112,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://vibefolio.com" />
@@ -125,7 +126,7 @@ export default function RootLayout({
         )}
       </head>
       <body
-        className={`${poppins.variable} ${notoSansKr.variable} font-sans antialiased min-h-screen custom-scrollbar overscroll-none`}
+        className={`${poppins.variable} ${notoSansKr.variable} font-pretendard antialiased min-h-screen custom-scrollbar overscroll-none`}
       >
         <Script
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"

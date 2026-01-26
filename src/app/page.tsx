@@ -15,11 +15,11 @@ export default function Home() {
 
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
+    <div className="relative min-h-screen bg-chef-bg text-chef-text overflow-hidden flex flex-col items-center justify-center pt-[60px] transition-colors duration-500">
       {/* Background Texture / Gradient */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
+        <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-5 md:opacity-10 mix-blend-overlay dark:opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-chef-bg/80 to-chef-bg" />
       </div>
 
       {/* Floating Elements (Aceternity UI Style) */}
@@ -59,7 +59,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-sm md:text-lg lg:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed px-4"
+          className="text-sm md:text-lg lg:text-xl text-chef-text opacity-60 font-medium max-w-2xl mx-auto leading-relaxed px-4 break-keep"
         >
           당신의 프로젝트/MVP를 미슐랭 스타급으로 평가해 보세요.<br />
           냉철한 시선과 집요한 디테일, 당신의 성장을 위한 마침표.
@@ -107,7 +107,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 pt-8"
+          className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-chef-text opacity-20 pt-8"
         >
           <Link href="/about/features" className="hover:text-orange-500 transition-colors">Platform Features</Link>
           <Link href="/faq" className="hover:text-orange-500 transition-colors">User Support & FAQ</Link>
@@ -117,7 +117,7 @@ export default function Home() {
       </main>
 
       {/* Footer Hint */}
-      <footer className="relative z-10 py-12 text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">
+      <footer className="relative z-10 py-12 text-chef-text opacity-20 text-[10px] font-black uppercase tracking-[0.3em]">
         © 2026 MyRatingIs. All Rights Reserved.
       </footer>
     </div>

@@ -50,27 +50,27 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
 
       <main className="relative z-10 w-full max-w-lg mx-auto px-6 flex flex-col items-center text-center space-y-6 md:space-y-10">
         <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-2"
+        >
+          <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
+            Professional Evaluation Stage
+          </span>
+        </motion.div>
+
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
           <img 
             src="/logo-white.png" 
             alt="제 평가는요?" 
             className="h-10 md:h-20 w-auto object-contain"
           />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
-        >
-          <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Professional Evaluation Stage
-          </span>
         </motion.div>
 
         <motion.div
@@ -464,8 +464,8 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Stage 02. Sticker Decision</span>
             </div>
-            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">최종 판정 투표</h3>
-            <p className="text-sm text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "이 프로젝트에 대한 당신의 최종 선택은?"}</p>
+            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">판정 투표</h3>
+            <p className="text-sm text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "현업 마스터의 냉정한 피드백"}</p>
           </div>
           
           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">

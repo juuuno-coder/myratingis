@@ -95,7 +95,7 @@ export default function ProjectUploadPage() {
 
   const [selectedPreset, setSelectedPreset] = useState<'professional' | 'michelin' | 'mz'>('professional');
   const [pollOptions, setPollOptions] = useState<any[]>(STICKER_PRESETS.professional);
-  const [pollDesc, setPollDesc] = useState("[몰입형] 현업 전문가의 리얼한 반응");
+  const [pollDesc, setPollDesc] = useState("현업 마스터의 냉정한 피드백");
   const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
 
   const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {

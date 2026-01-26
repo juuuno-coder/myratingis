@@ -113,10 +113,12 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
     if (validDocs.length === 0) return <Placeholder text="No Documents" />;
     
     const docUrl = ensureProtocol(validDocs[activeIdx]);
-    const isPdf = docUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+    const lowerDocUrl = docUrl.toLowerCase().split('?')[0];
+    const isPdf = lowerDocUrl.endsWith('.pdf');
+    const isDoc = lowerDocUrl.endsWith('.doc') || lowerDocUrl.endsWith('.docx');
     
-    // HWP files often need a specialized viewer. Google Docs viewer is a common choice.
-    const viewerUrl = isPdf ? docUrl : `https://docs.google.com/viewer?url=${encodeURIComponent(docUrl)}&embedded=true`;
+    // HWP, DOC, DOCX files often need a specialized viewer. Google Docs viewer is a common choice.
+    const viewerUrl = (isPdf) ? docUrl : `https://docs.google.com/viewer?url=${encodeURIComponent(docUrl)}&embedded=true`;
 
     return (
       <div className="w-full h-full bg-white flex flex-col">
@@ -158,7 +160,7 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
 
 function Placeholder({ text }: { text: string }) {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-black text-xl uppercase tracking-tighter">
+    <div className="w-full h-full flex items-center justify-center bg-chef-panel text-chef-text opacity-20 font-black text-xl uppercase tracking-tighter italic">
       {text}
     </div>
   );
