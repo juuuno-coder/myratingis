@@ -454,13 +454,13 @@ export default function MyPage() {
   }
 
   const tabs = [
-    { id: 'projects' as TabType, label: '나의 요리', icon: Grid, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    { id: 'audit_requests' as TabType, label: '평가 의뢰함', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
-    { id: 'likes' as TabType, label: '찜해둔 메뉴', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
-    { id: 'collections' as TabType, label: '시리즈 레시피', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
-    { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    { id: 'comments' as TabType, label: '내가 남긴 한 마디', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    ...(isAdmin ? [{ id: 'dashboard' as TabType, label: '성과 대시보드', icon: BarChart, color: 'text-orange-600', bgColor: 'bg-orange-600' }] : []),
+    { id: 'projects' as TabType, label: '나의 키친', icon: ChefHat, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'audit_requests' as TabType, label: '의뢰 현황', icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-600' },
+    { id: 'comments' as TabType, label: '참여한 평가', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'likes' as TabType, label: '관심 요리', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
+    { id: 'collections' as TabType, label: '스크랩북', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
+    { id: 'proposals' as TabType, label: '비즈니스 제안', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    ...(isAdmin ? [{ id: 'dashboard' as TabType, label: '성과 리포트', icon: BarChart, color: 'text-orange-600', bgColor: 'bg-orange-600' }] : []),
     { id: 'settings' as TabType, label: '셰프 설정', icon: Settings, color: 'text-chef-text', bgColor: 'bg-chef-text' },
   ];
 
@@ -582,8 +582,8 @@ export default function MyPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-24 bg-chef-card rounded-[2.5rem] border border-dashed border-chef-border">
                     <ChefHat className="w-16 h-16 text-chef-text opacity-10 mb-4" />
-                    <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">{activeTab === 'audit_requests' ? 'NO AUDIT REQUESTS' : 'NO PROJECTS'}</h3>
-                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-6 font-black uppercase tracking-widest text-xs">GO AUDIT</Button>
+                    <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">{activeTab === 'audit_requests' ? '진행 중인 의뢰가 없습니다' : '등록된 프로젝트가 없습니다'}</h3>
+                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-6 font-black uppercase tracking-widest text-xs">의뢰하러 가기</Button>
                   </div>
                 )}
               </div>
@@ -599,9 +599,9 @@ export default function MyPage() {
                 <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
                   {activeTab === 'likes' ? <Heart className="w-16 h-16 text-chef-text opacity-10 mb-4" /> : <Folder className="w-16 h-16 text-chef-text opacity-10 mb-4" />}
                   <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">
-                    {activeTab === 'likes' ? 'NO LIKED ITEMS' : 'COLLECTION EMPTY'}
+                    {activeTab === 'likes' ? '찜해둔 요리가 없습니다' : '스크랩북이 비어 있습니다'}
                   </h3>
-                  <Button onClick={() => router.push('/projects')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-12 mt-6 font-black uppercase tracking-widest text-[10px]">Explore More</Button>
+                  <Button onClick={() => router.push('/projects')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-12 mt-6 font-black uppercase tracking-widest text-[10px]">요리 탐색하기</Button>
                 </div>
               )
             )}
@@ -617,7 +617,7 @@ export default function MyPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
                   <Send className="w-16 h-16 text-chef-text opacity-10 mb-4" />
-                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">NO PROPOSALS</h3>
+                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">받은 제안이 없습니다</h3>
                 </div>
               )
             )}
@@ -648,7 +648,7 @@ export default function MyPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
                   <MessageCircle className="w-16 h-16 text-chef-text opacity-10 mb-4" />
-                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">NO COMMENTS</h3>
+                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">남긴 평가가 없습니다</h3>
                 </div>
               )
             )}
