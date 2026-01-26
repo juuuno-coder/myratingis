@@ -73,14 +73,30 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
           </span>
         </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, scale: 1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-4"
+        >
+             <p className="text-sm md:text-xl text-white font-bold leading-relaxed break-keep">
+                당신은 오늘, 이 창작물의 운명을 결정할<br />
+                전문 심사위원으로 초대되었습니다.
+             </p>
+             <p className="text-[10px] md:text-xs text-white/40 font-medium leading-relaxed max-w-[280px] md:max-w-none mx-auto break-keep">
+                냉철하고 객관적인 심미안으로 창작자의 성장을 위해<br />
+                진정성 있는 최고의 평가를 남겨주시겠습니까?
+             </p>
+        </motion.div>
+
         {/* Project Context & Cloche */}
-        <div className="w-full space-y-8 flex flex-col items-center">
+        <div className="w-full space-y-6 md:space-y-8 flex flex-col items-center">
            <motion.div
              onClick={onStart}
              initial={{ opacity: 0, scale: 0.8 }}
              animate={{ opacity: 1, scale: 1 }}
              whileHover={{ scale: 1.05 }}
-             transition={{ duration: 1, delay: 0.3, type: "spring" }}
+             transition={{ duration: 1, delay: 0.4, type: "spring" }}
              className="relative w-72 h-72 md:w-64 md:h-64 cursor-pointer group"
            >
              <img 
@@ -98,13 +114,12 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
              <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
-               transition={{ delay: 0.5 }}
+               transition={{ delay: 0.6 }}
                className="space-y-2 md:space-y-3"
              >
                 <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight">
                   {project.title}
                 </h4>
-
              </motion.div>
            )}
         </div>
@@ -112,20 +127,9 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="w-full space-y-6"
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="w-full"
         >
-          <div className="space-y-4">
-             <p className="text-sm md:text-lg text-white font-bold leading-relaxed break-keep">
-                당신은 오늘, 이 창작물의 운명을 결정할<br />
-                <span className="text-orange-500 underline underline-offset-8 decoration-2">전문 심사위원</span>으로 초대되었습니다.
-             </p>
-             <p className="text-[10px] md:text-xs text-white/40 font-medium leading-relaxed max-w-[280px] md:max-w-none mx-auto break-keep">
-                냉철하고 객관적인 심미안으로 창작자의 성장을 위해<br />
-                진정성 있는 최고의 평가를 남겨주시겠습니까?
-             </p>
-          </div>
-
           <Button
             onClick={onStart}
             className="w-full h-16 md:h-20 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-2xl font-black shadow-[0_20px_60px_-15px_rgba(234,88,12,0.6)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 bevel-cta border-none rounded-none"
