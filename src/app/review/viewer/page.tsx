@@ -22,6 +22,15 @@ import { MediaPreview } from '@/components/Review/MediaPreview';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 import { MichelinRating, MichelinRatingRef } from '@/components/MichelinRating';
 import { FeedbackPoll, FeedbackPollRef } from '@/components/FeedbackPoll';
+import { 
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  } from "@/components/ui/dialog";
+import { AlertCircle } from 'lucide-react';
 
 // --- Review Intro Component (Overlay) ---
 function ReviewIntro({ onStart }: { onStart: () => void }) {
@@ -57,7 +66,7 @@ function ReviewIntro({ onStart }: { onStart: () => void }) {
         >
           <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Professional Audit
+            Professional Evaluation
           </span>
         </motion.div>
 
@@ -130,6 +139,19 @@ function ViewerContent() {
   const michelinRef = React.useRef<MichelinRatingRef>(null);
   const pollRef = React.useRef<FeedbackPollRef>(null);
 
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+      isOpen: boolean;
+      title: string;
+      description: string;
+      onConfirm: () => void;
+  }>({
+      isOpen: false,
+      title: "",
+      description: "",
+      onConfirm: () => {},
+  });
+
   useEffect(() => {
     const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
     if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
@@ -176,14 +198,13 @@ function ViewerContent() {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-        toast.error("진단에 참여하려면 로그인이 필요합니다.", {
-            description: "로그인 후 당신의 소중한 의견을 들려주세요!",
+        toast.info("게스트 모드로 평가를 시작합니다.", {
+            description: "로그인 후 참여하시면 포인트를 획득할 수 있습니다.",
             action: {
-                label: "로그인하러 가기",
+                label: "로그인/가입",
                 onClick: () => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)
             }
         });
-        return;
     }
     
     setShowIntro(false);
@@ -211,16 +232,66 @@ function ViewerContent() {
   }, [isResizing]);
 
   const handleNextStep = async () => {
-    // Stage 1: Michelin Rating Save
-    if (currentStep === 0 && michelinRef.current) {
-        const success = await michelinRef.current.submit();
-        if (!success) return; 
+    // Stage 1: Michelin Rating Validation
+    if (currentStep === 0) {
+        if (!michelinRef.current?.isValid()) return;
+        
+        setConfirmModal({
+            isOpen: true,
+            title: "평가 점수를 확정하시겠습니까?",
+            description: "설정한 모든 항목의 평점이 기록됩니다. 다음 단계로 넘어가시겠습니까?",
+            onConfirm: async () => {
+                const success = await michelinRef.current?.submit();
+                if (success) {
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    setCurrentStep(1);
+                }
+            }
+        });
+        return;
     }
     
-    // Stage 2: Voting/Poll Save
-    if (currentStep === 1 && pollRef.current) {
-        const success = await pollRef.current.submit();
-        if (!success) return;
+    // Stage 2: Voting/Poll Validation
+    if (currentStep === 1) {
+        if (!pollRef.current?.isValid()) return;
+        
+        setConfirmModal({
+            isOpen: true,
+            title: "피드백 투표를 확정하시겠습니까?",
+            description: "선택하신 옵션이 최종 결과에 반영됩니다. 다음 단계로 넘어가시겠습니까?",
+            onConfirm: async () => {
+                const success = await pollRef.current?.submit();
+                if (success) {
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    setCurrentStep(2);
+                }
+            }
+        });
+        return;
+    }
+
+    // Stage 3: Subjective Questions Validation
+    if (currentStep === 2) {
+        const questions = project?.custom_data?.audit_config?.questions || [];
+        const allAnswered = questions.every((q: string) => customAnswers[q]?.trim().length > 0);
+        
+        if (!allAnswered && questions.length > 0) {
+            toast.error("아직 작성하지 않은 의견이 있습니다.", {
+                description: "작가를 위해 모든 질문에 답변을 남겨주세요!"
+            });
+            return;
+        }
+
+        setConfirmModal({
+            isOpen: true,
+            title: "최종 평가를 제출하시겠습니까?",
+            description: "작성하신 모든 내용이 기록되며, 이후 수정이 불가능할 수 있습니다. 제출하시겠습니까?",
+            onConfirm: () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                handleFinalSubmit();
+            }
+        });
+        return;
     }
     
     if (currentStep < steps.length - 2) { 
@@ -293,59 +364,38 @@ function ViewerContent() {
     ? JSON.parse(project.custom_data) 
     : (project?.custom_data || {});
 
-  const extractUrl = (proj: any) => {
-    if (!proj) return '';
-    
-    const cData = proj.custom_data || {};
-    
-    // 1. Explicit DB Columns (Highest Priority)
-    if (proj.site_url && typeof proj.site_url === 'string' && proj.site_url.trim()) {
-        return proj.site_url.trim();
-    }
-    
-    // 2. Audit Config specific field
-    const auditA = cData.audit_config?.mediaA;
-    if (auditA && typeof auditA === 'string' && auditA.trim()) return auditA.trim();
-    
-    // 2. Deep Regex Search in all text content (Improved for co.kr etc)
-    const urlRegex = /(https?:\/\/[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-    const contentPool = [
-        proj.content_text,
-        proj.description,
-        proj.summary,
-        proj.title,
-        ...(Array.isArray(proj.assets) ? proj.assets.map((a:any) => typeof a === 'string' ? a : a.url) : [])
-    ];
-
-    for (const text of contentPool) {
-        if (typeof text === 'string' && text.trim()) {
-            const matches = text.match(urlRegex);
-            if (matches && matches.length > 0) {
-                // Return the longest match that looks like a domain to be safe
-                const sorted = [...matches].sort((a,b) => b.length - a.length);
-                const found = sorted.find(m => m.includes('.'));
-                if (found) return found.trim();
-            }
-        }
-    }
-    
-    return '';
-  };
-
-  const previewUrl = extractUrl(project);
   const auditType = customData?.audit_config?.type || 'link';
-  const mediaData = previewUrl;
+  
+  // Robust Media Data Extraction
+  const getMediaData = (proj: any) => {
+    if (!proj) return null;
+    const cData = typeof proj.custom_data === 'string' ? JSON.parse(proj.custom_data) : (proj.custom_data || {});
+    const auditA = cData.audit_config?.mediaA;
+    
+    // If it's image or document, mediaA is likely the array/url we want
+    if ((auditType === 'image' || auditType === 'document') && auditA) {
+        return auditA;
+    }
+    
+    // Fallback/Legacy: Extract first URL from content if none specified
+    if (auditType === 'link' || auditType === 'video') {
+       if (typeof auditA === 'string' && auditA.trim()) return auditA.trim();
+       
+       // Search in specialized fields
+       if (proj.site_url) return proj.site_url;
+       
+       // Regex search as last resort
+       const urlRegex = /(https?:\/\/[^\s]+)/gi;
+       const content = `${proj.content_text || ''} ${proj.description || ''}`;
+       const matches = content.match(urlRegex);
+       return matches ? matches[0] : '';
+    }
 
-  const ensureProtocol = (url: string) => {
-    if (!url) return '';
-    if (typeof url !== 'string') return '';
-    const trimmed = url.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    // Special handling for common domains if no protocol
-    return `https://${trimmed}`;
+    return auditA || '';
   };
 
-  const finalDisplayUrl = ensureProtocol(previewUrl);
+  const mediaData = getMediaData(project);
+  const finalDisplayUrl = typeof mediaData === 'string' ? mediaData : (Array.isArray(mediaData) ? mediaData[0] : '');
 
   const renderCurrentStep = () => {
     const stepType = steps[currentStep];
@@ -613,12 +663,41 @@ function ViewerContent() {
               onClick={handleNextStep}
               className="flex-1 h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-lg transition-all hover:scale-[1.02] shadow-xl uppercase tracking-widest shadow-orange-600/20"
             >
-              {currentStep < steps.length - 2 ? "Next Process" : "Submit Final Audit"}
+              {currentStep < steps.length - 2 ? "다음 단계로" : "평가 제출하기"}
             </Button>
           </div>
         )}
         </div>
       </div>
+      {/* Confirmation Modal */}
+      <Dialog open={confirmModal.isOpen} onOpenChange={(open) => setConfirmModal(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-md bg-chef-card border-chef-border p-8 rounded-[2.5rem]">
+          <DialogHeader className="space-y-4">
+            <div className="w-16 h-16 bg-orange-600/10 rounded-2xl flex items-center justify-center text-orange-600 mb-2">
+              <AlertCircle size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black text-chef-text">{confirmModal.title}</DialogTitle>
+            <DialogDescription className="text-chef-text opacity-50 font-bold leading-relaxed">
+              {confirmModal.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-8 flex gap-3 sm:justify-end">
+            <Button 
+                variant="outline" 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="h-14 rounded-2xl border-chef-border font-black text-chef-text uppercase tracking-widest px-8"
+            >
+              취소
+            </Button>
+            <Button 
+                onClick={confirmModal.onConfirm}
+                className="h-14 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest px-8 shadow-lg shadow-orange-600/20"
+            >
+              확인 및 다음으로
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

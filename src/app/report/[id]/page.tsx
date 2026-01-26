@@ -113,7 +113,7 @@ export default function ReportPage() {
         };
     }
 
-    // Fallback Client-side Calculation (Legacy or if API fails partially)
+    // Fallback Client-side Calculation
     const radarData = categories.map((cat: any) => {
       const sum = ratings.reduce((acc, curr) => acc + (curr[cat.id] || 0), 0);
       const avg = ratings.length > 0 ? (sum / ratings.length).toFixed(1) : 0;
@@ -127,9 +127,6 @@ export default function ReportPage() {
     const stickerOptions = auditConfig?.poll?.options || [];
     const polls: Record<string, number> = {};
     ratings.forEach(r => {
-      // Logic for legacy ratings that might have vote_type mixed in?
-      // Actually new flow separates them. If we rely on ratings only here, we miss polls.
-      // So this fallback is weak for polls.
       if (r.vote_type) {
         polls[r.vote_type] = (polls[r.vote_type] || 0) + 1;
       }
@@ -171,11 +168,11 @@ export default function ReportPage() {
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
                <div className="px-4 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                  <ChefHat size={14} /> Diagnostic Final Report
+                  <ChefHat size={14} /> Evaluation Final Report
                </div>
             </motion.div>
             <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-4xl md:text-7xl font-black tracking-tighter">
-               {project?.title} <span className="text-white/20">진단 결과</span>
+               {project?.title} <span className="text-white/20">평가 결과</span>
             </motion.h1>
             <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg text-white/40 max-w-2xl mx-auto font-medium">
                누적 {reportStats?.participantCount}명의 전문가 시선으로 분석된<br />미슐랭 5성 프로젝트 리포트입니다.
@@ -196,6 +193,54 @@ export default function ReportPage() {
                  <h3 className="text-3xl font-black">{stat.value}</h3>
               </motion.div>
             ))}
+         </section>
+
+         {/* Actions Section */}
+         <section className="flex flex-wrap items-center justify-center gap-4 border-y border-white/5 py-10">
+            <Button 
+                onClick={() => window.print()}
+                className="h-14 px-8 rounded-2xl bg-white text-black font-black hover:bg-gray-200 gap-2 shadow-xl shadow-white/5"
+            >
+                <Download size={18} /> PDF 리포트 다운로드
+            </Button>
+            <Button 
+                onClick={() => {
+                   const headers = ["ID", "Score", "Date", "Opinions"];
+                   const csvContent = [
+                       headers.join(","),
+                       ...ratings.map((r, i) => [
+                           `Expert ${i+1}`,
+                           r.score || 0,
+                           new Date(r.created_at).toLocaleDateString(),
+                           `"${(r.proposal || "").replace(/"/g, '""')}"`
+                       ].join(","))
+                   ].join("\n");
+                   
+                   const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                   const url = URL.createObjectURL(blob);
+                   const link = document.createElement("a");
+                   link.setAttribute("href", url);
+                   link.setAttribute("download", `evaluation_report_${projectId}.csv`);
+                   document.body.appendChild(link);
+                   link.click();
+                   document.body.removeChild(link);
+                }}
+                variant="outline"
+                className="h-14 px-8 rounded-2xl border-white/10 bg-transparent text-white hover:bg-white/5 font-black gap-2"
+            >
+                <Download size={18} /> CSV 데이터 추출
+            </Button>
+            <Button 
+                onClick={() => {
+                   const url = `${window.location.origin}/review/viewer?projectId=${projectId}`;
+                   navigator.clipboard.writeText(url);
+                   toast.success("평가 링크가 복사되었습니다!");
+                }}
+                variant="outline"
+                className="h-14 px-8 rounded-2xl border-white/10 bg-transparent text-white hover:bg-white/5 font-black gap-2"
+            >
+                <Share2 size={18} /> 평가 링크 공유
+            </Button>
          </section>
 
          {/* Charts Grid */}
@@ -266,10 +311,62 @@ export default function ReportPage() {
             </motion.div>
          </section>
 
+         {/* Detailed Evaluation Table */}
+         <section className="space-y-10">
+            <div className="flex items-center justify-between">
+                <h3 className="text-3xl font-black flex items-center gap-3">
+                   <div className="w-1.5 h-6 bg-emerald-600 rounded-full" /> 평가 접수 명부
+                </h3>
+                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Sorted by Date (Asc)</span>
+            </div>
+            <div className="overflow-x-auto rounded-[2.5rem] border border-white/5 bg-white/5">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="border-b border-white/10">
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">번호</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">평가자</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">접수 일시</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-center">미슐랭 점수</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ratings.length > 0 ? (
+                          [...ratings].sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((r, i) => (
+                            <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td className="px-8 py-6 text-sm font-black text-white/20">{(i+1).toString().padStart(2, '0')}</td>
+                                <td className="px-8 py-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black border border-white/10">E</div>
+                                        <span className="text-sm font-bold">Expert Panel</span>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleString('ko-KR')}</td>
+                                <td className="px-8 py-6 text-center">
+                                    <span className="text-orange-500 font-black text-lg">{r.score?.toFixed(1) || '0.0'}</span>
+                                </td>
+                                <td className="px-8 py-6">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black border border-green-500/20">
+                                        <div className="w-1 h-1 bg-green-500 rounded-full" />
+                                        VERIFIED
+                                    </div>
+                                </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={5} className="px-8 py-20 text-center text-white/20 font-bold uppercase tracking-widest">접수된 내역이 없습니다.</td>
+                          </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+         </section>
+
          {/* Reviews List */}
          <section className="space-y-10">
             <h3 className="text-3xl font-black flex items-center gap-3">
-               <MessageSquare className="text-orange-600" /> 종합 의견 리포트
+               <MessageSquare className="text-orange-600" /> 상세 평가 의견 리포트
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {ratings.length > 0 ? (
@@ -284,7 +381,7 @@ export default function ReportPage() {
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter">
-                              EXP {i+1}
+                               EXP {i+1}
                            </div>
                            <h4 className="text-sm font-black">Anonymous Expert</h4>
                         </div>
@@ -327,7 +424,7 @@ export default function ReportPage() {
       <footer className="border-t border-white/5 py-20 px-6 text-center text-white/20">
          <div className="flex flex-col items-center gap-6">
             <ChefHat size={32} />
-            <p className="text-xs font-black uppercase tracking-[0.4em]">MyRatingIs Diagnostic System &copy; 2026</p>
+            <p className="text-xs font-black uppercase tracking-[0.4em]">MyRatingIs Evaluation System &copy; 2026</p>
          </div>
       </footer>
     </div>

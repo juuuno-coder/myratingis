@@ -60,7 +60,7 @@ export default function Home() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-sm md:text-lg lg:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed px-4"
         >
-          당신의 프로젝트/MVP를 미슐랭 스타급으로 진단해 보세요.<br />
+          당신의 프로젝트/MVP를 미슐랭 스타급으로 평가해 보세요.<br />
           냉철한 시선과 집요한 디테일, 당신의 성장을 위한 마침표.
         </motion.p>
 
@@ -90,14 +90,14 @@ export default function Home() {
             className="w-full h-14 md:h-16 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none"
           >
             <ChefHat className="w-5 h-5 md:w-6 md:h-6" />
-            진단 의뢰하기
+            평가 의뢰하기
           </Button>
           <Button
             onClick={() => router.push("/projects")}
             className="w-full h-14 md:h-16 bg-white hover:bg-gray-100 text-gray-900 text-lg md:text-xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none"
           >
             <Star className="w-5 h-5 md:w-6 md:h-6" />
-            진단 참여하기
+            평가 참여하기
           </Button>
         </motion.div>
 

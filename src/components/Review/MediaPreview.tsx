@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 interface MediaPreviewProps {
-  type: 'link' | 'image' | 'video';
+  type: 'link' | 'image' | 'video' | 'document';
   data: any; // URL or Array of URLs or Video ID
   isAB?: boolean;
   dataB?: any;
@@ -34,15 +34,24 @@ export function MediaPreview({ type, data, isAB, dataB }: MediaPreviewProps) {
 function RenderSingleMedia({ type, data }: { type: string, data: any }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
+  const ensureProtocol = (url: string) => {
+    if (!url) return '';
+    if (typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    return `https://${trimmed}`;
+  };
+
   if (type === 'image') {
     const images = Array.isArray(data) ? data : [data];
-    if (images.length === 0) return <Placeholder text="No Images" />;
+    const validImages = images.filter(img => typeof img === 'string' && img.trim());
+    if (validImages.length === 0) return <Placeholder text="No Images" />;
 
     return (
       <div className="relative w-full h-full bg-slate-900 flex items-center justify-center group">
         <div className="relative w-full h-full flex items-center justify-center p-4">
           <Image 
-            src={images[activeIdx]} 
+            src={validImages[activeIdx]} 
             alt="Preview" 
             fill
             className="object-contain shadow-2xl rounded-lg transition-all duration-500"
@@ -51,22 +60,22 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
           />
         </div>
         
-        {images.length > 1 && (
+        {validImages.length > 1 && (
           <>
             <button 
-              onClick={() => setActiveIdx(prev => (prev > 0 ? prev - 1 : images.length - 1))}
+              onClick={() => setActiveIdx(prev => (prev > 0 ? prev - 1 : validImages.length - 1))}
               className="absolute left-6 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
             >
               <ChevronLeft size={24} />
             </button>
             <button 
-              onClick={() => setActiveIdx(prev => (prev < images.length - 1 ? prev + 1 : 0))}
+              onClick={() => setActiveIdx(prev => (prev < validImages.length - 1 ? prev + 1 : 0))}
               className="absolute right-6 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
             >
               <ChevronRight size={24} />
             </button>
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-              {images.map((_, i) => (
+              {validImages.map((_, i) => (
                 <div key={i} className={cn("w-2 h-2 rounded-full transition-all", i === activeIdx ? "bg-white w-6" : "bg-white/30")} />
               ))}
             </div>
@@ -77,7 +86,6 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
   }
 
   if (type === 'video') {
-    // Basic Youtube/Vimeo/Direct detection
     let videoUrl = data;
     if (typeof data === 'string' && data.includes('youtube.com/watch?v=')) {
       const id = data.split('v=')[1]?.split('&')[0];
@@ -99,13 +107,36 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
     );
   }
 
-  // Default: Link (Iframe)
-  const ensureProtocol = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
-  };
+  if (type === 'document') {
+    const documents = Array.isArray(data) ? data : [data];
+    const validDocs = documents.filter(doc => typeof doc === 'string' && doc.trim());
+    if (validDocs.length === 0) return <Placeholder text="No Documents" />;
+    
+    const docUrl = ensureProtocol(validDocs[activeIdx]);
+    const isPdf = docUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+    
+    // HWP files often need a specialized viewer. Google Docs viewer is a common choice.
+    const viewerUrl = isPdf ? docUrl : `https://docs.google.com/viewer?url=${encodeURIComponent(docUrl)}&embedded=true`;
 
+    return (
+      <div className="w-full h-full bg-white flex flex-col">
+        <iframe 
+          src={viewerUrl} 
+          className="flex-1 w-full border-none h-full" 
+          title="Document Viewer"
+        />
+        {validDocs.length > 1 && (
+           <div className="h-12 bg-slate-900 flex items-center justify-between px-4 shrink-0">
+             <button onClick={() => setActiveIdx(prev => (prev > 0 ? prev - 1 : validDocs.length-1))} className="text-white opacity-50 hover:opacity-100 transition-opacity"><ChevronLeft size={20} /></button>
+             <span className="text-white font-black text-[10px] uppercase tracking-widest">{activeIdx + 1} / {validDocs.length} Documents</span>
+             <button onClick={() => setActiveIdx(prev => (prev < validDocs.length - 1 ? prev + 1 : 0))} className="text-white opacity-50 hover:opacity-100 transition-opacity"><ChevronRight size={20} /></button>
+           </div>
+        )}
+      </div>
+    );
+  }
+
+  // Default: Link (Iframe)
   const finalUrl = ensureProtocol(data);
 
   return (

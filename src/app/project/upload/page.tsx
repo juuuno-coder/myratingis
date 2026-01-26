@@ -50,8 +50,8 @@ export default function ProjectUploadPage() {
     d.setDate(d.getDate() + 7);
     return d.toISOString().split('T')[0];
   });
-  const [auditType, setAuditType] = useState<'link' | 'image' | 'video'>('link');
-  const [mediaData, setMediaData] = useState<string | string[]>(auditType === 'image' ? [] : "");
+  const [auditType, setAuditType] = useState<'link' | 'image' | 'video' | 'document'>('link');
+  const [mediaData, setMediaData] = useState<string | string[]>(auditType === 'image' || auditType === 'document' ? [] : "");
   const [linkPreview, setLinkPreview] = useState<{title?: string, description?: string, image?: string} | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   
@@ -165,7 +165,7 @@ export default function ProjectUploadPage() {
         <div className="space-y-4">
           <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
             <input 
-              placeholder="진단받을 제목 (예: 커피 배달 매칭 MVP)" 
+              placeholder="평가받을 제목 (예: 커피 배달 매칭 MVP)" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
               className="w-full h-16 bg-chef-panel border-none text-xl font-black text-chef-text px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
@@ -188,50 +188,81 @@ export default function ProjectUploadPage() {
              <FontAwesomeIcon icon={faCamera} className="text-orange-500" /> 대상 미디어 및 마감 기한
           </h4>
           <div className="relative">
-             <Label className="text-[10px] font-black text-chef-text opacity-30 uppercase absolute -top-4 right-0 tracking-widest">진단 마감일</Label>
+             <Label className="text-[10px] font-black text-chef-text opacity-30 uppercase absolute -top-4 right-0 tracking-widest">평가 마감일</Label>
              <input type="date" value={auditDeadline} onChange={e => setAuditDeadline(e.target.value)} className="bg-white/5 text-chef-text border border-chef-border px-4 py-2 text-xs font-black bevel-cta outline-none focus:border-orange-500 transition-all cursor-pointer chef-input-high-v" />
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-1">
-          {(['link', 'image', 'video'] as const).map(t => (
+        <div className="grid grid-cols-4 gap-1">
+          {(['link', 'image', 'video', 'document'] as const).map(t => (
             <button 
               key={t} 
               onClick={() => {
                 setAuditType(t);
-                setMediaData(t === 'image' ? [] : "");
+                setMediaData(t === 'image' || t === 'document' ? [] : "");
               }} 
               className={cn(
                 "h-14 font-black text-xs uppercase tracking-widest transition-all bevel-cta border border-chef-border",
                 auditType === t ? "bg-chef-text text-chef-bg" : "bg-chef-bg text-chef-text opacity-40 hover:opacity-100"
               )}
             >
-              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지 갤러리" : "유튜브"}
+              {t === 'link' ? "웹 링크" : t === 'image' ? "이미지" : t === 'video' ? "유튜브" : "문서(PDF/HWP)"}
             </button>
           ))}
         </div>
 
         <div className="space-y-4">
-          {auditType === 'image' ? (
-             <div className="flex flex-wrap gap-4 p-6 bg-chef-panel bevel-section border border-chef-border min-h-[160px]">
-               {Array.isArray(mediaData) && mediaData.map((img, i) => (
-                 <div key={i} className="w-24 h-24 bevel-sm overflow-hidden relative group">
-                   <img src={img} className="w-full h-full object-cover" />
-                   <button onClick={() => setMediaData((mediaData as string[]).filter((_, j) => j !== i))} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                     <FontAwesomeIcon icon={faTrash} />
-                   </button>
-                 </div>
-               ))}
-               <label className="w-24 h-24 bevel-sm border-2 border-dashed border-chef-border flex flex-col items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-chef-text opacity-20 hover:opacity-100">
-                 <FontAwesomeIcon icon={faPlus} className="mb-2" />
-                 <span className="text-[8px] font-black uppercase">Add Photo</span>
-                 <input type="file" multiple className="hidden" onChange={async e => {
-                   if (e.target.files) {
-                     const urls = await Promise.all(Array.from(e.target.files).map(f => uploadImage(f)));
-                     setMediaData([...(Array.isArray(mediaData) ? mediaData : []), ...urls]);
-                   }
-                 }} />
-               </label>
+          {auditType === 'image' || auditType === 'document' ? (
+             <div className="flex flex-col gap-4 p-6 bg-chef-panel bevel-section border border-chef-border min-h-[160px]">
+               <div className="flex flex-wrap gap-4">
+                 {Array.isArray(mediaData) && mediaData.map((file, i) => (
+                   <div key={i} className="relative group">
+                     {auditType === 'image' ? (
+                        <div className="w-24 h-24 bevel-sm overflow-hidden relative">
+                           <img src={file} className="w-full h-full object-cover" />
+                        </div>
+                     ) : (
+                        <div className="w-32 h-32 bevel-sm bg-chef-card border border-chef-border flex flex-col items-center justify-center p-2 text-center">
+                           <div className="text-2xl mb-1">📄</div>
+                           <span className="text-[10px] font-black text-chef-text opacity-50 truncate w-full px-1">
+                              {file.split('/').pop().split('?')[0] || "document.pdf"}
+                           </span>
+                        </div>
+                     )}
+                     <button 
+                       onClick={() => setMediaData((mediaData as string[]).filter((_, j) => j !== i))} 
+                       className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                     >
+                       <FontAwesomeIcon icon={faTrash} size="xs" />
+                     </button>
+                   </div>
+                 ))}
+                 <label className="w-24 h-24 bevel-sm border-2 border-dashed border-chef-border flex flex-col items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-chef-text opacity-20 hover:opacity-100">
+                   <FontAwesomeIcon icon={faPlus} className="mb-2" />
+                   <span className="text-[8px] font-black uppercase">Add {auditType === 'image' ? 'Image' : 'File'}</span>
+                   <input 
+                     type="file" 
+                     multiple 
+                     accept={auditType === 'image' ? "image/*" : ".pdf,.hwp"} 
+                     className="hidden" 
+                     onChange={async e => {
+                       if (e.target.files) {
+                         toast.info("파일 업로드 중...", { id: 'uploading' });
+                         try {
+                           const urls = await Promise.all(Array.from(e.target.files).map(f => uploadImage(f)));
+                           setMediaData([...(Array.isArray(mediaData) ? mediaData : []), ...urls]);
+                           toast.success("업로드 완료!", { id: 'uploading' });
+                         } catch (err) {
+                           toast.error("업로드 실패", { id: 'uploading' });
+                         }
+                       }
+                     }} 
+                   />
+                 </label>
+               </div>
+               {auditType === 'document' && (
+                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest px-2">* PDF와 HWP 파일만 지원합니다.</p>
+               )}
              </div>
           ) : (
             <div className="space-y-4">
@@ -474,7 +505,7 @@ export default function ProjectUploadPage() {
       <div className="flex justify-between items-center pt-10 border-t border-chef-border">
         <Button variant="ghost" onClick={() => setAuditStep(auditStep - 1)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
         <Button onClick={handleSubmit} disabled={isSubmitting} className="h-20 px-16 bevel-cta bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_10px_40px_rgba(234,88,12,0.4)]">
-          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 진단 의뢰 게시하기</>}
+          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 평가 의뢰 게시하기</>}
         </Button>
       </div>
     </motion.div>

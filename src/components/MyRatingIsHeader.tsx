@@ -34,7 +34,7 @@ export function MyRatingIsHeader() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8">
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
@@ -47,10 +47,10 @@ export function MyRatingIsHeader() {
             <>
               <Button
                 onClick={() => router.push("/project/upload")}
-                className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-xs uppercase tracking-widest flex items-center gap-2"
+                className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-[11px] uppercase tracking-widest flex items-center gap-2"
               >
                 <ChefHat className="w-4 h-4" />
-                Audit Request
+                의뢰하기
               </Button>
               <div className="relative">
                 <button
@@ -135,16 +135,6 @@ export function MyRatingIsHeader() {
             <div className="p-6 flex flex-col gap-4">
               {isAuthenticated && user ? (
                 <>
-                  <div className="flex items-center gap-4 py-2 border-b border-chef-border/50 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center font-black text-white shadow-lg">
-                       {userProfile?.username?.charAt(0) || "U"}
-                    </div>
-                    <div className="flex-1">
-                       <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest">Signed in as</p>
-                       <p className="text-sm font-black text-chef-text">{userProfile?.username || "CHEF"}</p>
-                    </div>
-                  </div>
-                  
                   <Button
                     onClick={() => {
                       router.push("/project/upload");
@@ -153,7 +143,7 @@ export function MyRatingIsHeader() {
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-2xl h-14 font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-600/20"
                   >
                     <ChefHat className="w-5 h-5 mr-3" />
-                    진단 의뢰하기
+                    평가 의뢰하기
                   </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
@@ -166,7 +156,7 @@ export function MyRatingIsHeader() {
                       className="w-full rounded-2xl h-14 font-black text-chef-text border-chef-border text-[11px] uppercase tracking-widest bg-white/5"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      마이 스튜디오
+                      MY STUDIO
                     </Button>
                     <Button
                       onClick={() => {

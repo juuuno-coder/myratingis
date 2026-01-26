@@ -1106,7 +1106,7 @@ export function ProjectDetailModalV2({
                   <div className="flex gap-2">
                     {isAuditMode ? (
                       <span className="px-2.5 py-1 bg-orange-500 text-white text-[9px] font-black rounded-full shadow-lg shadow-orange-100 flex items-center gap-1.5 uppercase tracking-wider">
-                         <FontAwesomeIcon icon={faStar} className="w-2.5 h-2.5" /> 평가 진단 중
+                         <FontAwesomeIcon icon={faStar} className="w-2.5 h-2.5" /> 평가 진행 중
                       </span>
                     ) : isGrowthMode ? (
                       <span className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-black rounded-full shadow-lg shadow-green-100 flex items-center gap-1.5 uppercase tracking-wider">
@@ -1127,7 +1127,7 @@ export function ProjectDetailModalV2({
                       className="mt-2 bg-slate-900 hover:bg-black text-white font-black rounded-xl h-11 px-6 shadow-xl w-full md:w-fit gap-2 border-2 border-orange-500/20"
                     >
                        <FontAwesomeIcon icon={faStar} className="text-orange-400" />
-                       전문가 진단 리포트 확인
+                       전문가 평가 리포트 확인
                     </Button>
                   )}
                 </div>
@@ -1320,7 +1320,7 @@ export function ProjectDetailModalV2({
                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500 rounded-lg text-[10px] font-black uppercase mb-4 shadow-lg shadow-orange-500/20">
                               Expert Audit Report
                            </div>
-                           <h3 className="text-3xl font-black mb-4">전문가가 진단한 리포트가 도착했습니다</h3>
+                           <h3 className="text-3xl font-black mb-4">전문가가 평가한 리포트가 도착했습니다</h3>
                            <p className="text-slate-400 text-lg mb-8 leading-relaxed max-w-xl">
                              본 프로젝트는 Vibefolio 인증 전문가들에 의해 기획력, 완성도, 시장성 등 다각도 분석이 완료되었습니다. 자세한 분석 내용은 전용 뷰어에서 확인하실 수 있습니다.
                            </p>

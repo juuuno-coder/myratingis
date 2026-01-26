@@ -31,9 +31,9 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function generateMetadata(): Promise<Metadata> {
   const defaultTitle =
-    "제 평가는요? (MyRatingIs) - 흑백요리사 컨셉 프로젝트 진단";
+    "제 평가는요? (MyRatingIs) - 흑백요리사 컨셉 프로젝트 평가";
   const defaultDesc =
-    "당신의 프로젝트/MVP를 미슐랭 스타급으로 평가받으세요. 냉철하고 감각적인 프로젝트 진단 솔루션.";
+    "당신의 프로젝트/MVP를 미슐랭 스타급으로 평가받으세요. 냉철하고 감각적인 프로젝트 평가 솔루션.";
   const defaultOgImage = "/images/og-myratingis.png";
 
   let title = defaultTitle;
@@ -80,7 +80,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: description,
     keywords: [
       "프로젝트 평가",
-      "MVP 진단",
+      "MVP 평가",
       "흑백요리사",
       "미슐랭 평가",
       "스타트업",

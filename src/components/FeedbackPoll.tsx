@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 export interface FeedbackPollRef {
   submit: () => Promise<boolean>;
+  isValid: () => boolean;
 }
 
 interface FeedbackPollProps {
@@ -66,7 +67,18 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
     }
   };
 
+  const hasSelected = () => {
+    return selected !== null;
+  };
+
   const handleVoteSubmit = async (): Promise<boolean> => {
+    if (!hasSelected()) {
+        toast.error("투표 항목을 선택해 주세요.", {
+            description: "가장 적절한 피드백 스티커를 하나 선택해야 합니다."
+        });
+        return false;
+    }
+
     if (isDemo) {
         toast.info(`[데모] 투표 정보가 준비되었습니다.`);
         return true;
@@ -105,7 +117,8 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
   };
 
   React.useImperativeHandle(ref, () => ({
-    submit: handleVoteSubmit
+    submit: handleVoteSubmit,
+    isValid: hasSelected
   }));
 
   // Dynamic Options Base

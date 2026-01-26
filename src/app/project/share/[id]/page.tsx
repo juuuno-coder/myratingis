@@ -24,7 +24,7 @@ export default function ProjectSharePage() {
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
-    toast.success("진단 링크가 복사되었습니다!");
+    toast.success("평가 링크가 복사되었습니다!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -45,7 +45,7 @@ export default function ProjectSharePage() {
             <Share2 size={40} />
           </div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tighter">
-            진단 의뢰가<br /><span className="text-orange-500">생성되었습니다</span>
+            평가 의뢰가<br /><span className="text-orange-500">생성되었습니다</span>
           </h1>
           <p className="text-white/40 font-medium leading-relaxed">
             이제 아래 링크를 공유하여<br />
@@ -88,7 +88,7 @@ export default function ProjectSharePage() {
       </motion.div>
 
       <footer className="mt-12 text-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
-        <ChefHat size={14} /> MyRatingIs Diagnostic System
+        <ChefHat size={14} /> MyRatingIs Evaluation System
       </footer>
     </div>
   );

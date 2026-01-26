@@ -64,7 +64,7 @@ function ReviewLanding() {
             className="max-w-2xl mx-auto text-xl text-slate-500 font-medium leading-relaxed"
           >
             V-Audit은 단순한 피드백을 넘어, 업계 전문가들의 기획력, 완성도, 독참성 분석을 통해 
-            당신의 프로젝트가 가진 진정한 포텐셜을 진단합니다.
+            당신의 프로젝트가 가진 진정한 포텐셜을 평가합니다.
           </motion.p>
 
           <motion.div 
@@ -74,7 +74,7 @@ function ReviewLanding() {
             className="flex flex-wrap justify-center gap-4 pt-4"
           >
             <Button size="lg" className="h-16 px-10 rounded-2xl bg-slate-900 text-white font-black text-xl shadow-2xl hover:scale-105 transition-all" asChild>
-              <Link href="/growth">진단 시작하기</Link>
+              <Link href="/growth">평가 시작하기</Link>
             </Button>
             <Button variant="outline" size="lg" className="h-16 px-10 rounded-2xl border-2 border-slate-100 font-black text-xl hover:bg-slate-50 transition-all">
               시스템 가이드라인
@@ -87,7 +87,7 @@ function ReviewLanding() {
       <section className="py-20 px-6 bg-slate-50">
          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
             {[
-               { title: "Point 01", label: "전문가 진단", desc: "현업 시니어급 전문가들의 정밀한 다각도 분석 시스템" },
+               { title: "Point 01", label: "전문가 평가", desc: "현업 시니어급 전문가들의 정밀한 다각도 분석 시스템" },
                { title: "Point 02", label: "실시간 반응", desc: "사용자들의 실제 투표와 반응을 통한 시장성 검증" },
                { title: "Point 03", label: "인사이트 리포트", desc: "개선 방향과 기획 의도를 보강하는 AI 기반 인플레임" },
             ].map((f, i) => (

@@ -188,7 +188,7 @@ export function FeedbackRequestModal({ open, onOpenChange, projectId, projectTit
                                 />
                                 <div>
                                     <p className="font-bold text-slate-900 text-sm">미슐랭 평점</p>
-                                    <p className="text-[10px] text-slate-500">5가지 항목 정밀 진단</p>
+                                    <p className="text-[10px] text-slate-500">5가지 항목 정밀 평가</p>
                                 </div>
                             </label>
 

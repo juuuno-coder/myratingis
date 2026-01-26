@@ -51,10 +51,10 @@ export default function ProjectsPage() {
                  <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Ongoing Audit Requests</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-black text-chef-text tracking-tighter italic uppercase">
-                진단 참여하기
+                평가 참여하기
               </h1>
               <p className="text-chef-text opacity-40 font-bold max-w-xl text-lg">
-                도전하는 창작자들의 프로젝트를 미슐랭 스타급 시선으로 진단해 주세요.<br />
+                도전하는 창작자들의 프로젝트를 미슐랭 스타급 시선으로 평가해 주세요.<br />
                 당신의 한 마디가 새로운 마침표가 됩니다.
               </p>
            </div>
@@ -90,7 +90,7 @@ export default function ProjectsPage() {
                   <h3 className="text-2xl font-black italic uppercase tracking-tight flex items-center gap-2 justify-center md:justify-start">
                      <Sparkles className="w-6 h-6" /> Join the Kitchen
                   </h3>
-                  <p className="text-white/80 font-bold">로그인하고 셰프가 되어 프로젝트를 진단해보세요. <br className="hidden md:block" />참여 시 다양한 리워드와 전문성 배지가 제공됩니다.</p>
+                  <p className="text-white/80 font-bold">로그인하고 셰프가 되어 프로젝트를 평가해보세요. <br className="hidden md:block" />참여 시 다양한 리워드와 전문성 배지가 제공됩니다.</p>
                </div>
                <div className="flex gap-3">
                   <Button onClick={() => router.push('/login')} variant="secondary" className="h-14 px-8 rounded-2xl font-black bg-white text-orange-600 hover:bg-white/90">로그인하기</Button>
@@ -203,14 +203,14 @@ export default function ProjectsPage() {
                           onClick={() => router.push(`/report/${p.project_id}`)}
                           className="h-14 rounded-2xl bevel-cta bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-green-600/10"
                         >
-                          내 진단 결과 보기
+                          내 평가 결과 보기
                         </Button>
                       ) : (
                         <Button 
                           onClick={() => router.push(`/review/viewer?projectId=${p.project_id}`)}
                           className="h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
                         >
-                          진단 시작하기
+                          평가 시작하기
                         </Button>
                       )}
                       
@@ -220,7 +220,7 @@ export default function ProjectsPage() {
                            onClick={() => router.push(`/report/${p.project_id}`)}
                            className="h-12 rounded-2xl border-chef-border bg-chef-panel text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
                          >
-                           전체 진단 통계
+                           전체 평가 통계
                          </Button>
                       )}
 
@@ -241,13 +241,13 @@ export default function ProjectsPage() {
              </div>
              <div className="space-y-2">
                 <h3 className="text-3xl font-black text-chef-text italic uppercase">No Audits Found</h3>
-                <p className="text-chef-text opacity-40 font-bold">진단을 기다리는 프로젝트가 아직 없습니다. 직접 의뢰를 시작해 보세요.</p>
+                <p className="text-chef-text opacity-40 font-bold">평가를 기다리는 프로젝트가 아직 없습니다. 직접 의뢰를 시작해 보세요.</p>
              </div>
              <Button 
                onClick={() => router.push('/project/upload')}
                className="bg-orange-600 hover:bg-orange-500 text-white font-black px-10 h-14 rounded-full shadow-2xl transition-all hover:scale-105"
              >
-               진단 의뢰하기 <ArrowRight className="ml-2 w-5 h-5" />
+               평가 의뢰하기 <ArrowRight className="ml-2 w-5 h-5" />
              </Button>
           </div>
         )}

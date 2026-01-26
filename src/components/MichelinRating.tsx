@@ -18,6 +18,7 @@ import {
 
 export interface MichelinRatingRef {
   submit: () => Promise<boolean>;
+  isValid: () => boolean;
 }
 
 interface MichelinRatingProps {
@@ -175,7 +176,18 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   // Auto-submit removed to prevent annoying interruptions and resets.
   // Now parent controls submission via Ref.
 
+  const isAllRated = () => {
+    return categories.every(cat => (scores[cat.id] || 0) > 0);
+  };
+
   const handleRatingSubmit = async (): Promise<boolean> => {
+    if (!isAllRated()) {
+        toast.error("아직 평가하지 않은 항목이 있습니다.", {
+            description: "모든 항목의 슬라이더를 조절하여 점수를 매겨주세요!"
+        });
+        return false;
+    }
+
     if (isDemo) {
         toast.success(`[데모] 평가 정보가 준비되었습니다.`);
         return true;
@@ -220,7 +232,8 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   };
 
   React.useImperativeHandle(ref, () => ({
-    submit: handleRatingSubmit
+    submit: handleRatingSubmit,
+    isValid: isAllRated
   }));
 
   // Recharts Data Transformation

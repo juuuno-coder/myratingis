@@ -455,7 +455,7 @@ export default function MyPage() {
 
   const tabs = [
     { id: 'projects' as TabType, label: '나의 요리', icon: Grid, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    { id: 'audit_requests' as TabType, label: '진단 의뢰함', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
+    { id: 'audit_requests' as TabType, label: '평가 의뢰함', icon: ChefHat, color: 'text-orange-600', bgColor: 'bg-orange-600' },
     { id: 'likes' as TabType, label: '찜해둔 메뉴', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
     { id: 'collections' as TabType, label: '시리즈 레시피', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
     { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
@@ -550,7 +550,7 @@ export default function MyPage() {
                           <div className="absolute top-4 left-4 z-10">
                              <div className="bg-orange-600/90 text-white px-3 py-1.5 bevel-sm text-[10px] font-black tracking-tighter shadow-lg flex items-center gap-1.5 backdrop-blur-md">
                                 <ChefHat size={14} />
-                                전문 진단 진행 중
+                                전문 평가 진행 중
                              </div>
                           </div>
                         )}

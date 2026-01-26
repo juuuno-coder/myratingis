@@ -126,11 +126,11 @@ export const ImageCard = forwardRef<HTMLDivElement, ImageCardProps>(
                     <button 
                       onClick={(e) => { 
                           e.stopPropagation(); 
-                          router.push(`/mypage/projects/${props.id}/audit`);
+                          router.push(`/report/${props.id}`);
                       }}
                       className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-indigo-700 transition-colors transform hover:scale-105 shadow-lg w-32 justify-center mb-2"
                     >
-                      <BarChart3 className="w-4 h-4" /> 진단 리포트
+                      <BarChart3 className="w-4 h-4" /> 평가 리포트
                     </button>
                 )}
 
@@ -180,9 +180,9 @@ export const ImageCard = forwardRef<HTMLDivElement, ImageCardProps>(
                 </div>
               )}
               {(props.is_growth_requested || props.is_feedback_requested) && (
-                <div className="bg-slate-900 border border-white/20 text-white text-[9px] font-black px-2.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
-                   <span className="tracking-widest">V-AUDIT ACTIVE</span>
+                <div className="bg-orange-600 text-white text-[9px] font-black px-2.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 border border-white/20">
+                   <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                   <span className="tracking-widest italic uppercase">Auditing</span>
                 </div>
               )}
           </div>

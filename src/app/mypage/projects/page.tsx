@@ -185,9 +185,9 @@ export default function MyProjectsPage() {
                     />
                     
                     {isAuditActive && (
-                      <div className="absolute top-3 left-3 px-3 py-1 bg-green-500 text-white text-[10px] font-black rounded-full shadow-lg flex items-center gap-1 animate-pulse">
-                        <div className="w-2 h-2 bg-white rounded-full" />
-                        V-AUDIT ACTIVE
+                      <div className="absolute top-3 left-3 px-3 py-1 bg-orange-600 text-white text-[10px] font-black rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        AUDITING
                       </div>
                     )}
 
@@ -232,13 +232,13 @@ export default function MyProjectsPage() {
                     </div>
 
                     {isAuditActive ? (
-                      <Link href={`/mypage/projects/${project.id}/audit`} className="mt-auto">
-                        <Button className="w-full bg-slate-900 hover:bg-green-600 text-white rounded-xl py-6 font-black text-sm shadow-xl transition-all group/btn overflow-hidden relative">
+                      <Link href={`/report/${project.id}`} className="mt-auto">
+                        <Button className="w-full bg-slate-900 hover:bg-orange-600 text-white rounded-xl py-6 font-black text-sm shadow-xl transition-all group/btn overflow-hidden relative">
                            <span className="relative z-10 flex items-center justify-center gap-2">
-                             진단 인사이트 리포트
+                             평가 인사이트 리포트
                              <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                            </span>
-                           <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                           <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                         </Button>
                       </Link>
                     ) : (
