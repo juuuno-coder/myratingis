@@ -35,6 +35,18 @@ export function MyRatingIsHeader() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
+          {/* Info Links */}
+          <nav className="flex items-center gap-6 mr-4">
+             <Link href="/about/features" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
+                Features
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+             </Link>
+             <Link href="/faq" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
+                FAQ
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+             </Link>
+          </nav>
+
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
@@ -185,6 +197,20 @@ export function MyRatingIsHeader() {
                   </Link>
                 </div>
               )}
+              
+              {/* Secondary Links for Mobile */}
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                 <Link href="/about/features" onClick={() => setIsMenuOpen(false)}>
+                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
+                       Features
+                    </div>
+                 </Link>
+                 <Link href="/faq" onClick={() => setIsMenuOpen(false)}>
+                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
+                       FAQ
+                    </div>
+                 </Link>
+              </div>
               
               {/* Theme Toggle in Mobile */}
               <div className="pt-4 mt-2 border-t border-chef-border/30 flex items-center justify-between">

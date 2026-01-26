@@ -12,13 +12,16 @@ import {
   faCheck, 
   faPlus,
   faTrash,
-  faStar
+  faStar,
+  faGift,
+  faCoins,
+  faCalculator
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { uploadImage } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat } from "lucide-react";
+import { ChefHat, Sparkles, Info } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
@@ -27,7 +30,13 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading, isAdmin } = useAuth();
+  
+  // Reward States (Admin Only Feature Dev)
+  const [rewardType, setRewardType] = useState<'none' | 'point' | 'coupon'>('none');
+  const [rewardAmount, setRewardAmount] = useState(500);
+  const [recipientCount, setRecipientCount] = useState(10);
+  const [distributeMethod, setDistributeMethod] = useState<'fcfs' | 'author'>('fcfs');
   
   const mode = searchParams.get('mode') || 'audit'; 
   
@@ -36,10 +45,15 @@ export default function ProjectUploadPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      toast.error("평가 의뢰를 위해 로그인이 필요합니다.");
+      router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
     if (!authLoading && user && !userProfile) {
       setShowOnboarding(true);
     }
-  }, [authLoading, user, userProfile]);
+  }, [authLoading, user, userProfile, router]);
 
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -156,6 +170,19 @@ export default function ProjectUploadPage() {
       <section className="space-y-6">
         <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-4 py-1">
           <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">평가 의뢰 정보</h3>
+        </div>
+
+        {/* Informational Banner for Creators */}
+        <div className="bg-orange-500/5 border border-orange-500/20 p-8 rounded-sm space-y-4 bevel-sm">
+           <div className="flex items-center gap-3">
+              <Sparkles className="text-orange-500 w-5 h-5 animate-pulse" />
+              <h4 className="text-sm font-black text-orange-500 uppercase tracking-[0.2em] italic">Creator Tip: 비회원 참여 및 데이터 통합</h4>
+           </div>
+           <p className="text-xs text-chef-text opacity-70 leading-relaxed font-bold max-w-2xl">
+              제 평가는요? 시스템은 <span className="text-orange-500">비회원 참여</span>를 공식 지원합니다. 
+              가입하지 않은 팀원이나 커스터머에게도 링크 하나로 평가를 요청하세요. 
+              참여자가 추후 가입할 경우, 이전에 남긴 모든 소중한 피드백이 해당 계정으로 자동 통합되어 안전하게 관리됩니다.
+           </p>
         </div>
         
         <div className="space-y-4">
@@ -505,9 +532,105 @@ export default function ProjectUploadPage() {
       </section>
 
       <div className="flex justify-between items-center pt-10 border-t border-chef-border">
-        <Button variant="ghost" onClick={() => setAuditStep(auditStep - 1)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
+        <Button variant="ghost" onClick={() => setAuditStep(3)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
+        <Button onClick={() => {
+           if (isAdmin) {
+             setAuditStep(5);
+           } else {
+             handleSubmit();
+           }
+        }} disabled={isSubmitting} className="h-20 px-16 bevel-cta bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_10px_40px_rgba(234,88,12,0.4)]">
+          {isSubmitting ? "의뢰 게시 중..." : (isAdmin ? <><FontAwesomeIcon icon={faPlus} className="w-5 h-5" /> 계속 : 보약 설정</> : <><ChefHat className="w-6 h-6" /> 평가 의뢰 게시하기</>)}
+        </Button>
+      </div>
+    </motion.div>
+  );
+
+  const renderStep5 = () => (
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="space-y-12">
+      <section className="space-y-10">
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-4 py-1">
+              <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">4. 보약(보상/약속) 설정</h3>
+           </div>
+           <div className="px-4 py-1.5 bg-chef-panel border border-chef-border text-[10px] font-black text-orange-500 uppercase tracking-widest rounded-full animate-pulse">
+              Admin Only Beta
+           </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+           <div className="space-y-8">
+              <div className="space-y-4">
+                 <Label className="text-xs font-black text-chef-text opacity-30 uppercase tracking-[0.2em]">보상 종류 선택</Label>
+                 <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={() => setRewardType('point')}
+                      className={cn(
+                        "p-8 bevel-sm border-2 transition-all flex flex-col items-center gap-4",
+                        rewardType === 'point' ? "border-orange-500 bg-orange-500/5 text-orange-500" : "border-chef-border bg-chef-card opacity-40 hover:opacity-100"
+                      )}
+                    >
+                       <FontAwesomeIcon icon={faCoins} size="2xl" />
+                       <span className="font-black text-xs uppercase tracking-widest">Point Reward</span>
+                    </button>
+                    <button 
+                      onClick={() => setRewardType('coupon')}
+                      className={cn(
+                        "p-8 bevel-sm border-2 transition-all flex flex-col items-center gap-4",
+                        rewardType === 'coupon' ? "border-orange-500 bg-orange-500/5 text-orange-500" : "border-chef-border bg-chef-card opacity-40 hover:opacity-100"
+                      )}
+                    >
+                       <FontAwesomeIcon icon={faGift} size="2xl" />
+                       <span className="font-black text-xs uppercase tracking-widest">Gifticon Shop</span>
+                    </button>
+                 </div>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label className="text-xs font-black text-chef-text opacity-30 uppercase tracking-[0.2em]">인당 보상 금액 (P)</Label>
+                    <input type="number" value={rewardAmount} onChange={e => setRewardAmount(Number(e.target.value))} className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-black px-6 outline-none focus:border-orange-500 bevel-sm" />
+                 </div>
+                 <div className="space-y-2">
+                    <Label className="text-xs font-black text-chef-text opacity-30 uppercase tracking-[0.2em]">모집 인원 (명)</Label>
+                    <input type="number" value={recipientCount} onChange={e => setRecipientCount(Number(e.target.value))} className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-black px-6 outline-none focus:border-orange-500 bevel-sm" />
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-chef-card border-none bevel-section p-10 space-y-8 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-10 opacity-5 -mr-10 -mt-10 group-hover:rotate-12 transition-transform duration-1000">
+                 <FontAwesomeIcon icon={faCalculator} size="10x" />
+              </div>
+              <h4 className="text-xl font-black text-chef-text italic uppercase flex items-center gap-3">
+                 <FontAwesomeIcon icon={faCoins} className="text-orange-500" /> Real-time Billing
+              </h4>
+              <div className="space-y-4 border-y border-chef-border py-6">
+                 <div className="flex justify-between text-chef-text font-bold">
+                    <span className="opacity-40">보상 원금</span>
+                    <span>{(rewardAmount * recipientCount).toLocaleString()} P</span>
+                 </div>
+                 <div className="flex justify-between text-chef-text font-bold">
+                    <span className="opacity-40">플랫폼 수수료 (10%)</span>
+                    <span className="text-orange-500">+{(rewardAmount * recipientCount * 0.1).toLocaleString()} P</span>
+                 </div>
+                 <div className="flex justify-between text-chef-text font-bold">
+                    <span className="opacity-40">부가가치세 (10%)</span>
+                    <span className="text-orange-500">+{(rewardAmount * recipientCount * 1.1 * 0.1).toLocaleString()} P</span>
+                 </div>
+              </div>
+              <div className="flex justify-between items-end">
+                 <span className="text-xs font-black text-chef-text opacity-40 uppercase tracking-widest">Final Total</span>
+                 <span className="text-4xl font-black italic text-chef-text tracking-tighter">{(rewardAmount * recipientCount * 1.21).toLocaleString()} P</span>
+              </div>
+           </div>
+        </div>
+      </section>
+
+      <div className="flex justify-between items-center pt-10 border-t border-chef-border">
+        <Button variant="ghost" onClick={() => setAuditStep(4)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
         <Button onClick={handleSubmit} disabled={isSubmitting} className="h-20 px-16 bevel-cta bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_10px_40px_rgba(234,88,12,0.4)]">
-          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 평가 의뢰 게시하기</>}
+          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 보약 담아 의뢰 게시하기</>}
         </Button>
       </div>
     </motion.div>
@@ -525,13 +648,13 @@ export default function ProjectUploadPage() {
                <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">Evaluation Request Lab</span>
             </div>
             <div className="flex items-center gap-3">
-               {[1, 2, 3, 4].map(s => (
+               {[1, 2, 3, 4, ...(isAdmin ? [5] : [])].map(s => (
                  <div key={s} className="flex items-center gap-2">
                     <div className={cn(
                       "w-8 h-1 transition-all duration-500 bevel-cta", 
                       auditStep >= s ? "bg-orange-500 shadow-[0_0_10px_#f97316]" : "bg-chef-text opacity-10"
                     )} />
-                    {s < 4 && <div className="text-[6px] text-chef-text opacity-5 font-black">/</div>}
+                    {s < (isAdmin ? 5 : 4) && <div className="text-[6px] text-chef-text opacity-5 font-black">/</div>}
                  </div>
                ))}
             </div>
@@ -541,7 +664,7 @@ export default function ProjectUploadPage() {
       <div className="pt-40 pb-32">
         <main className="max-w-4xl mx-auto px-6">
           <AnimatePresence mode="wait">
-            {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : auditStep === 3 ? renderStep3() : renderStep4()}
+            {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : auditStep === 3 ? renderStep3() : auditStep === 4 ? renderStep4() : renderStep5()}
           </AnimatePresence>
         </main>
       </div>

@@ -118,6 +118,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION'].includes(event)) {
         updateState(session, session?.user || null);
+
+        // [New] Claim guest ratings upon login
+        if (event === 'SIGNED_IN' && session) {
+           const guestId = localStorage.getItem('guest_id');
+           if (guestId) {
+              try {
+                const res = await fetch('/api/auth/claim-ratings', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ guest_id: guestId })
+                });
+                if (res.ok) {
+                   const data = await res.json();
+                   if (data.merged_count > 0) {
+                      // localStorage.removeItem('guest_id'); // Optional: Clear after merge
+                      console.log(`[Auth] Merged ${data.merged_count} guest ratings.`);
+                   }
+                }
+              } catch (e) {
+                console.error("[Auth] Guest merge failed:", e);
+              }
+           }
+        }
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
       }

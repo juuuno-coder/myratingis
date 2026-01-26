@@ -135,7 +135,10 @@ export default function ProjectsPage() {
                    {/* Left: Thumbnail Section */}
                    <div 
                      className="w-full md:w-60 aspect-video md:aspect-[4/3] rounded-3xl overflow-hidden bg-chef-panel shrink-0 border border-chef-border relative cursor-pointer group"
-                     onClick={() => router.push(`/review/viewer?projectId=${p.project_id}`)}
+                     onClick={() => {
+                        if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
+                        router.push(`/review/viewer?projectId=${p.project_id}`);
+                     }}
                    >
                       {p.thumbnail_url ? (
                         <Image 
@@ -167,9 +170,12 @@ export default function ProjectsPage() {
                          <span className="text-[10px] text-chef-text opacity-20 font-black italic">by {p.User?.username || "Unknown"}</span>
                       </div>
                       
-                      <h3 
+                       <h3 
                         className="text-2xl md:text-3xl font-black text-chef-text tracking-tighter truncate mb-2 hover:text-orange-500 cursor-pointer transition-colors"
-                        onClick={() => router.push(`/review/viewer?projectId=${p.project_id}`)}
+                        onClick={() => {
+                           if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
+                           router.push(`/review/viewer?projectId=${p.project_id}`);
+                        }}
                       >
                          {p.title}
                       </h3>
@@ -207,7 +213,10 @@ export default function ProjectsPage() {
                         </Button>
                       ) : (
                         <Button 
-                          onClick={() => router.push(`/review/viewer?projectId=${p.project_id}`)}
+                          onClick={() => {
+                             if (!isAuthenticated) { router.push(`/login?returnPath=${encodeURIComponent(window.location.pathname)}`); return; }
+                             router.push(`/review/viewer?projectId=${p.project_id}`);
+                          }}
                           className="h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
                         >
                           평가 시작하기

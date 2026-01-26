@@ -210,11 +210,6 @@ function GrowthContent() {
   useEffect(() => {
     if (authLoading) return;
     
-    if (!isAuthenticated) {
-       setLoading(false);
-       return; 
-    }
-
     const loadGrowthProjects = async () => {
       setLoading(true);
       try {
@@ -340,12 +335,8 @@ function GrowthContent() {
              </div>
          </div>
 
-         {!authLoading && !isAuthenticated ? (
-            renderLoginGuard()
-         ) : (
-            <>
-               {/* Interactive Demo Section - Only show when onboarded */}
-               <InteractiveHero />
+         {/* Interactive Demo Section - Only show when onboarded */}
+         <InteractiveHero />
 
          {/* [New] Growth Mode Highlighting */}
          {projects.length > 0 && (
@@ -400,8 +391,6 @@ function GrowthContent() {
                  프로젝트 등록하기
               </Button>
            </div>
-         )}
-            </>
          )}
       </main>
 

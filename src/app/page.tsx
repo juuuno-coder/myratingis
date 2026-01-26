@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Rocket, Sparkles, Star } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -99,6 +100,17 @@ export default function Home() {
             <Star className="w-5 h-5 md:w-6 md:h-6" />
             평가 참여하기
           </Button>
+        </motion.div>
+
+        {/* Secondary Discovery Links */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 pt-8"
+        >
+          <Link href="/about/features" className="hover:text-orange-500 transition-colors">Platform Features</Link>
+          <Link href="/faq" className="hover:text-orange-500 transition-colors">User Support & FAQ</Link>
         </motion.div>
 
 

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FontAwesomeIcon } from "./FaIcon";
 import { faHeart, faShareNodes, faComment, faBookmark, faPaperPlane, faUser, faXmark, faChartSimple, faSpinner, faFolder, faEye, faCheck, faLock, faUnlock, faRocket, faStar, faFaceSmile, faMapPin, faClock } from "@fortawesome/free-solid-svg-icons";
+import { ChefHat, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { VersionHistoryModal } from "./VersionHistoryModal";
@@ -1324,18 +1325,47 @@ export function ProjectDetailModalV2({
                            <p className="text-slate-400 text-lg mb-8 leading-relaxed max-w-xl">
                              본 프로젝트는 Vibefolio 인증 전문가들에 의해 기획력, 완성도, 시장성 등 다각도 분석이 완료되었습니다. 자세한 분석 내용은 전용 뷰어에서 확인하실 수 있습니다.
                            </p>
-                           <Button 
-                             onClick={() => window.open(`https://review.vibefolio.net/viewer?projectId=${project.id}`, '_blank')}
-                             className="h-14 px-8 rounded-2xl bg-white text-black font-black text-lg hover:bg-gray-100 transition-all shadow-xl gap-3"
-                           >
-                              <FontAwesomeIcon icon={faStar} className="text-orange-500" />
-                              전체 리포트 열람하기
-                           </Button>
-                        </div>
-                     </div>
-                   </div>
-                 )}
-                 <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                            <Button 
+                              onClick={() => {
+                                if (!isLoggedIn) { setLoginModalOpen(true); return; }
+                                window.open(`/review/viewer?projectId=${project.id}`, '_blank')
+                              }}
+                              className="h-14 px-8 rounded-2xl bg-white text-black font-black text-lg hover:bg-gray-100 transition-all shadow-xl gap-3"
+                            >
+                               <FontAwesomeIcon icon={faStar} className="text-orange-500" />
+                               전체 리포트 열람하기
+                            </Button>
+                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Participate in Evaluation CTA */}
+                  {isFeedbackRequested && !isAuthor && (
+                    <div className="max-w-4xl mx-auto px-6 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                       <div className="bg-orange-50/50 rounded-[2.5rem] p-10 border border-dashed border-orange-200 text-center">
+                          <h4 className="text-2xl font-black text-orange-950 mb-3 italic flex items-center justify-center gap-3">
+                             <Sparkles className="text-orange-500 w-6 h-6" /> 당신의 전문적인 평가를 남겨주세요
+                          </h4>
+                          <p className="text-orange-800/60 font-medium mb-8 leading-relaxed max-w-lg mx-auto">
+                             미슐랭 가이드 스타일의 정밀 진단과 스티커 투표를 통해<br/>
+                             크리에이터에게 성장의 기회를 선물해주세요.
+                          </p>
+                          <Button 
+                            onClick={() => {
+                              if (!isLoggedIn) { setLoginModalOpen(true); return; }
+                              window.open(`/review/viewer?projectId=${project.id}`, '_blank');
+                            }}
+                            className="h-16 px-12 rounded-2xl bg-orange-600 text-white font-black text-xl hover:bg-orange-700 transition-all shadow-2xl shadow-orange-200 gap-4 hover:scale-105 active:scale-95"
+                          >
+                             <ChefHat className="w-6 h-6" /> 
+                             지금 평가 시작하기
+                          </Button>
+                       </div>
+                    </div>
+                  )}
+
+                  <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
                     <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 text-gray-600 shadow-sm">
                        <FontAwesomeIcon icon={faComment} className="w-4 h-4 text-gray-400" />
                        <span className="text-sm font-bold tracking-wide">Review & Feedback</span>

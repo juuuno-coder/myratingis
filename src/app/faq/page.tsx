@@ -1,196 +1,176 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React from "react";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
+import { motion } from "framer-motion";
+import { 
+  ChevronDown, 
+  HelpCircle, 
+  MessageCircle, 
+  Globe, 
+  UserPlus, 
+  Zap, 
+  ShieldCheck,
+  Star
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { supabase } from "@/lib/supabase/client";
-import { Loader2, Search, HelpCircle, ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-
-interface FAQ {
-  id: number;
-  category: string;
-  question: string;
-  answer: string;
-}
-
-const CATEGORIES = ["전체", "서비스 이용", "계정 관리", "프로젝트", "운영 정책", "문의"];
+import { useRouter } from "next/navigation";
 
 export default function FAQPage() {
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [filteredFaqs, setFilteredFaqs] = useState<FAQ[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const router = useRouter();
 
-  useEffect(() => {
-    async function loadFaqs() {
-      try {
-        const { data, error } = await supabase
-          .from("faqs")
-          .select("*")
-          .eq("is_visible", true)
-          .order("order_index", { ascending: true });
-
-        if (error) throw error;
-        
-        // DB에 데이터가 없으면 기본 FAQ 사용
-        if (!data || data.length === 0) {
-          const defaultFaqs: FAQ[] = [
-            { id: 1, category: "서비스 이용", question: "Vibefolio는 어떤 서비스인가요?", answer: "Vibefolio는 크리에이터들이 자신의 포트폴리오를 공유하고, 전 세계 아티스트들과 소통하며 영감을 주고받을 수 있는 프리미엄 포트폴리오 커뮤니티입니다." },
-            { id: 2, category: "계정 관리", question: "회원가입은 어떻게 하나요?", answer: "우측 상단의 '회원가입' 버튼을 클릭하거나, Google 계정으로 간편하게 가입하실 수 있습니다." },
-            { id: 3, category: "프로젝트", question: "프로젝트는 어떻게 업로드하나요?", answer: "로그인 후 '프로젝트 등록' 버튼을 클릭하여 이미지, 제목, 설명 등을 입력하고 업로드하실 수 있습니다." },
-            { id: 4, category: "프로젝트", question: "어떤 형식의 파일을 업로드할 수 있나요?", answer: "JPG, PNG, GIF 등의 이미지 파일을 지원하며, 최대 10MB까지 업로드 가능합니다." },
-            { id: 5, category: "운영 정책", question: "저작권은 어떻게 보호되나요?", answer: "업로드된 모든 작품의 저작권은 창작자에게 있으며, 무단 도용 시 법적 조치가 가능합니다." },
-            { id: 6, category: "문의", question: "문의는 어떻게 하나요?", answer: "하단의 '1:1 문의하기' 버튼을 통해 언제든지 문의하실 수 있으며, 24시간 내에 답변드립니다." },
-          ];
-          setFaqs(defaultFaqs);
-          setFilteredFaqs(defaultFaqs);
-        } else {
-          setFaqs(data);
-          setFilteredFaqs(data);
+  const faqs = [
+    {
+      category: "서비스 이용",
+      items: [
+        {
+          q: "비회원도 평가에 참여할 수 있나요?",
+          a: "네! 제 평가는요?는 높은 접근성을 위해 공유된 링크를 통한 비회원 참여를 공식 지원합니다. 로그인 없이도 미슐랭 정밀 진단과 스티커 투표 등 모든 평가 기능을 이용하실 수 있습니다.",
+          icon: Globe
+        },
+        {
+          q: "비회원으로 평가했다가 나중에 가입하면 기록이 사라지나요?",
+          a: "아니요! 시스템이 브라우저의 기록(Guest ID)을 자동으로 감지합니다. 동일한 브라우저에서 가입하거나 로그인하는 순간, 이전에 비회원으로 남겼던 모든 평가와 코멘트가 새 계정으로 즉시 통합됩니다.",
+          icon: UserPlus
+        },
+        {
+          q: "평가를 의뢰하려면 로그인이 꼭 필요한가요?",
+          a: "네, 평가를 의뢰하시는 창작자 분은 프로젝트 관리와 리포트 확인을 위해 계정이 필요합니다. 의뢰된 프로젝트는 DB에 안전하게 저장되어 실시간으로 피드백을 수집하게 됩니다.",
+          icon: Zap
         }
-      } catch (e) {
-        console.error("FAQ Load Error:", e);
-        // 에러 발생 시에도 기본 FAQ 표시
-        const defaultFaqs: FAQ[] = [
-          { id: 1, category: "서비스 이용", question: "Vibefolio는 어떤 서비스인가요?", answer: "Vibefolio는 크리에이터들이 자신의 포트폴리오를 공유하고, 전 세계 아티스트들과 소통하며 영감을 주고받을 수 있는 프리미엄 포트폴리오 커뮤니티입니다." },
-          { id: 2, category: "계정 관리", question: "회원가입은 어떻게 하나요?", answer: "우측 상단의 '회원가입' 버튼을 클릭하거나, Google 계정으로 간편하게 가입하실 수 있습니다." },
-          { id: 3, category: "프로젝트", question: "프로젝트는 어떻게 업로드하나요?", answer: "로그인 후 '프로젝트 등록' 버튼을 클릭하여 이미지, 제목, 설명 등을 입력하고 업로드하실 수 있습니다." },
-        ];
-        setFaqs(defaultFaqs);
-        setFilteredFaqs(defaultFaqs);
-      } finally {
-        setLoading(false);
-      }
+      ]
+    },
+    {
+      category: "평가 시스템",
+      items: [
+        {
+          q: "미슐랭 정밀 진단은 무엇인가요?",
+          a: "기획력, 독창성, 심미성 등 프로젝트의 핵심 가치를 5점 척도로 평가하는 다면 분석 시스템입니다. 축적된 데이터는 시각화된 레이더 차트 리포트로 제공됩니다.",
+          icon: Star
+        },
+        {
+          q: "내 프로젝트를 외부에 공유해도 안전한가요?",
+          a: "네, 모든 프로젝트는 암호화된 고유 ID를 통해 관리됩니다. 작성자는 언제든 프로젝트의 공개 여부를 설정할 수 있으며, 불필요한 노출을 제어할 수 있는 관리 도구를 제공합니다.",
+          icon: ShieldCheck
+        },
+        {
+          q: "평가 참여 시 혜택이 있나요?",
+          a: "로그인 후 평가에 참여하시면 활동 포인트가 지급됩니다. 이 포인트는 추후 서비스 내 프리미엄 기능 이용이나 배지 획득 등에 사용될 예정입니다.",
+          icon: Zap
+        }
+      ]
     }
-    loadFaqs();
-  }, []);
-
-  useEffect(() => {
-    let result = faqs;
-
-    if (selectedCategory !== "전체") {
-      result = result.filter(f => f.category === selectedCategory);
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(f => 
-        f.question.toLowerCase().includes(term) || 
-        f.answer.toLowerCase().includes(term)
-      );
-    }
-
-    setFilteredFaqs(result);
-  }, [selectedCategory, searchTerm, faqs]);
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-20 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-2xl mb-6">
-            <HelpCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 mb-4">자주 묻는 질문</h1>
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            Vibefolio 이용 중 궁금한 점이 있으신가요? 
-            분야별로 정리된 답변을 통해 궁금증을 해결해 보세요.
-          </p>
-        </div>
-
-        {/* Search & Filter */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-10">
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <Input 
-              placeholder="궁금한 내용을 입력해 보세요 (예: 비밀번호 찾기, 업로드 등)"
-              className="pl-12 h-14 rounded-2xl border-slate-200 text-lg focus:ring-green-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
-                  selectedCategory === cat 
-                    ? "bg-slate-900 text-white shadow-md shadow-slate-200" 
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* FAQ List */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-          {loading ? (
-            <div className="flex justify-center py-24 text-slate-400">
-              <Loader2 className="animate-spin mr-2" size={24} /> 
-              <span>데이터를 불러오는 중입니다...</span>
-            </div>
-          ) : filteredFaqs.length > 0 ? (
-            <Accordion type="single" collapsible className="w-full">
-              {filteredFaqs.map((faq, idx) => (
-                <AccordionItem 
-                  key={faq.id} 
-                  value={`item-${faq.id}`}
-                  className={`border-b border-slate-100 last:border-0`}
-                >
-                  <AccordionTrigger className="px-8 py-6 text-left hover:bg-slate-50 transition-all text-lg font-bold text-slate-900 group">
-                    <span className="flex items-center gap-4">
-                      <span className="text-green-600 font-mono text-sm group-hover:scale-110 transition-transform">
-                        Q{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
-                      </span>
-                      {faq.question}
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-12 py-8 bg-slate-50 text-slate-600 leading-relaxed text-lg border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex gap-4">
-                      <span className="text-blue-600 font-mono font-bold text-sm pt-1">A.</span>
-                      <p className="whitespace-pre-wrap">{faq.answer}</p>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          ) : (
-            <div className="text-center py-24">
-              <p className="text-slate-400 text-lg mb-6">검색 결과가 없습니다.</p>
-              <Button asChild variant="outline" onClick={() => {setSearchTerm(""); setSelectedCategory("전체");}}>
-                <span>검색 조건 초기화</span>
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Extra Help */}
-        <div className="mt-16 bg-gradient-to-r from-green-600 to-emerald-500 rounded-3xl p-10 text-white text-center">
-          <h3 className="text-2xl font-bold mb-4">원하시는 답변을 찾지 못하셨나요?</h3>
-          <p className="opacity-90 mb-8 max-w-lg mx-auto">
-            Vibefolio 고객센터는 언제나 열려있습니다. 
-            1:1 문의를 남겨주시면 담당자가 신속하게 도와드리겠습니다.
-          </p>
-          <Button asChild size="lg" className="bg-white text-green-700 hover:bg-slate-100 rounded-full font-bold px-8">
-            <Link href="/contact" className="flex items-center gap-2">
-              1:1 문의하기 <ArrowRight size={18} />
-            </Link>
-          </Button>
-        </div>
+    <div className="min-h-screen chef-bg-page selection:bg-orange-500/30 pb-32">
+      <MyRatingIsHeader />
+      
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none opacity-5">
+         <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
+            <HelpCircle className="w-[600px] h-[600px] text-chef-text" />
+         </div>
       </div>
+
+      <main className="max-w-4xl mx-auto px-6 pt-40 relative z-10">
+        <div className="text-center space-y-4 mb-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/20"
+          >
+            Support Center
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-5xl md:text-7xl font-black text-chef-text tracking-tighter italic uppercase"
+          >
+            Frequently Asked <br/> Questions
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-chef-text opacity-40 font-bold max-w-xl mx-auto"
+          >
+            질문이 있으신가요? 제 평가는요? 사용에 관한 가장 빈번한 질문들을 모았습니다. <br/>
+            찾으시는 질문이 없다면 고객 지원으로 문의해주세요.
+          </motion.p>
+        </div>
+
+        <div className="space-y-16">
+          {faqs.map((category, idx) => (
+            <motion.section 
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              className="space-y-6"
+            >
+              <h2 className="text-xl font-black text-chef-text border-l-4 border-orange-500 pl-4 py-1 italic uppercase tracking-widest">
+                {category.category}
+              </h2>
+              
+              <Accordion type="single" collapsible className="space-y-4">
+                {category.items.map((item, i) => (
+                  <AccordionItem 
+                    key={i} 
+                    value={`item-${idx}-${i}`} 
+                    className="border-none bg-chef-card/30 backdrop-blur-sm px-6 rounded-2xl border border-chef-border/10 overflow-hidden"
+                  >
+                    <AccordionTrigger className="hover:no-underline py-6">
+                      <div className="flex items-center gap-4 text-left">
+                        <div className="w-10 h-10 bg-chef-panel rounded-xl flex items-center justify-center text-orange-500 shrink-0 border border-chef-border/50">
+                           <item.icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-lg font-black text-chef-text tracking-tight group-hover:text-orange-500 transition-colors">
+                          {item.q}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-8 pt-2 pl-14">
+                      <p className="text-sm text-chef-text opacity-50 font-medium leading-relaxed max-w-2xl whitespace-pre-wrap">
+                        {item.a}
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </motion.section>
+          ))}
+        </div>
+
+        {/* Footer CTA */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="mt-32 p-12 bg-chef-text text-chef-bg rounded-[3rem] text-center space-y-6 shadow-2xl"
+        >
+           <h3 className="text-3xl font-black italic uppercase tracking-tighter">Still have questions?</h3>
+           <p className="text-chef-bg opacity-60 font-medium max-w-sm mx-auto">
+              도움이 더 필요하신가요? 저희 팀이 영업일 기준 24시간 이내에 답변을 드립니다.
+           </p>
+           <div className="flex flex-wrap justify-center gap-4">
+              <Button onClick={() => router.push('/contact')} className="h-14 px-10 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-lg transition-all scale-100 hover:scale-105 active:scale-95 shadow-xl shadow-orange-600/20">
+                 1:1 문의하기
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/about/features')} className="h-14 px-10 rounded-2xl border-white/20 text-white hover:bg-white/10 font-black text-lg">
+                 기능 살펴보기
+              </Button>
+           </div>
+        </motion.div>
+      </main>
     </div>
   );
 }

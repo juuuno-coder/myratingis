@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-type TabType = 'projects' | 'audit_requests' | 'likes' | 'collections' | 'proposals' | 'comments' | 'ai_tools' | 'settings';
+type TabType = 'projects' | 'audit_requests' | 'likes' | 'collections' | 'proposals' | 'comments' | 'ai_tools' | 'dashboard' | 'settings';
 type AiToolType = 'lean-canvas' | 'persona' | 'assistant' | 'job' | 'trend' | 'recipe' | 'tool' | 'api-settings';
 
 import { LeanCanvasModal, type LeanCanvasData } from "@/components/LeanCanvasModal";
@@ -99,7 +99,7 @@ export default function MyPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { user: authUser, userProfile: authProfile, loading: authLoading } = useAuth();
+  const { user: authUser, userProfile: authProfile, loading: authLoading, isAdmin } = useAuth();
   
   // 1. 초기화 - 사용자 정보 및 통계 로드
   // 1. 초기화 - 사용자 정보 및 통계 로드
@@ -460,6 +460,7 @@ export default function MyPage() {
     { id: 'collections' as TabType, label: '시리즈 레시피', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
     { id: 'proposals' as TabType, label: '제안 및 평가 의견', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
     { id: 'comments' as TabType, label: '내가 남긴 한 마디', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    ...(isAdmin ? [{ id: 'dashboard' as TabType, label: '성과 대시보드', icon: BarChart, color: 'text-orange-600', bgColor: 'bg-orange-600' }] : []),
     { id: 'settings' as TabType, label: '셰프 설정', icon: Settings, color: 'text-chef-text', bgColor: 'bg-chef-text' },
   ];
 
@@ -753,6 +754,43 @@ export default function MyPage() {
             {activeTab === 'settings' && userProfile && (
                <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
                   <ProfileManager user={userProfile} onUpdate={initStats} />
+               </div>
+            )}
+            {activeTab === 'dashboard' && isAdmin && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                          <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Total Impressions</p>
+                          <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">24,802</h4>
+                          <div className="text-xs font-bold text-green-600 flex items-center gap-1">
+                             <Rocket size={14} /> +12% from last week
+                          </div>
+                      </div>
+                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                          <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Feedback Rate</p>
+                          <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">4.8%</h4>
+                          <div className="text-xs font-bold text-orange-600 flex items-center gap-1">
+                             <Sparkles size={14} /> High Engagement
+                          </div>
+                      </div>
+                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                          <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Conversion Point</p>
+                          <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">860P</h4>
+                          <div className="text-xs font-bold text-blue-600 flex items-center gap-1">
+                             <BarChart size={14} /> Stable Flow
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div className="bg-white p-10 rounded-[2.5rem] border border-chef-border shadow-sm min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
+                      <div className="w-20 h-20 bg-orange-600/10 rounded-full flex items-center justify-center text-orange-600">
+                         <BarChart size={40} />
+                      </div>
+                      <div className="space-y-2">
+                         <h3 className="text-2xl font-black text-chef-text italic uppercase">Deep Analytics Coming Soon</h3>
+                         <p className="text-chef-text opacity-40 font-bold max-w-sm">프로젝트별 유입 경로, 체류 시간, 문항별 정밀 분석 데이터를 준비 중입니다. 관리자 권한으로 초안을 확인하고 계십니다.</p>
+                      </div>
+                  </div>
                </div>
             )}
           </>
