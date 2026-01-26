@@ -600,7 +600,7 @@ function ViewerContent() {
           <div className="absolute inset-0 z-0 opacity-10 bg-[url('/grid-pattern.svg')] pointer-events-none" />
           
           <div className={cn(
-            "transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-[0_40px_100px_rgba(0,0,0,0.8)] bg-white relative z-10 overflow-hidden",
+            "transition-all duration-700 ease-in-out shadow-[0_40px_100px_rgba(0,0,0,0.8)] bg-white relative z-10 overflow-hidden",
             viewerMode === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-[12px] border-chef-border" : "w-full h-full rounded-xl border border-white/10"
           )}>
             <MediaPreview type={auditType as any} data={mediaData} />
