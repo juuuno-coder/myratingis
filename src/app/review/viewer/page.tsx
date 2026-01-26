@@ -104,9 +104,7 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
                 <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight">
                   {project.title}
                 </h4>
-                <p className="text-orange-500 text-xs md:text-sm font-black uppercase tracking-widest max-w-xs mx-auto opacity-80 break-keep">
-                   Chef's One-liner: "{project.summary || project.description || "No description provided."}"
-                </p>
+
              </motion.div>
            )}
         </div>
