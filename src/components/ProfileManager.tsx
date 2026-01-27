@@ -2,6 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -360,92 +369,171 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             </div>
         </section>
 
-        {/* 2. 추가 정보 (온보딩) - 관심사 영역 대체 */ }
+        {/* 2. 상세 프로필 (온보딩 정보) - Modal로 관리 */}
         <section className="space-y-6">
-            <h2 className="text-xl font-bold border-b pb-4">추가 정보</h2>
-            <div className="space-y-6">
-                <div className="space-y-3">
-                    <Label className="text-base">성별</Label>
-                    <div className="flex gap-2">
-                        {['남성', '여성', '기타'].map((g) => (
-                            <button
-                                key={g}
-                                onClick={() => setFormData({ ...formData, gender: g })}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
-                                    ? 'bg-orange-500 border-orange-500 text-white'
-                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                                    }`}
-                            >
-                                {g}
-                            </button>
-                        ))}
-                    </div>
+            <div className="flex items-center justify-between border-b pb-4">
+                <div>
+                   <h2 className="text-xl font-bold flex items-center gap-2">
+                       상세 프로필
+                       <span className="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">Onboarding Info</span>
+                   </h2>
+                   <p className="text-sm text-gray-500 mt-1">성별, 연령, 직업, 전문 분야 정보입니다.</p>
                 </div>
+                
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="border-orange-200 hover:bg-orange-50 text-orange-700">전문가 정보 수정</Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>상세 프로필 수정</DialogTitle>
+                            <DialogDescription>
+                                사용자 맞춤 정보를 위해 정확한 정보를 입력해주세요.
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-8 py-4">
+                             {/* 성별 */}
+                             <div className="space-y-3">
+                                <Label className="text-base font-bold">성별</Label>
+                                <div className="flex gap-2">
+                                    {['남성', '여성', '기타'].map((g) => (
+                                        <button
+                                            key={g}
+                                            onClick={() => setFormData({ ...formData, gender: g })}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
+                                                ? 'bg-orange-600 border-orange-600 text-white'
+                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                <div className="space-y-3">
-                    <Label className="text-base">연령대</Label>
-                    <div className="flex flex-wrap gap-2">
-                        {['10대', '20대', '30대', '40대', '50대 이상'].map((age) => (
-                            <button
-                                key={age}
-                                onClick={() => setFormData({ ...formData, age_group: age })}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
-                                    ? 'bg-orange-500 border-orange-500 text-white'
-                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                                    }`}
-                            >
-                                {age}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            {/* 연령대 */}
+                            <div className="space-y-3">
+                                <Label className="text-base font-bold">연령대</Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['10대', '20대', '30대', '40대', '50대 이상'].map((age) => (
+                                        <button
+                                            key={age}
+                                            onClick={() => setFormData({ ...formData, age_group: age })}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
+                                                ? 'bg-orange-600 border-orange-600 text-white'
+                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {age}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                <div className="space-y-3">
-                    <Label className="text-base">직업군</Label>
-                    <div className="flex flex-wrap gap-2">
-                        {['학생', '직장인', '프리랜서', '사업가', '구직자', '기타'].map((job) => (
-                            <button
-                                key={job}
-                                onClick={() => setFormData({ ...formData, occupation: job })}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.occupation === job
-                                    ? 'bg-orange-500 border-orange-500 text-white'
-                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                                    }`}
-                            >
-                                {job}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            {/* 직업군 - New Categories */}
+                            <div className="space-y-3">
+                                <Label className="text-base font-bold">직업 / 소속</Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자', '기타'].map((job) => (
+                                        <button
+                                            key={job}
+                                            onClick={() => setFormData({ ...formData, occupation: job === '기타' ? '' : job })}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                                                (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
+                                                ? 'bg-orange-600 border-orange-600 text-white'
+                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {job}
+                                        </button>
+                                    ))}
+                                </div>
+                                {/* '기타' 직접 입력 */}
+                                {!['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && (
+                                    <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                                        <Input 
+                                            value={formData.occupation} 
+                                            onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                                            placeholder="직업을 직접 입력하세요 (예: 작가)" 
+                                            className="font-bold border-orange-200 focus:border-orange-500"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 전문 분야 */}
+                            <div className="space-y-3">
+                                <Label className="text-base font-bold flex items-center gap-2">
+                                    전문 분야 🎖️
+                                    <span className="text-[10px] text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Badge Display</span>
+                                </Label>
+                                <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
+                                        <button
+                                            key={item.value}
+                                            onClick={() => toggleExpertise(item.value)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                                                expertise.fields.includes(item.value)
+                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
+                                                : 'bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500'
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-4 border-t">
+                            <DialogClose asChild><Button variant="ghost">취소</Button></DialogClose>
+                            <DialogClose asChild><Button onClick={handleSave} className="bg-orange-600 text-white hover:bg-orange-700">저장하기</Button></DialogClose>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
-        </section>
 
-        {/* 2.5 전문 분야 (자부심 뱃지) */}
-        <section className="space-y-6">
-            <h2 className="text-xl font-bold border-b pb-4 flex items-center gap-2">
-                전문 분야 🎖️
-                <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">Expert Badge</span>
-            </h2>
-            <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-2xl">
-                <p className="text-sm text-blue-700 mb-4 leading-relaxed font-medium">
-                    본인의 전문성을 나타낼 수 있는 분야를 선택하세요. 
-                    평가 서비스 제공 시 사용자 이름 옆에 <strong>인증 뱃지</strong>로 표시됩니다.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
-                        <button
-                            key={item.value}
-                            onClick={() => toggleExpertise(item.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-bold transition-all border-2 shadow-sm ${
-                                expertise.fields.includes(item.value)
-                                ? 'bg-blue-600 border-blue-600 text-white transform scale-105'
-                                : 'bg-white border-gray-100 text-gray-500 hover:border-blue-200 hover:text-blue-600'
-                            }`}
-                        >
-                            {item.label}
-                        </button>
-                    ))}
-                </div>
+            {/* Read-Only Summary View */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                         <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Basic Info</span>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-500">성별</span>
+                            <span className="font-bold text-gray-800">{formData.gender || <span className="text-gray-300">-</span>}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-500">연령대</span>
+                            <span className="font-bold text-gray-800">{formData.age_group || <span className="text-gray-300">-</span>}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-500">직업</span>
+                            <span className="font-bold text-gray-800">{formData.occupation || <span className="text-gray-300">-</span>}</span>
+                        </div>
+                    </div>
+                 </div>
+
+                 <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                         <span className="text-sm font-bold text-blue-400 uppercase tracking-wider">Expertise Badges</span>
+                    </div>
+                    {expertise.fields.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {expertise.fields.map(f => {
+                                const label = [...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].find(c => c.value === f)?.label || f;
+                                return (
+                                    <span key={f} className="px-3 py-1 bg-white text-blue-600 border border-blue-200 rounded-full text-xs font-bold shadow-sm">
+                                        {label}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-400 italic">선택된 전문 분야가 없습니다.</p>
+                    )}
+                 </div>
             </div>
         </section>
 
