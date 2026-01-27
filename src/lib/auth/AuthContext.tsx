@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface UserProfile {
   username: string;
@@ -42,6 +42,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const initializedRef = useRef(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // ====== Enforce Onboarding ======
+  useEffect(() => {
+    if (!loading && user && userProfile) {
+      // Check if essential fields are missing
+      const isMissingInfo = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
+      // Allow access to onboarding, logout, api, and non-protected routes (if needed, but simpler to just protect everything for logged in users)
+      // We must avoid redirect loop if already on /onboarding
+      if (isMissingInfo && pathname !== "/onboarding" && !pathname?.startsWith("/api") && !pathname?.startsWith("/auth")) {
+          // If on MyPage or other pages, force redirect
+          // But maybe allow "Logout" via UI? UI might be blocked by redirect.
+          // Just redirect to onboarding.
+          // Add a toast if not already shown? No, just redirect.
+          router.replace("/onboarding");
+      }
+    }
+  }, [loading, user, userProfile, pathname, router]);
 
   // ====== Supabase Metadata에서 프로필 로드 ======
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
