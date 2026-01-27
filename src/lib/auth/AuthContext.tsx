@@ -135,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (db && !error) {
+          console.log("[AuthContext] Profile Loaded:", db);
           // 서비스 내부에서 설정한 이미지가 있는지 우선 확인
           const customImage = (db as any).profile_image_url || (db as any).avatar_url;
           
@@ -147,7 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             interests: (db as any).interests || base.interests,
             expertise: (db as any).expertise || base.expertise,
             gender: (db as any).gender,
-            // DB 컬럼이 age_group 이거나 age_range 일 수 있음 (Schema 유연성 확보)
+            // age_group과 age_range 둘 다 채워줌 (호환성)
+            age_group: (db as any).age_group || (db as any).age_range,
             age_range: (db as any).age_group || (db as any).age_range, 
             occupation: (db as any).occupation,
           };
@@ -156,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserProfile(base);
         }
       } catch (e) {
-        console.error("[AuthContext] Update State Loop Error:", e);
+        console.error("[AuthContext] updateState error:", e);
         setUserProfile(base);
       }
     } else {

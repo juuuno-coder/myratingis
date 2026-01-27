@@ -96,13 +96,12 @@ export function OnboardingModal() {
       
       
     } catch (error: any) {
-      console.error("Onboarding Catch:", error);
+      console.error("Onboarding Catch Error Object:", error);
       const errorMsg = error.message || error.details || JSON.stringify(error) || "알 수 없는 오류";
       
       // 사용자 요청: "저장이 안되도 일단 꺼지던가" 반영
-      // 에러가 나도 일단 새로고침하여, 만약 실제로는 저장되었는데 에러로 오인된 경우(혹은 캐시 문제)를 해결하고, 
-      // 진짜 실패했더라도 사용자가 갇히지 않게 함.
-      alert(`저장 중 다음과 같은 문제가 발생했지만, 화면을 갱신합니다.\n(문제가 지속되면 SQL 설정을 확인해주세요)\n\n에러 내용: ${errorMsg}`);
+      // 만약 RLS 정책 문제나 컬럼 누락 문제라면 여기서 알 수 있음
+      alert(`저장 중 오류가 발생했습니다.\n\n[원인]: ${errorMsg}\n\n화면을 새로고침하여 모달을 닫습니다. 데이터가 저장되지 않았다면 마이페이지에서 다시 시도해주세요.`);
       window.location.reload();
       
     } finally {

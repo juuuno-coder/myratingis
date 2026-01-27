@@ -108,18 +108,25 @@ export default function MyPage() {
       setUserId(authUser.id);
       
       try {
-        const { data: dbProfile } = await supabase
+      try {
+        const { data: dbProfile, error: profileError } = await supabase
           .from('profiles')
-          .select('username, nickname, bio, cover_image_url, social_links, interests, is_public, gender, age_group, occupation, expertise')
+          .select('*')
           .eq('id', authUser.id)
           .single();
 
+        if (profileError) {
+          console.warn("[MyPage] Profile fetch error:", profileError);
+        }
+
+        console.log("[MyPage] Fetched Profile Data:", dbProfile);
+
         setUserProfile({
           username: (dbProfile as any)?.username || authProfile?.username || 'user',
-          nickname: (dbProfile as any)?.nickname || authProfile?.username || '사용자',
+          nickname: (dbProfile as any)?.nickname || (dbProfile as any)?.username || authProfile?.username || '사용자',
           email: authUser.email,
-          profile_image_url: authProfile?.profile_image_url || '/globe.svg',
-          role: authProfile?.role || 'user',
+          profile_image_url: (dbProfile as any)?.profile_image_url || (dbProfile as any)?.avatar_url || authProfile?.profile_image_url || '/globe.svg',
+          role: (dbProfile as any)?.role || authProfile?.role || 'user',
           bio: (dbProfile as any)?.bio || '',
           cover_image_url: (dbProfile as any)?.cover_image_url || null,
           social_links: (dbProfile as any)?.social_links || {},
@@ -127,7 +134,7 @@ export default function MyPage() {
           is_public: (dbProfile as any)?.is_public,
           // Add onboarding fields
           gender: (dbProfile as any)?.gender,
-          age_group: (dbProfile as any)?.age_group,
+          age_group: (dbProfile as any)?.age_group || (dbProfile as any)?.age_range,
           occupation: (dbProfile as any)?.occupation,
           expertise: (dbProfile as any)?.expertise,
           id: authUser.id, 
@@ -148,7 +155,7 @@ export default function MyPage() {
         
         setStats({ projects: p, likes: l, collections: c, followers: fr, following: fg });
       } catch (e) {
-        console.warn("통계 로드 실패:", e);
+        console.warn("[MyPage] initStats failed:", e);
       } finally {
         setInitialized(true);
       }
