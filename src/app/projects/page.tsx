@@ -92,7 +92,7 @@ export default function ProjectsPage() {
                </div>
                <div className="flex gap-3">
                   <Button onClick={() => router.push('/login')} variant="secondary" className="h-14 px-8 rounded-2xl font-black bg-white text-orange-600 hover:bg-white/90">로그인하기</Button>
-                  <Button onClick={() => router.push('/signup')} variant="outline" className="h-14 px-8 rounded-2xl font-black border-white/20 text-white hover:bg-white/10">회원가입</Button>
+                  <Button onClick={() => router.push('/signup')} variant="outline" className="h-14 px-8 rounded-2xl font-black border-2 border-white text-white bg-transparent hover:bg-white/10">회원가입</Button>
                </div>
             </div>
           </motion.div>

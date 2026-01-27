@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 필요한 필드만 선택 (최적화) - 안전하게 모든 컬럼 조회 (관계 제거)
     let query = (supabaseAnon as any)
       .from('Project')
-      .select('*') 
+      .select('project_id, title, thumbnail_url, views_count, likes_count, created_at, user_id, category_id, summary, description, custom_data, audit_deadline, site_url, visibility, scheduled_at, is_growth_requested') 
       .is('deleted_at', null) 
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
