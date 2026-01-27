@@ -27,11 +27,24 @@ export default function Home() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[100px] animate-pulse delay-1000" />
 
       <main className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center space-y-12">
-        {/* Logo */}
+        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+        >
+          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-orange-400 fill-orange-400" />
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
+            Professional Evaluation Stage
+          </span>
+        </motion.div>
+
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
           className="pt-4 md:pt-8"
         >
           <img 
@@ -41,19 +54,6 @@ export default function Home() {
           />
         </motion.div>
 
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
-        >
-          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-orange-400 fill-orange-400" />
-          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Culinary Class Wars Concept
-          </span>
-        </motion.div>
-
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -61,8 +61,8 @@ export default function Home() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-sm md:text-lg lg:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed px-4 break-keep"
         >
-          당신의 프로젝트/MVP를 미슐랭 스타급으로 평가해 보세요.<br />
-          냉철한 시선과 집요한 디테일, 당신의 성장을 위한 마침표.
+          잠재고객과 전문평가위원이 여러분의 프로젝트를 솔직하게 평가합니다.<br />
+          공정하면서도 냉정한 평가는 성장의 자산이 됩니다.
         </motion.p>
 
         {/* Cloche Illustration */}
