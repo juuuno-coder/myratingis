@@ -90,7 +90,10 @@ function LoginContent() {
         </div>
 
         <div className="w-full max-w-md relative z-10">
-          <div className="bevel-border bevel-section p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]">
+          <div 
+            className="bevel-section p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]"
+            style={{ filter: "drop-shadow(0 0 1px var(--chef-border))" }}
+          >
             {/* 로고 영역 */}
             <div className="flex justify-center mb-12">
               <div className="relative group">
@@ -107,7 +110,7 @@ function LoginContent() {
 
             <div className="text-center mb-10">
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
-                셰프 로그인
+                로그인
               </h2>
               <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
             </div>
@@ -178,7 +181,7 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
+                className="w-full h-16 bg-orange-600 text-white hover:bg-orange-700 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
               >
                 {loading ? "로그인 중..." : "입장하기"}
               </Button>
