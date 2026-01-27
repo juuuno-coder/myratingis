@@ -13,7 +13,8 @@ import {
   ChefHat,
   Star,
   Eye,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -575,8 +576,18 @@ function ViewerContent() {
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
              </div>
+
+             {/* Back Button */}
+             <button 
+               onClick={() => router.back()}
+               className="flex items-center justify-center w-8 h-8 rounded-full text-chef-text opacity-40 hover:opacity-100 hover:bg-white/10 transition-all ml-2"
+               title="돌아가기"
+             >
+               <ArrowLeft size={16} />
+             </button>
+
              {/* Address Bar Mockup */}
-             <div className="hidden lg:flex items-center bg-chef-panel/80 px-4 py-1.5 rounded-full border border-chef-border w-96 truncate ml-4 shadow-inner">
+             <div className="hidden lg:flex items-center bg-chef-panel/80 px-4 py-1.5 rounded-full border border-chef-border w-96 truncate shadow-inner">
                 <span className="text-[10px] font-black text-chef-text opacity-40 truncate uppercase tracking-tight">{finalDisplayUrl || "preparing dish..."}</span>
              </div>
           </div>
