@@ -100,49 +100,54 @@ export function OnboardingModal() {
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if(!val && isSubmitting) return; /* Prevent closing while submitting */ }}>
-      {/* Force modal to be non-closable via outside click if strictly enforcing, but for better UX maybe allow escape? 
-          User said "force onboarding", so we usually use `onInteractOutside={(e) => e.preventDefault()}` */}
+    <Dialog open={open} onOpenChange={(val) => { if(!val && isSubmitting) return; }}>
       <DialogContent 
-        className="max-w-4xl h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-white text-black"
+        className="max-w-4xl h-[90vh] md:h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-white text-black border-none shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()} 
         onEscapeKeyDown={(e) => e.preventDefault()}
-        showCloseButton={false} // Custom close logic or none
+        showCloseButton={false}
       >
-        <div className="flex flex-1 h-full">
-            {/* Left Side: Progress & Info */}
-            <div className="hidden md:flex flex-col w-1/3 bg-slate-50 border-r border-gray-100 p-8 justify-between">
-                <div>
-                    <h1 className="font-black text-2xl italic tracking-tighter mb-8">
+        <DialogHeader className="sr-only">
+          <DialogTitle>온보딩</DialogTitle>
+          <DialogDescription>서비스 이용을 위한 필수 정보를 입력합니다.</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col md:flex-row flex-1 h-full overflow-hidden">
+            {/* Left/Top Side: Progress & Info */}
+            <div className="w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-gray-100 p-4 md:p-8 flex flex-col justify-between shrink-0">
+                <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
+                    <h1 className="font-black text-xl md:text-2xl italic tracking-tighter mb-0 md:mb-8 text-slate-900 whitespace-nowrap">
                        제 평가는요?
                     </h1>
-                    <div className="space-y-6">
+                    
+                    {/* Steps Container */}
+                    <div className="flex flex-row md:flex-col gap-2 md:gap-6 overflow-x-auto no-scrollbar items-center md:items-start">
                         {[
-                            { step: 1, label: "환영합니다" },
-                            { step: 2, label: "기본 정보" },
-                            { step: 3, label: "직업/소속" },
-                            { step: 4, label: "전문 분야" },
+                            { step: 1, label: "환영" },
+                            { step: 2, label: "정보" },
+                            { step: 3, label: "직업" },
+                            { step: 4, label: "분야" },
                         ].map((s) => (
-                            <div key={s.step} className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                            <div key={s.step} className="flex items-center gap-2 shrink-0">
+                                <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold transition-all ${
                                     step >= s.step ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-400"
                                 }`}>
-                                    {step > s.step ? <Check className="w-4 h-4" /> : s.step}
+                                    {step > s.step ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : s.step}
                                 </div>
-                                <span className={`font-bold ${step === s.step ? "text-slate-900" : "text-gray-400"}`}>
+                                <span className={`text-xs md:text-sm font-bold hidden sm:inline-block ${step === s.step ? "text-slate-900" : "text-gray-400"}`}>
                                     {s.label}
                                 </span>
                             </div>
                         ))}
                     </div>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="hidden md:block text-xs text-gray-400">
                     <p>모든 정보는 안전하게 암호화되어 저장됩니다.</p>
                 </div>
             </div>
 
-            {/* Right Side: Content */}
-            <div className="flex-1 p-8 md:p-12 overflow-y-auto relative">
+            {/* Right/Bottom Side: Content */}
+            <div className="flex-1 p-6 md:p-12 overflow-y-auto relative bg-white">
                 <AnimatePresence mode="wait">
                     
                     {/* STEP 1: WELCOME */}
@@ -152,21 +157,21 @@ export function OnboardingModal() {
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                             className="h-full flex flex-col items-center justify-center text-center space-y-6"
                         >
-                            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
+                            <div className="w-20 h-20 md:w-24 md:h-24 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-2">
                                 👋
                             </div>
                             <div>
-                                <h2 className="text-3xl font-black mb-2">환영합니다!</h2>
-                                <p className="text-xl font-bold text-orange-600">
+                                <h2 className="text-2xl md:text-3xl font-black mb-2">환영합니다!</h2>
+                                <p className="text-lg md:text-xl font-bold text-orange-600">
                                     {userProfile?.username || "고객"}님
                                 </p>
                             </div>
-                            <p className="text-gray-500 max-w-sm">
+                            <p className="text-sm md:text-base text-gray-500 max-w-sm">
                                 공정한 평가와 성장을 위한 플랫폼,<br/>
                                 MyRatingIs에 오신 것을 환영합니다.
                             </p>
-                            <div className="pt-8">
-                                <Button onClick={() => setStep(2)} size="lg" className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-12 h-14 rounded-full text-lg shadow-xl shadow-orange-200">
+                            <div className="pt-8 w-full md:w-auto">
+                                <Button onClick={() => setStep(2)} size="lg" className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold px-12 h-14 rounded-full text-lg shadow-xl shadow-orange-200">
                                     시작하기 <ChevronRight className="ml-2 w-5 h-5"/>
                                 </Button>
                             </div>
@@ -178,10 +183,10 @@ export function OnboardingModal() {
                         <motion.div 
                             key="step2"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8"
+                            className="space-y-6 md:space-y-8 pb-10"
                         >
                             <div>
-                                <h2 className="text-2xl font-black mb-2">기본 정보</h2>
+                                <h2 className="text-xl md:text-2xl font-black mb-2">기본 정보</h2>
                                 <p className="text-sm text-gray-500">보다 정확한 콘텐츠 추천을 위해 필요합니다.</p>
                             </div>
 
@@ -193,7 +198,7 @@ export function OnboardingModal() {
                                             <button
                                                 key={g}
                                                 onClick={() => setFormData({ ...formData, gender: g })}
-                                                className={`flex-1 h-14 rounded-xl font-bold border-2 transition-all ${formData.gender === g
+                                                className={`flex-1 h-12 md:h-14 rounded-xl font-bold border-2 transition-all text-sm md:text-base ${formData.gender === g
                                                     ? 'bg-orange-50 border-orange-600 text-orange-700'
                                                     : 'bg-white border-gray-100 text-gray-400 hover:border-gray-300'
                                                     }`}
@@ -211,7 +216,7 @@ export function OnboardingModal() {
                                             <button
                                                 key={age}
                                                 onClick={() => setFormData({ ...formData, age_group: age })}
-                                                className={`h-12 rounded-xl font-bold border-2 transition-all ${formData.age_group === age
+                                                className={`h-10 md:h-12 rounded-xl font-bold border-2 transition-all text-sm md:text-base ${formData.age_group === age
                                                     ? 'bg-orange-50 border-orange-600 text-orange-700'
                                                     : 'bg-white border-gray-100 text-gray-400 hover:border-gray-300'
                                                     }`}
@@ -223,8 +228,8 @@ export function OnboardingModal() {
                                 </div>
                             </div>
 
-                            <div className="pt-8">
-                                <Button onClick={handleNext} className="w-full h-14 bg-black text-white hover:bg-gray-800 text-lg font-bold rounded-xl">
+                            <div className="pt-4 md:pt-8">
+                                <Button onClick={handleNext} className="w-full h-12 md:h-14 bg-black text-white hover:bg-gray-800 text-lg font-bold rounded-xl">
                                     다음 단계
                                 </Button>
                             </div>
@@ -236,10 +241,10 @@ export function OnboardingModal() {
                         <motion.div 
                             key="step3"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8"
+                            className="space-y-6 md:space-y-8 pb-10"
                         >
                             <div>
-                                <h2 className="text-2xl font-black mb-2">직업 / 소속</h2>
+                                <h2 className="text-xl md:text-2xl font-black mb-2">직업 / 소속</h2>
                                 <p className="text-sm text-gray-500">현재 주로 활동하는 분야를 알려주세요.</p>
                             </div>
 
@@ -248,7 +253,7 @@ export function OnboardingModal() {
                                     <button
                                         key={job}
                                         onClick={() => setFormData({ ...formData, occupation: job === '기타' ? '' : job })}
-                                        className={`h-14 rounded-xl font-bold border-2 transition-all ${
+                                        className={`h-12 md:h-14 rounded-xl font-bold border-2 transition-all text-sm md:text-base ${
                                             (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
                                             ? 'bg-orange-50 border-orange-600 text-orange-700'
                                             : 'bg-white border-gray-100 text-gray-400 hover:border-gray-300'
@@ -273,8 +278,8 @@ export function OnboardingModal() {
                                 </div>
                             )}
 
-                            <div className="pt-8">
-                                <Button onClick={handleNext} className="w-full h-14 bg-black text-white hover:bg-gray-800 text-lg font-bold rounded-xl">
+                            <div className="pt-4 md:pt-8">
+                                <Button onClick={handleNext} className="w-full h-12 md:h-14 bg-black text-white hover:bg-gray-800 text-lg font-bold rounded-xl">
                                     다음 단계
                                 </Button>
                             </div>
@@ -286,22 +291,22 @@ export function OnboardingModal() {
                         <motion.div 
                             key="step4"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8"
+                            className="space-y-6 md:space-y-8 pb-10"
                         >
                             <div>
-                                <h2 className="text-2xl font-black mb-2">전문 분야 (선택)</h2>
+                                <h2 className="text-xl md:text-2xl font-black mb-2">전문 분야 (선택)</h2>
                                 <p className="text-sm text-gray-500">
                                     본인의 전문성을 나타낼 수 있는 분야를 선택하세요.<br/>
                                     <span className="text-orange-600 font-bold">* 프로필 뱃지로 표시됩니다.</span>
                                 </p>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 max-h-[40vh] overflow-y-auto p-1">
+                            <div className="flex flex-wrap gap-2 max-h-[40vh] overflow-y-auto p-1 scrollbar-hide">
                                 {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
                                     <button
                                         key={item.value}
                                         onClick={() => toggleExpertise(item.value)}
-                                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all border-2 ${
+                                        className={`px-3 py-2 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold transition-all border-2 ${
                                             formData.expertise.includes(item.value)
                                             ? 'bg-blue-600 border-blue-600 text-white shadow-md'
                                             : 'bg-white border-gray-100 text-gray-400 hover:border-blue-200 hover:text-blue-500'
@@ -312,8 +317,8 @@ export function OnboardingModal() {
                                 ))}
                             </div>
 
-                            <div className="pt-8">
-                                <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full h-14 bg-orange-600 text-white hover:bg-orange-700 text-lg font-bold rounded-xl shadow-lg shadow-orange-200">
+                            <div className="pt-4 md:pt-8">
+                                <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full h-12 md:h-14 bg-orange-600 text-white hover:bg-orange-700 text-lg font-bold rounded-xl shadow-lg shadow-orange-200">
                                     {isSubmitting ? "저장 중..." : "설정 완료 및 시작"}
                                 </Button>
                             </div>
