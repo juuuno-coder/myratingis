@@ -406,13 +406,18 @@ export default function ProjectUploadPage() {
               <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">스티커 투표 옵션</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex bg-chef-panel p-1 bevel-sm gap-1">
-              {(['professional', 'michelin', 'mz'] as const).map(p => (
-                <button key={p} onClick={() => handlePresetChange(p)} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === p ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-20 hover:opacity-100")}>{p}</button>
-              ))}
+          <div className="flex flex-col gap-4 w-full md:w-auto">
+            {/* Preset Selector */}
+            <div className="flex flex-col gap-2">
+                <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest text-right">프리셋 선택</span>
+                <div className="flex bg-chef-panel p-1 bevel-sm gap-1 self-end">
+                  <button onClick={() => handlePresetChange('professional')} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === 'professional' ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-40 hover:opacity-100")}>전문가 (Professional)</button>
+                  <button onClick={() => handlePresetChange('michelin')} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === 'michelin' ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-40 hover:opacity-100")}>미슐랭 (Michelin)</button>
+                  <button onClick={() => handlePresetChange('mz')} className={cn("px-4 py-2 text-[10px] font-black uppercase transition-all", selectedPreset === 'mz' ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-40 hover:opacity-100")}>MZ세대 (MZ)</button>
+                </div>
             </div>
-            <div className="flex items-center gap-4">
+            
+            <div className="flex items-center gap-4 justify-end">
               <span className="text-xs font-black text-chef-text opacity-20">{pollOptions.length}/6</span>
               <Button onClick={() => setPollOptions([...pollOptions, { id: `p-${Date.now()}`, label: "", desc: "", image_url: "" }])} disabled={pollOptions.length >= 6} className="bevel-sm h-10 bg-chef-panel text-chef-text border border-chef-border hover:bg-black/5 dark:hover:bg-white/5 font-black text-[10px] uppercase tracking-widest transition-all"><FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가</Button>
             </div>
