@@ -106,7 +106,7 @@ export default function SignupPage() {
 
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
-                셰프 등록
+                회원가입
               </h2>
               <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
             </div>
@@ -122,10 +122,10 @@ export default function SignupPage() {
               onClick={handleGoogleSignup}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 bg-transparent border-2 border-chef-border text-chef-text hover:bg-chef-panel bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8"
+              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8 shadow-sm"
             >
-              <FcGoogle className="h-4 w-4 mr-3" />
-              구글로 회원가입
+              <FcGoogle className="h-5 w-5 mr-3" />
+              구글 계정으로 계속하기
             </Button>
 
             <div className="relative mb-8">

@@ -199,10 +199,10 @@ function LoginContent() {
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
-              className="w-full h-14 bg-transparent border-2 border-chef-border text-chef-text hover:bg-chef-panel bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all"
+              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all shadow-sm"
             >
-              <FcGoogle className="h-4 w-4 mr-3" />
-              구글로 로그인
+              <FcGoogle className="h-5 w-5 mr-3" />
+              구글 계정으로 계속하기
             </Button>
 
             <div className="mt-12 text-center">
