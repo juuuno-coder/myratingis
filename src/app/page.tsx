@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Rocket, Sparkles, Star } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +17,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
+      <MyRatingIsHeader />
       {/* Background Texture / Gradient */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
@@ -43,6 +45,7 @@ export default function Home() {
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
           className="pt-2 md:pt-4"
         >
@@ -116,9 +119,7 @@ export default function Home() {
       </main>
 
       {/* Footer Hint */}
-      <footer className="relative z-10 py-12 text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">
-        © 2026 MyRatingIs. All Rights Reserved.
-      </footer>
+
     </div>
   );
 }

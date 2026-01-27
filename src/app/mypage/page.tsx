@@ -456,13 +456,13 @@ export default function MyPage() {
 
   const tabs = [
     { id: 'projects' as TabType, label: '나의 키친', icon: ChefHat, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    { id: 'audit_requests' as TabType, label: '의뢰 현황', icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-600' },
+    // { id: 'audit_requests' as TabType, label: '의뢰 현황', icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-600' }, // Hidden
     { id: 'comments' as TabType, label: '참여한 평가', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    { id: 'likes' as TabType, label: '관심 요리', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
-    { id: 'collections' as TabType, label: '스크랩북', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
-    { id: 'proposals' as TabType, label: '비즈니스 제안', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
-    ...(isAdmin ? [{ id: 'dashboard' as TabType, label: '성과 리포트', icon: BarChart, color: 'text-orange-600', bgColor: 'bg-orange-600' }] : []),
-    { id: 'settings' as TabType, label: '셰프 설정', icon: Settings, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'likes' as TabType, label: '좋아요', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
+    { id: 'collections' as TabType, label: '컬렉션', icon: Folder, color: 'text-indigo-500', bgColor: 'bg-indigo-500' },
+    { id: 'proposals' as TabType, label: '1:1 문의', icon: Send, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    // ...(isAdmin ? [{ id: 'dashboard' as TabType, label: '성과 리포트', icon: BarChart, color: 'text-orange-600', bgColor: 'bg-orange-600' }] : []), // Hidden
+    { id: 'settings' as TabType, label: '프로필 설정', icon: Settings, color: 'text-chef-text', bgColor: 'bg-chef-text' },
   ];
 
   return (

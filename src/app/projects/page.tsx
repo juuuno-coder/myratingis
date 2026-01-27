@@ -141,13 +141,6 @@ export default function ProjectsPage() {
                       {(() => {
                         const getSmartThumbnail = () => {
                             if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) return p.thumbnail_url;
-                            
-                            const targetLink = p.site_url || 
-                                               (p.custom_data?.audit_config?.type === 'link' ? p.custom_data.audit_config.mediaA : null);
-
-                            if (targetLink && targetLink.startsWith('http')) {
-                                return `https://api.microlink.io/?url=${encodeURIComponent(targetLink)}&screenshot=true&meta=false&embed=screenshot.url`;
-                            }
                             return null;
                         };
                         const SmartThumb = getSmartThumbnail();
@@ -231,7 +224,7 @@ export default function ProjectsPage() {
                              if (!isAuthenticated) { router.push(`/login?returnPath=${encodeURIComponent(window.location.pathname)}`); return; }
                              router.push(`/review/viewer?projectId=${p.project_id}`);
                           }}
-                          className="h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
+                          className="h-14 rounded-none bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
                         >
                           평가 시작하기
                         </Button>
@@ -276,12 +269,7 @@ export default function ProjectsPage() {
         )}
       </main>
 
-      <footer className="py-20 border-t border-chef-border mt-20">
-         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6">
-            <img src="/myratingis-logo.png" className="h-6 opacity-20 brightness-0 dark:invert transition-all" />
-            <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.4em]">© 2026 MyRatingIs. Beyond the Star.</p>
-         </div>
-      </footer>
+
     </div>
   );
 }
