@@ -72,7 +72,7 @@ export default function OnboardingPage() {
 
       const { error } = await supabase
         .from('profiles')
-        .update(updatePayload)
+        .upsert(updatePayload) // Changed from update to upsert to handle missing rows
         .eq('id', user.id);
 
       if (error) throw error;
