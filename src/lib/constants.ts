@@ -4,6 +4,7 @@
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://vibefolio.net';
 
+export const CATEGORY_IDS = {
   PHOTO: 1,
   ANIMATION: 2,
   DESIGN: 3,
