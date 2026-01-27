@@ -157,7 +157,7 @@ export default function ProjectsPage() {
                           src={SmartThumb} 
                           alt={p.title} 
                           fill 
-                          className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                          className="object-contain transition-transform duration-700" 
                           unoptimized={SmartThumb.includes('microlink.io')}
                         />
                       ) : (
