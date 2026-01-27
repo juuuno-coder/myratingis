@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // 3. DB 상세 프로필 조회
         const { data: db, error } = await supabase
           .from('profiles')
-          .select('username, avatar_url, profile_image_url, role, interests, expertise, points, gender, age_range, occupation')
+          .select('username, avatar_url, profile_image_url, role, interests, expertise, points, gender, age_group, occupation')
           .eq('id', u.id)
           .single();
 
