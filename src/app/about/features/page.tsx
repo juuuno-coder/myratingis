@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function FeaturesPage() {
   const router = useRouter();
@@ -73,16 +74,15 @@ export default function FeaturesPage() {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-chef-panel border border-chef-border rounded-lg"
                 >
                    <Zap className="text-orange-500 w-4 h-4" />
-                   <span className="text-[10px] font-black text-chef-text uppercase tracking-widest italic">Core Technology</span>
+                   <span className="text-[10px] font-black text-chef-text uppercase tracking-widest italic">서비스 비전</span>
                 </motion.div>
                 
-                <motion.h1 
                    initial={{ opacity: 0, y: 30 }}
                    animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: 0.1 }}
-                   className="text-6xl md:text-8xl font-black text-chef-text tracking-tighter italic uppercase leading-[0.85]"
+                   className="text-5xl md:text-7xl font-black text-chef-text tracking-tighter italic uppercase leading-[1.1]"
                 >
-                  Beyond The <br/> <span className="text-orange-500">Standard</span>
+                  평가의 <br/> <span className="text-orange-500">새로운 기준</span>
                 </motion.h1>
 
                 <motion.p 
@@ -96,36 +96,27 @@ export default function FeaturesPage() {
                   매끄러운 사용자 경험을 결합한 혁신적인 평가 솔루션입니다.
                 </motion.p>
 
-                <motion.div 
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: 0.3 }}
                    className="flex gap-4 pt-4"
                 >
-                   <Button onClick={() => router.push('/project/upload')} className="h-16 px-10 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xl shadow-2xl shadow-orange-600/20 gap-3 group">
+                   <Button onClick={() => router.push('/project/upload')} className="h-16 px-10 min-w-[320px] rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xl shadow-2xl shadow-orange-600/20 gap-3 group">
                       의뢰 시작하기 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                    </Button>
                 </motion.div>
               </div>
 
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, delay: 0.4, type: "spring" }}
                 className="relative aspect-square md:aspect-auto md:h-[600px] rounded-[4rem] overflow-hidden shadow-2xl border border-chef-border/10"
               >
-                 <img src="/review/a1.jpeg" className="w-full h-full object-cover brightness-75 contrast-125" />
+                 <Image 
+                   src="/review/a1.jpeg" 
+                   alt="Feature Hero" 
+                   fill
+                   priority
+                   className="object-cover brightness-75 contrast-125" 
+                   sizes="(max-width: 768px) 100vw, 50vw"
+                 />
                  <div className="absolute inset-0 bg-gradient-to-t from-chef-bg via-transparent to-transparent" />
-                 <div className="absolute bottom-12 left-12 right-12 p-8 bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 space-y-4">
-                    <div className="flex items-center gap-3">
-                       <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" />
-                       <span className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">System Visualized</span>
-                    </div>
-                    <div className="space-y-2">
-                       <div className="h-4 w-3/4 bg-white/20 rounded-full" />
-                       <div className="h-4 w-1/2 bg-white/10 rounded-full" />
-                    </div>
-                 </div>
               </motion.div>
            </div>
         </div>
