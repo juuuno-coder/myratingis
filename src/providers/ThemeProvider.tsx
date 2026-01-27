@@ -45,10 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  // 하이드레이션 불일치 방지
-  if (!mounted) {
-    return <>{children}</>;
-  }
+
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
