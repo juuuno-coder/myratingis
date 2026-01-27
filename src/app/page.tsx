@@ -43,9 +43,8 @@ export default function Home() {
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="pt-4 md:pt-8"
+          className="pt-2 md:pt-4"
         >
           <img 
             src="/myratingis-logo.png" 
