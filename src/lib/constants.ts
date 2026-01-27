@@ -57,7 +57,7 @@ export const GENRE_CATEGORIES = [
   { id: "game", label: "게임" },
 ];
 
-  { id: "finance", label: "경제/금융" },
+export const FIELD_CATEGORIES = [
   { id: "law", label: "법률" },
   { id: "administration", label: "행정/공공" },
   { id: "startup", label: "창업/스타트업" },
