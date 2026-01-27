@@ -491,6 +491,7 @@
     font-weight: 500 !important;
     background-color: var(--chef-panel) !important;
     border: 1px solid var(--chef-border) !important;
+    border-radius: 0px !important; /* 직사각형 형태 */
     transition: all 0.2s ease;
   }
 
@@ -655,40 +656,40 @@
   /* Bevel cut corners style (Smoother) */
   .bevel-cta {
     clip-path: polygon(
-      4px 0, 
-      calc(100% - 4px) 0, 
-      100% 4px, 
-      100% calc(100% - 4px), 
-      calc(100% - 4px) 100%, 
-      4px 100%, 
-      0 calc(100% - 4px), 
-      0 4px
+      6px 0, 
+      calc(100% - 6px) 0, 
+      100% 6px, 
+      100% calc(100% - 6px), 
+      calc(100% - 6px) 100%, 
+      6px 100%, 
+      0 calc(100% - 6px), 
+      0 6px
     );
   }
 
   .bevel-sm {
     clip-path: polygon(
-      2px 0, 
-      calc(100% - 2px) 0, 
-      100% 2px, 
-      100% calc(100% - 2px), 
-      calc(100% - 2px) 100%, 
-      2px 100%, 
-      0 calc(100% - 2px), 
-      0 2px
+      3px 0, 
+      calc(100% - 3px) 0, 
+      100% 3px, 
+      100% calc(100% - 3px), 
+      calc(100% - 3px) 100%, 
+      3px 100%, 
+      0 calc(100% - 3px), 
+      0 3px
     );
   }
 
   .bevel-section {
     clip-path: polygon(
-      8px 0, 
-      calc(100% - 8px) 0, 
-      100% 8px, 
-      100% calc(100% - 8px), 
-      calc(100% - 8px) 100%, 
-      8px 100%, 
-      0 calc(100% - 8px), 
-      0 8px
+      12px 0, 
+      calc(100% - 12px) 0, 
+      100% 12px, 
+      100% calc(100% - 12px), 
+      calc(100% - 12px) 100%, 
+      12px 100%, 
+      0 calc(100% - 12px), 
+      0 12px
     );
   }
 }
