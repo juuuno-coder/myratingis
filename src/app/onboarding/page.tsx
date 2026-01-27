@@ -214,12 +214,13 @@ export default function OnboardingPage() {
                             <p className="text-sm text-gray-500">현재 주로 활동하는 분야를 알려주세요.</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            {['학생', '직장인', '프리랜서', '사업가', '구직자', '기타'].map((job) => (
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                            {['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자', '기타'].map((job) => (
                                 <button
                                     key={job}
-                                    onClick={() => setFormData({ ...formData, occupation: job })}
-                                    className={`h-14 rounded-none font-bold border-2 transition-all ${formData.occupation === job
+                                    onClick={() => setFormData({ ...formData, occupation: job === '기타' ? '' : job })}
+                                    className={`h-14 rounded-none font-bold border-2 transition-all ${
+                                        (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
                                         ? 'bg-orange-600 border-orange-600 text-white'
                                         : 'bg-transparent border-gray-200 text-gray-500 hover:border-orange-200'
                                         }`}
@@ -228,6 +229,21 @@ export default function OnboardingPage() {
                                 </button>
                             ))}
                         </div>
+                        
+                        {/* '기타' 선택 시 직접 입력 필드 노출 (직업이 위 목록에 없으면) */}
+                        {!['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && (
+                            <div className="animate-in fade-in slide-in-from-top-2">
+                                <Label className="text-xs font-bold text-orange-500 mb-1 block">직업을 직접 입력해주세요</Label>
+                                <input 
+                                    type="text" 
+                                    value={formData.occupation}
+                                    onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                                    placeholder="예: 작가, 아티스트 등"
+                                    className="w-full h-12 px-4 border-b-2 border-orange-500 bg-transparent outline-none font-bold text-chef-text placeholder:text-gray-300 rounded-none focus:bg-orange-500/5 transition-colors"
+                                    autoFocus
+                                />
+                            </div>
+                        )}
 
                         <div className="flex-1" />
                         <Button onClick={handleNext} className="w-full h-14 bg-white text-black hover:bg-gray-200 text-lg font-black rounded-none">

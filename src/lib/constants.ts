@@ -57,8 +57,10 @@ export const GENRE_CATEGORIES = [
   { id: "game", label: "게임" },
 ];
 
-export const FIELD_CATEGORIES = [
   { id: "finance", label: "경제/금융" },
+  { id: "law", label: "법률" },
+  { id: "administration", label: "행정/공공" },
+  { id: "startup", label: "창업/스타트업" },
   { id: "healthcare", label: "헬스케어" },
   { id: "beauty", label: "뷰티/패션" },
   { id: "pet", label: "반려" },
