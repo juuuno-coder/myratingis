@@ -1,48 +1,41 @@
--- 1. Create/Update Profiles Table
-create table if not exists public.profiles (
-  id uuid references auth.users on delete cascade not null primary key,
-  username text,
-  full_name text,
-  avatar_url text,
-  profile_image_url text,
-  website text,
-  gender text,
-  age_group text,
-  occupation text,
-  role text default 'user',
-  points integer default 0,
-  expertise jsonb default '[]'::jsonb,
-  interests jsonb default '[]'::jsonb,
-  updated_at timestamp with time zone,
-  
-  constraint username_length check (char_length(username) >= 2)
-);
+-- 1. Ensure all columns exist (Using ALTER TABLE to be safe if table already exists)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='gender') THEN
+        ALTER TABLE public.profiles ADD COLUMN gender text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='age_group') THEN
+        ALTER TABLE public.profiles ADD COLUMN age_group text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='occupation') THEN
+        ALTER TABLE public.profiles ADD COLUMN occupation text;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='role') THEN
+        ALTER TABLE public.profiles ADD COLUMN role text DEFAULT 'user';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='points') THEN
+        ALTER TABLE public.profiles ADD COLUMN points integer DEFAULT 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='expertise') THEN
+        ALTER TABLE public.profiles ADD COLUMN expertise jsonb DEFAULT '{"fields": []}'::jsonb;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='interests') THEN
+        ALTER TABLE public.profiles ADD COLUMN interests jsonb DEFAULT '{"genres": [], "fields": []}'::jsonb;
+    END IF;
+END $$;
 
 -- 2. Enable RLS
 alter table public.profiles enable row level security;
 
--- 3. Drop existing policies to avoid conflicts
+-- 3. Re-create Policies
 drop policy if exists "Public profiles are viewable by everyone." on profiles;
 drop policy if exists "Users can insert their own profile." on profiles;
 drop policy if exists "Users can update own profile." on profiles;
 
--- 4. Re-create Policies (Corrected)
+create policy "Public profiles are viewable by everyone." on profiles for select using ( true );
+create policy "Users can insert their own profile." on profiles for insert with check ( auth.uid() = id );
+create policy "Users can update own profile." on profiles for update using ( auth.uid() = id );
 
--- Allow public read access
-create policy "Public profiles are viewable by everyone."
-  on profiles for select
-  using ( true );
-
--- Allow users to insert their *own* profile row
-create policy "Users can insert their own profile."
-  on profiles for insert
-  with check ( auth.uid() = id );
-
--- Allow users to update their *own* profile row
-create policy "Users can update own profile."
-  on profiles for update
-  using ( auth.uid() = id );
-
--- 5. Grant usage (just in case)
+-- 4. Grant usage
 grant usage on schema public to anon, authenticated;
 grant all on public.profiles to anon, authenticated;
