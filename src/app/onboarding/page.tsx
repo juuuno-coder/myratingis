@@ -63,7 +63,7 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("로그인이 필요합니다.");
 
-      const updatePayload = {
+      const updatePayload: any = {
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
