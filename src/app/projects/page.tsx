@@ -138,18 +138,34 @@ export default function ProjectsPage() {
                         router.push(`/review/viewer?projectId=${p.project_id}`);
                      }}
                    >
-                      {p.thumbnail_url ? (
+                      {(() => {
+                        const getSmartThumbnail = () => {
+                            if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) return p.thumbnail_url;
+                            
+                            const targetLink = p.site_url || 
+                                               (p.custom_data?.audit_config?.type === 'link' ? p.custom_data.audit_config.mediaA : null);
+
+                            if (targetLink && targetLink.startsWith('http')) {
+                                return `https://api.microlink.io/?url=${encodeURIComponent(targetLink)}&screenshot=true&meta=false&embed=screenshot.url`;
+                            }
+                            return null;
+                        };
+                        const SmartThumb = getSmartThumbnail();
+                        
+                        return SmartThumb ? (
                         <Image 
-                          src={p.thumbnail_url} 
+                          src={SmartThumb} 
                           alt={p.title} 
                           fill 
                           className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                          unoptimized={SmartThumb.includes('microlink.io')}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-chef-panel to-chef-card opacity-30">
                           <ChefHat className="w-12 h-12" />
                         </div>
-                      )}
+                      );
+                      })()}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                          <ArrowRight className="text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={32} />
                       </div>

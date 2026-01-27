@@ -13,6 +13,7 @@ interface OptimizedImageProps {
   height?: number;
   priority?: boolean;
   fallbackSrc?: string;
+  unoptimized?: boolean;
 }
 
 export function OptimizedImage({
@@ -23,7 +24,8 @@ export function OptimizedImage({
   width,
   height,
   priority = false,
-  fallbackSrc = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800'
+  fallbackSrc = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
+  unoptimized = false
 }: OptimizedImageProps) {
   const [imgSrc, setImgSrc] = useState(src);
   const [error, setError] = useState(false);
@@ -59,6 +61,7 @@ export function OptimizedImage({
         className={className}
         onError={handleError}
         priority={priority}
+        unoptimized={unoptimized}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
     );
@@ -73,6 +76,7 @@ export function OptimizedImage({
       className={className}
       onError={handleError}
       priority={priority}
+      unoptimized={unoptimized}
     />
   );
 }

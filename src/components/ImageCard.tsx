@@ -44,6 +44,8 @@ interface ImageCardProps {
     userId?: string;
     is_feedback_requested?: boolean;
     is_growth_requested?: boolean;
+    site_url?: string;
+    custom_data?: any;
   } | null;
   className?: string;
   onClick?: () => void;
@@ -67,8 +69,26 @@ export const ImageCard = forwardRef<HTMLDivElement, ImageCardProps>(
 
     if (!props) return null;
 
-    // 안전한 데이터 접근
-    const imageUrl = props.urls?.regular || props.urls?.full || FALLBACK_IMAGE;
+    // [New] 스마트 썸네일 로직: 기존 이미지가 없거나 플레이스홀더인 경우 웹 스크린샷 시도
+    const getSmartThumbnail = () => {
+        // 1. 유효한 업로드 이미지가 있는 경우
+        if (props.urls?.regular && !props.urls.regular.includes('placeholder')) return props.urls.regular;
+        if (props.urls?.full && !props.urls.full.includes('placeholder')) return props.urls.full;
+        
+        // 2. 웹 사이트 URL이나 링크 타입 프로젝트인 경우 스크린샷 썸네일 생성
+        const targetLink = props.site_url || 
+                           (props.custom_data?.audit_config?.type === 'link' ? props.custom_data.audit_config.mediaA : null);
+
+        if (targetLink && (targetLink.startsWith('http'))) {
+            return `https://api.microlink.io/?url=${encodeURIComponent(targetLink)}&screenshot=true&meta=false&embed=screenshot.url`;
+        }
+
+        // 3. 이미지 정보 사용 (비록 placeholder일지라도)
+        return props.urls?.regular || props.urls?.full || FALLBACK_IMAGE;
+    };
+
+    const imageUrl = getSmartThumbnail();
+    const isExternalThumbnail = imageUrl.includes('microlink.io');
     const username = props.user?.username || 'Unknown';
     const avatarUrl = props.user?.profile_image?.large || props.user?.profile_image?.small || FALLBACK_AVATAR;
     const likes = props.likes ?? 0;
@@ -202,6 +222,7 @@ export const ImageCard = forwardRef<HTMLDivElement, ImageCardProps>(
                 className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
                 width={800}
                 height={600}
+                unoptimized={isExternalThumbnail}
               />
             </>
           )}

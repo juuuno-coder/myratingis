@@ -170,7 +170,7 @@ export default function MyPage() {
         if (activeTab === 'projects' || activeTab === 'audit_requests') {
           const { data } = await supabase
             .from('Project')
-            .select('project_id, title, thumbnail_url, likes_count, views_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline')
+            .select('project_id, title, thumbnail_url, likes_count, views_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline, site_url')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
           
@@ -192,6 +192,7 @@ export default function MyPage() {
             custom_data: p.custom_data,
             scheduled_at: p.scheduled_at,
             visibility: p.visibility || 'public',
+            site_url: p.site_url,
           })));
           
         } else if (activeTab === 'likes') {
