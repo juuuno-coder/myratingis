@@ -107,7 +107,7 @@ function LoginContent() {
 
             <div className="text-center mb-10">
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
-                Chef's Login
+                셰프 로그인
               </h2>
               <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
             </div>
@@ -122,7 +122,7 @@ function LoginContent() {
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label htmlFor="email-address" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    Email Identity
+                    이메일 주소
                   </label>
                   <input
                     id="email-address"
@@ -138,7 +138,7 @@ function LoginContent() {
 
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    Security Key
+                    비밀번호
                   </label>
                   <input
                     id="password"
@@ -166,12 +166,12 @@ function LoginContent() {
                     </div>
                   </div>
                   <label htmlFor="remember-me" className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest cursor-pointer group-hover:opacity-60 transition-colors">
-                    Keep me logged in
+                    로그인 유지
                   </label>
                 </div>
 
                 <Link href="/forgot-password" className="text-[10px] font-black text-orange-500 uppercase tracking-widest hover:text-orange-400 transition-colors">
-                  Lost Key?
+                  비밀번호 찾기
                 </Link>
               </div>
 
@@ -180,7 +180,7 @@ function LoginContent() {
                 disabled={loading}
                 className="w-full h-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
               >
-                {loading ? "AUTHENTICATING..." : "ENTER STUDIO"}
+                {loading ? "로그인 중..." : "입장하기"}
               </Button>
             </form>
 
@@ -189,7 +189,7 @@ function LoginContent() {
                 <div className="w-full border-t border-white/5" />
               </div>
               <div className="relative flex justify-center text-[8px] font-black uppercase tracking-[0.4em]">
-                <span className="bg-chef-card px-4 text-chef-text opacity-20">OR AUTHENTICATE VIA</span>
+                <span className="bg-chef-card px-4 text-chef-text opacity-20">또는 소셜 로그인</span>
               </div>
             </div>
 
@@ -199,17 +199,17 @@ function LoginContent() {
               className="w-full h-14 bg-transparent border-2 border-chef-border text-chef-text hover:bg-chef-panel bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all"
             >
               <FcGoogle className="h-4 w-4 mr-3" />
-              Login with Google
+              구글로 로그인
             </Button>
 
             <div className="mt-12 text-center">
               <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest">
-                New to the platform?{" "}
+                계정이 없으신가요?{" "}
                 <Link
                   href="/signup"
                   className="text-orange-500 hover:text-orange-400 underline underline-offset-4 ml-2"
                 >
-                  Join the Kitchen
+                  회원가입
                 </Link>
               </p>
             </div>
@@ -222,7 +222,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse">INITIATING...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse">로딩 중...</div>}>
       <LoginContent />
     </Suspense>
   );

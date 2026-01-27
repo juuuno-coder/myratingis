@@ -106,7 +106,7 @@ export default function SignupPage() {
 
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
-                Register as Chef
+                셰프 등록
               </h2>
               <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
             </div>
@@ -125,7 +125,7 @@ export default function SignupPage() {
               className="w-full h-14 bg-transparent border-2 border-chef-border text-chef-text hover:bg-chef-panel bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8"
             >
               <FcGoogle className="h-4 w-4 mr-3" />
-              Join with Google
+              구글로 회원가입
             </Button>
 
             <div className="relative mb-8">
@@ -133,7 +133,7 @@ export default function SignupPage() {
                 <div className="w-full border-t border-white/5" />
               </div>
               <div className="relative flex justify-center text-[8px] font-black uppercase tracking-[0.4em]">
-                <span className="bg-chef-card px-4 text-chef-text opacity-20">OR CREATE CHEF ID</span>
+                <span className="bg-chef-card px-4 text-chef-text opacity-20">또는 이메일로 가입</span>
               </div>
             </div>
 
@@ -141,7 +141,7 @@ export default function SignupPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    Email Identity
+                    이메일 주소
                   </label>
                   <input
                     id="email"
@@ -157,7 +157,7 @@ export default function SignupPage() {
 
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    Security Key
+                    비밀번호
                   </label>
                   <input
                     id="password"
@@ -173,7 +173,7 @@ export default function SignupPage() {
 
                 <div className="space-y-2">
                   <label htmlFor="password-confirm" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    Confirm Key
+                    비밀번호 확인
                   </label>
                   <input
                     id="password-confirm"
@@ -193,25 +193,23 @@ export default function SignupPage() {
                 disabled={loading}
                 className="w-full h-16 bg-orange-600 text-white hover:bg-orange-700 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl mt-4"
               >
-                {loading ? "PROCESSING..." : "JOIN THE KITCHEN"}
+                {loading ? "처리 중..." : "회원가입 완료"}
               </Button>
             </form>
 
             <div className="mt-10 text-center space-y-4">
               <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest leading-relaxed">
-                Already a Chef?{" "}
+                이미 계정이 있으신가요?{" "}
                 <Link
                   href="/login"
                   className="text-chef-text hover:text-orange-500 underline underline-offset-4 ml-2"
                 >
-                  Enter Studio
+                  로그인하기
                 </Link>
               </p>
               
               <p className="text-[8px] font-black text-chef-text opacity-10 uppercase tracking-widest leading-loose max-w-[200px] mx-auto">
-                By joining, you agree to our{" "}
-                <Link href="/policy/terms" className="underline">Terms</Link> &{" "}
-                <Link href="/policy/privacy" className="underline">Privacy Policy</Link>
+                가입 시 <Link href="/policy/terms" className="underline">이용약관</Link> 및 <Link href="/policy/privacy" className="underline">개인정보처리방침</Link>에 동의하게 됩니다.
               </p>
             </div>
           </div>

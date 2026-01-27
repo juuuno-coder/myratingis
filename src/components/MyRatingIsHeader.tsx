@@ -38,11 +38,11 @@ export function MyRatingIsHeader() {
           {/* Info Links */}
           <nav className="flex items-center gap-6 mr-4">
              <Link href="/about/features" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
-                Features
+                서비스 소개
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
              </Link>
              <Link href="/faq" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
-                FAQ
+                자주 묻는 질문
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
              </Link>
           </nav>
@@ -89,7 +89,7 @@ export function MyRatingIsHeader() {
                       className="w-full text-left px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2 text-xs font-black text-chef-text opacity-70 hover:opacity-100 transition-all"
                     >
                       <User className="w-4 h-4" />
-                      MY STUDIO
+                      마이 스튜디오
                     </button>
                     <button
                       onClick={() => {
@@ -99,7 +99,7 @@ export function MyRatingIsHeader() {
                       className="w-full text-left px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2 text-xs font-black text-red-500 hover:text-red-400 transition-all"
                     >
                       <LogOut className="w-4 h-4" />
-                      LOGOUT
+                      로그아웃
                     </button>
                   </div>
                 )}
@@ -109,12 +109,12 @@ export function MyRatingIsHeader() {
             <div className="flex items-center gap-2">
               <Link href="/login">
                 <Button variant="ghost" className="text-chef-text opacity-60 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 px-5 font-black text-xs uppercase tracking-widest transition-all">
-                  Login
+                  로그인
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button className="bg-chef-text text-chef-bg hover:opacity-90 bevel-cta px-6 font-black text-xs uppercase tracking-widest transition-all">
-                  Signup
+                  회원가입
                 </Button>
               </Link>
             </div>
@@ -168,7 +168,7 @@ export function MyRatingIsHeader() {
                       className="w-full rounded-2xl h-14 font-black text-chef-text border-chef-border text-[11px] uppercase tracking-widest bg-white/5"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      MY STUDIO
+                      마이 스튜디오
                     </Button>
                     <Button
                       onClick={() => {
@@ -202,25 +202,25 @@ export function MyRatingIsHeader() {
               <div className="grid grid-cols-2 gap-3 mt-2">
                  <Link href="/about/features" onClick={() => setIsMenuOpen(false)}>
                     <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       Features
+                       서비스 소개
                     </div>
                  </Link>
                  <Link href="/faq" onClick={() => setIsMenuOpen(false)}>
                     <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       FAQ
+                       자주 묻는 질문
                     </div>
                  </Link>
               </div>
               
               {/* Theme Toggle in Mobile */}
               <div className="pt-4 mt-2 border-t border-chef-border/30 flex items-center justify-between">
-                 <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest italic">Appearance Mode</span>
+                 <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest italic">화면 모드 설정</span>
                  <button 
                     onClick={toggleTheme}
                     className="flex items-center gap-3 px-4 py-2 rounded-full bg-chef-panel border border-chef-border text-xs font-black text-chef-text"
                   >
                     {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-                    {theme === 'dark' ? 'LIGHT' : 'DARK'}
+                    {theme === 'dark' ? '라이트 모드' : '다크 모드'}
                   </button>
               </div>
             </div>
