@@ -262,7 +262,7 @@ export default function ProjectUploadPage() {
                  ))}
                  <label className="w-24 h-24 bevel-sm border-2 border-dashed border-chef-border flex flex-col items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-chef-text opacity-20 hover:opacity-100">
                    <FontAwesomeIcon icon={faPlus} className="mb-2" />
-                   <span className="text-[8px] font-black uppercase">Add {auditType === 'image' ? 'Image' : 'File'}</span>
+                   <span className="text-[8px] font-black uppercase">{auditType === 'image' ? '이미지' : '파일'} 추가</span>
                    <input 
                      type="file" 
                      multiple 
@@ -347,7 +347,7 @@ export default function ProjectUploadPage() {
             <div className="w-14 h-14 bg-orange-500 text-white flex items-center justify-center text-2xl bevel-section">🎯</div>
             <div>
               <h3 className="text-2xl font-black text-chef-text tracking-tighter uppercase italic">1. 미슐랭 평가 설정</h3>
-              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">EVALUATION METRICS</p>
+              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">평가 기준 설정</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -390,7 +390,7 @@ export default function ProjectUploadPage() {
 
       <div className="flex justify-between items-center pt-8">
         <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">NEXT: STICKER POLL <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
+        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">다음: 스티커 투표 설정 <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
       </div>
     </motion.div>
   );
@@ -403,7 +403,7 @@ export default function ProjectUploadPage() {
             <div className="w-14 h-14 bg-indigo-600 text-white flex items-center justify-center text-2xl bevel-section">📊</div>
             <div>
               <h3 className="text-2xl font-black text-chef-text tracking-tighter uppercase italic">2. 스티커 투표 설정</h3>
-              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">STICKER POLL OPTIONS</p>
+              <p className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.3em] mt-0.5">스티커 투표 옵션</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-3">
@@ -420,7 +420,7 @@ export default function ProjectUploadPage() {
         </div>
 
         <div className="chef-frame-container">
-          <div className="chef-frame-header">STICKER MENU</div>
+          <div className="chef-frame-header">스티커 메뉴</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pollOptions.map((opt, idx) => (
               <div key={idx} className="chef-menu-card group">
@@ -432,7 +432,7 @@ export default function ProjectUploadPage() {
                     <FontAwesomeIcon icon={faCamera} className="text-chef-text opacity-10 text-3xl" />
                   )}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
-                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">Select Image</span>
+                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">이미지 선택</span>
                   </div>
                   <input type="file" className="hidden" onChange={async e => {
                     const file = e.target.files?.[0];
@@ -486,7 +486,7 @@ export default function ProjectUploadPage() {
 
       <div className="flex justify-between items-center pt-10 border-t border-chef-border">
         <Button variant="ghost" onClick={() => setAuditStep(2)} className="h-14 px-8 font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={() => setAuditStep(4)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">NEXT: QUESTIONNAIRE <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
+        <Button onClick={() => setAuditStep(4)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">다음: 심층 질문 설정 <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
       </div>
     </motion.div>
   );
@@ -505,7 +505,7 @@ export default function ProjectUploadPage() {
           {auditQuestions.map((q, idx) => (
             <div key={idx} className="flex flex-col gap-3 group p-8 bg-chef-panel bevel-section border border-chef-border relative">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] italic">Deep Questionnaire {idx+1}</span>
+                <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] italic">심층 질문 {idx+1}</span>
                 {auditQuestions.length > 1 && (
                   <button onClick={() => setAuditQuestions(auditQuestions.filter((_, i) => i !== idx))} className="text-chef-text opacity-20 hover:text-red-400 hover:opacity-100 transition-all p-1">
                     <FontAwesomeIcon icon={faTrash} size="sm" />
@@ -554,7 +554,7 @@ export default function ProjectUploadPage() {
               <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">4. 보약(보상/약속) 설정</h3>
            </div>
            <div className="px-4 py-1.5 bg-chef-panel border border-chef-border text-[10px] font-black text-orange-500 uppercase tracking-widest rounded-full animate-pulse">
-              Admin Only Beta
+              관리자 전용 베타
            </div>
         </div>
 
@@ -571,7 +571,7 @@ export default function ProjectUploadPage() {
                       )}
                     >
                        <FontAwesomeIcon icon={faCoins} size="2xl" />
-                       <span className="font-black text-xs uppercase tracking-widest">Point Reward</span>
+                       <span className="font-black text-xs uppercase tracking-widest">포인트 보상</span>
                     </button>
                     <button 
                       onClick={() => setRewardType('coupon')}
@@ -581,7 +581,7 @@ export default function ProjectUploadPage() {
                       )}
                     >
                        <FontAwesomeIcon icon={faGift} size="2xl" />
-                       <span className="font-black text-xs uppercase tracking-widest">Gifticon Shop</span>
+                       <span className="font-black text-xs uppercase tracking-widest">기프티콘 샵</span>
                     </button>
                  </div>
               </div>
@@ -603,7 +603,7 @@ export default function ProjectUploadPage() {
                  <FontAwesomeIcon icon={faCalculator} size="10x" />
               </div>
               <h4 className="text-xl font-black text-chef-text italic uppercase flex items-center gap-3">
-                 <FontAwesomeIcon icon={faCoins} className="text-orange-500" /> Real-time Billing
+                 <FontAwesomeIcon icon={faCoins} className="text-orange-500" /> 실시간 청구 내역
               </h4>
               <div className="space-y-4 border-y border-chef-border py-6">
                  <div className="flex justify-between text-chef-text font-bold">
@@ -620,7 +620,7 @@ export default function ProjectUploadPage() {
                  </div>
               </div>
               <div className="flex justify-between items-end">
-                 <span className="text-xs font-black text-chef-text opacity-40 uppercase tracking-widest">Final Total</span>
+                 <span className="text-xs font-black text-chef-text opacity-40 uppercase tracking-widest">최종 합계</span>
                  <span className="text-4xl font-black italic text-chef-text tracking-tighter">{(rewardAmount * recipientCount * 1.21).toLocaleString()} P</span>
               </div>
            </div>
@@ -644,7 +644,7 @@ export default function ProjectUploadPage() {
          <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-4">
                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-               <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">Evaluation Request Lab</span>
+               <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">평가 의뢰 연구소</span>
             </div>
             <div className="flex items-center gap-3">
                {[1, 2, 3, 4, ...(isAdmin ? [5] : [])].map(s => (
