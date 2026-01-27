@@ -12,6 +12,7 @@ import { RootLayoutContent } from "@/components/layout/RootLayoutContent";
 import RealtimeListener from "@/components/RealtimeListener";
 import { VisitTracker } from "@/components/VisitTracker";
 import { headers } from "next/headers";
+import { OnboardingModal } from "@/components/auth/OnboardingModal";
 
 export const revalidate = 0; // 메타데이터 실시간 반영을 위해 캐시 끄기
 
@@ -155,6 +156,7 @@ export default function RootLayout({
           <AutoLogoutProvider>
             <TooltipProvider>
               <RealtimeListener />
+              <OnboardingModal />
               <RootLayoutContent
                 isReviewServer={headers().get("host")?.includes("review")}
               >

@@ -46,18 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   // ====== Enforce Onboarding ======
-  useEffect(() => {
-    if (!loading && user && userProfile) {
-      // Check if essential fields are missing
-      const isMissingInfo = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
-      
-      // Allow access to onboarding, logout, api, and non-protected routes
-      if (isMissingInfo && pathname !== "/onboarding" && !pathname?.startsWith("/api") && !pathname?.startsWith("/auth")) {
-          console.log("Redirecting to onboarding due to missing info:", { gender: userProfile.gender, age: userProfile.age_range, job: userProfile.occupation });
-          router.replace("/onboarding");
-      }
-    }
-  }, [loading, user, userProfile, pathname, router]);
+  // ====== Enforce Onboarding (Disabled in favor of Modal) ======
+  // useEffect(() => {
+  //   if (!loading && user && userProfile) {
+  //     const isMissingInfo = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
+  //     if (isMissingInfo && pathname !== "/onboarding" && !pathname?.startsWith("/api") && !pathname?.startsWith("/auth")) {
+  //         // console.log("Redirecting to onboarding due to missing info:", { ... });
+  //         // router.replace("/onboarding");
+  //     }
+  //   }
+  // }, [loading, user, userProfile, pathname, router]);
 
   // [New] Realtime Profile Update Listener (Expanded to include onboarding fields)
   useEffect(() => {
