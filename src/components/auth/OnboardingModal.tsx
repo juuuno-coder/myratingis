@@ -91,12 +91,14 @@ export function OnboardingModal() {
       toast.success("프로필 설정이 완료되었습니다!");
       
       // Force reload to ensure absolutely fresh state and clear any stuck modal logic
-      // This is the "nuclear option" to guarantee the user is unblocked
       window.location.reload(); 
       
     } catch (error: any) {
       console.error("Onboarding Catch:", error);
-      toast.error(`저장 실패: ${error.message || error.details || "알 수 없는 오류"}`);
+      const errorMsg = error.message || error.details || JSON.stringify(error) || "알 수 없는 오류";
+      // Explicitly alert the user as requested so they know the exact cause
+      alert(`저장 중 오류가 발생했습니다:\n${errorMsg}\n\n잠시 후 다시 시도하거나 관리자에게 문의하세요.`);
+      toast.error(`저장 실패: ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }
