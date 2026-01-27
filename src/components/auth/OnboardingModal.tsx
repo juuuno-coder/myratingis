@@ -59,30 +59,44 @@ export function OnboardingModal() {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) {
+        toast.error("로그인 정보가 없습니다. 다시 로그인해주세요.");
+        return;
+    }
     setIsSubmitting(true);
     try {
       const updatePayload: any = {
-        id: user.id,
+        id: user.id, // Explicitly include ID for RLS
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
-        expertise: { fields: formData.expertise },
+        expertise: { fields: formData.expertise }, // Ensure column is JSONB in DB
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      console.log("Onboarding Payload:", updatePayload);
+
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert(updatePayload);
+        .upsert(updatePayload)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Onboarding Save Error:", error);
+        throw error;
+      }
+      
+      console.log("Onboarding Success:", data);
 
-      await refreshUserProfile();
-      toast.success("환영합니다! 시작해보세요.");
-      setOpen(false);
+      toast.success("프로필 설정이 완료되었습니다!");
+      
+      // Force reload to ensure absolutely fresh state and clear any stuck modal logic
+      // This is the "nuclear option" to guarantee the user is unblocked
+      window.location.reload(); 
       
     } catch (error: any) {
-      toast.error(error.message || "저장 중 오류가 발생했습니다.");
+      console.error("Onboarding Catch:", error);
+      toast.error(`저장 실패: ${error.message || error.details || "알 수 없는 오류"}`);
     } finally {
       setIsSubmitting(false);
     }
