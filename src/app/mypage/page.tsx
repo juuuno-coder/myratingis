@@ -110,7 +110,7 @@ export default function MyPage() {
       try {
         const { data: dbProfile } = await supabase
           .from('profiles')
-          .select('username, nickname, bio, cover_image_url, social_links, interests, is_public')
+          .select('username, nickname, bio, cover_image_url, social_links, interests, is_public, gender, age_group, occupation, expertise')
           .eq('id', authUser.id)
           .single();
 
@@ -125,6 +125,11 @@ export default function MyPage() {
           social_links: (dbProfile as any)?.social_links || {},
           interests: (dbProfile as any)?.interests,
           is_public: (dbProfile as any)?.is_public,
+          // Add onboarding fields
+          gender: (dbProfile as any)?.gender,
+          age_group: (dbProfile as any)?.age_group,
+          occupation: (dbProfile as any)?.occupation,
+          expertise: (dbProfile as any)?.expertise,
           id: authUser.id, 
         });
 
