@@ -12,6 +12,9 @@ import {
   faCode,
   faMobileScreen,
   faGamepad,
+  faBuilding,
+  faBook,
+  faLaptopCode,
 } from "@fortawesome/free-solid-svg-icons";
 import { GENRE_CATEGORIES as GENRES_CONST, FIELD_CATEGORIES as FIELDS_CONST } from "@/lib/constants";
 
@@ -19,15 +22,12 @@ import { GENRE_CATEGORIES as GENRES_CONST, FIELD_CATEGORIES as FIELDS_CONST } fr
 const GENRE_ICONS: Record<string, any> = {
   photo: faCamera,
   animation: faWandMagicSparkles,
-  graphic: faPalette,
-  design: faPenRuler,
+  design: faPalette,
   video: faVideo,
-  cinema: faFilm,
-  audio: faHeadphones,
-  "3d": faCube,
-  text: faFileLines,
-  code: faCode,
-  webapp: faMobileScreen,
+  entertainment: faHeadphones,
+  construction: faBuilding,
+  writing: faBook,
+  development: faLaptopCode,
   game: faGamepad,
 };
 

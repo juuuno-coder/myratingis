@@ -4,34 +4,27 @@
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://vibefolio.net';
 
-export const CATEGORY_IDS = {
   PHOTO: 1,
   ANIMATION: 2,
-  GRAPHIC: 3,
-  DESIGN: 4,
-  VIDEO: 5,
-  CINEMA: 6,
-  AUDIO: 7,
-  "3D": 8,
-  TEXT: 9,
-  CODE: 10,
-  WEBAPP: 11,
-  GAME: 12,
+  DESIGN: 3,
+  VIDEO: 4,
+  ENTERTAINMENT: 5,
+  CONSTRUCTION: 6,
+  WRITING: 7,
+  DEVELOPMENT: 8,
+  GAME: 9,
 } as const;
 
 export const GENRE_TO_CATEGORY_ID: Record<string, number> = {
   photo: 1,
   animation: 2,
-  graphic: 3,
-  design: 4,
-  video: 5,
-  cinema: 6,
-  audio: 7,
-  "3d": 8,
-  text: 9,
-  code: 10,
-  webapp: 11,
-  game: 12,
+  design: 3,
+  video: 4,
+  entertainment: 5,
+  construction: 6,
+  writing: 7,
+  development: 8,
+  game: 9,
 };
 
 export const CONTACT_EMAIL = 'support@vibefolio.com';
@@ -45,15 +38,12 @@ export const SOCIAL_LINKS = {
 export const GENRE_CATEGORIES = [
   { id: "photo", label: "포토" },
   { id: "animation", label: "웹툰/애니" },
-  { id: "graphic", label: "그래픽" },
-  { id: "design", label: "디자인" },
-  { id: "video", label: "영상" },
-  { id: "cinema", label: "영화·드라마" },
-  { id: "audio", label: "오디오" },
-  { id: "3d", label: "3D" },
-  { id: "text", label: "텍스트" },
-  { id: "code", label: "코드" },
-  { id: "webapp", label: "웹/앱" },
+  { id: "design", label: "그래픽/디자인" },
+  { id: "video", label: "영상/영화" },
+  { id: "entertainment", label: "엔터테인먼트" },
+  { id: "construction", label: "토목/건설/건축" },
+  { id: "writing", label: "작가/서적" },
+  { id: "development", label: "개발/웹/앱" },
   { id: "game", label: "게임" },
 ];
 
