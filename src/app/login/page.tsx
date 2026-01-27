@@ -91,7 +91,7 @@ function LoginContent() {
 
         <div className="w-full max-w-md relative z-10">
           <div 
-            className="bevel-section p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]"
+            className="rounded-none p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]"
             style={{ filter: "drop-shadow(0 0 1px var(--chef-border))" }}
           >
             {/* 로고 영역 */}
@@ -112,12 +112,12 @@ function LoginContent() {
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
                 로그인
               </h2>
-              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
+              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 rounded-none" />
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 bevel-sm text-[10px] font-black uppercase tracking-widest leading-loose">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-widest leading-loose">
                    [ Error : {error} ]
                 </div>
               )}
@@ -135,7 +135,7 @@ function LoginContent() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                   />
                 </div>
 
@@ -151,7 +151,7 @@ function LoginContent() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                   />
                 </div>
               </div>
@@ -164,7 +164,7 @@ function LoginContent() {
                       type="checkbox"
                       className="peer absolute inset-0 opacity-0 cursor-pointer z-10"
                     />
-                    <div className="w-4 h-4 border border-white/20 bevel-sm bg-white/5 peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all flex items-center justify-center">
+                    <div className="w-4 h-4 border border-white/20 rounded-none bg-white/5 peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-all flex items-center justify-center">
                       <div className="w-1.5 h-1.5 bg-white scale-0 peer-checked:scale-100 transition-transform" />
                     </div>
                   </div>
@@ -199,7 +199,7 @@ function LoginContent() {
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
-              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all shadow-sm"
+              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 rounded-none font-black text-[10px] tracking-[0.2em] uppercase transition-all shadow-sm"
             >
               <FcGoogle className="h-5 w-5 mr-3" />
               구글 계정으로 계속하기

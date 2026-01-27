@@ -92,7 +92,7 @@ export default function SignupPage() {
         </div>
 
         <div className="w-full max-w-md relative z-10">
-          <div className="bevel-border bevel-section p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]">
+          <div className="rounded-none border-2 border-chef-border p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]">
             {/* 로고 영역 */}
             <div className="flex justify-center mb-10">
               <Image
@@ -108,11 +108,11 @@ export default function SignupPage() {
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
                 회원가입
               </h2>
-              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 bevel-sm" />
+              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 rounded-none" />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 mb-6 bevel-sm text-[10px] font-black uppercase tracking-widest leading-loose">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 mb-6 rounded-none text-[10px] font-black uppercase tracking-widest leading-loose">
                  [ {error} ]
               </div>
             )}
@@ -122,7 +122,7 @@ export default function SignupPage() {
               onClick={handleGoogleSignup}
               disabled={loading}
               variant="outline"
-              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 bevel-sm font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8 shadow-sm"
+              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 rounded-none font-black text-[10px] tracking-[0.2em] uppercase transition-all mb-8 shadow-sm"
             >
               <FcGoogle className="h-5 w-5 mr-3" />
               구글 계정으로 계속하기
@@ -150,7 +150,7 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
@@ -166,7 +166,7 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
@@ -182,7 +182,7 @@ export default function SignupPage() {
                     value={passwordConfirm}
                     onChange={(e) => setPasswordConfirm(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 bevel-sm focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
                     disabled={loading}
                   />
                 </div>
