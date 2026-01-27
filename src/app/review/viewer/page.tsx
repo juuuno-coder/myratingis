@@ -35,7 +35,7 @@ import {
 import { AlertCircle } from 'lucide-react';
 
 // --- Review Intro Component (Overlay) ---
-// --- Review Intro Component (Overlay) ---
+
 function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }) {
   return (
     <div className="absolute inset-x-0 bottom-0 top-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">

@@ -1348,7 +1348,7 @@ export function ProjectDetailModalV2({
                              <Sparkles className="text-orange-500 w-6 h-6" /> 당신의 전문적인 평가를 남겨주세요
                           </h4>
                           <p className="text-orange-800/60 font-medium mb-8 leading-relaxed max-w-lg mx-auto">
-                             미슐랭 가이드 스타일의 정밀 진단과 스티커 투표를 통해<br/>
+                             미슐랭 가이드 스타일의 정밀 평가와 스티커 투표를 통해<br/>
                              크리에이터에게 성장의 기회를 선물해주세요.
                           </p>
                           <Button 
