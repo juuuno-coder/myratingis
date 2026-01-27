@@ -162,6 +162,9 @@ function ViewerContent() {
   
   // Review State
   const [currentStep, setCurrentStep] = useState(0); 
+  const [michelinScores, setMichelinScores] = useState<Record<string, number>>({});
+  const [pollSelection, setPollSelection] = useState<string | null>(null);
+  
   // 1. Michelin (Quantitative), 2. Sticker (Poll), 3. Depth Questions (Subjective) -> Summary
   const steps = ['rating', 'voting', 'subjective', 'summary'];
   
@@ -169,11 +172,11 @@ function ViewerContent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [guestId, setGuestId] = useState<string | null>(null);
 
-  // Refs for manual submission
+  // Refs for validation
   const michelinRef = React.useRef<MichelinRatingRef>(null);
   const pollRef = React.useRef<FeedbackPollRef>(null);
-
-  // Confirmation Modal State
+  
+  // Confirmation Modal State (Only using for final step now)
   const [confirmModal, setConfirmModal] = useState<{
       isOpen: boolean;
       title: string;
@@ -187,6 +190,7 @@ function ViewerContent() {
   });
 
   useEffect(() => {
+    // ... (GuestID logic kept same)
     const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
     if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
     setGuestId(gid);
@@ -197,6 +201,7 @@ function ViewerContent() {
     }
 
     const fetchProject = async () => {
+      // ... (Fetch logic kept same)
       try {
         setLoading(true);
         const response = await fetch(`/api/projects/${projectId}`);
@@ -229,8 +234,8 @@ function ViewerContent() {
   }, [projectId, router]);
 
   const handleStartReview = async () => {
+    // ... (Start logic kept same)
     const { data: { user } } = await supabase.auth.getUser();
-    
     if (!user) {
         toast.info("게스트 모드로 평가를 시작합니다.", {
             description: "로그인 후 참여하시면 포인트를 획득할 수 있습니다.",
@@ -240,11 +245,10 @@ function ViewerContent() {
             }
         });
     }
-    
     setShowIntro(false);
   };
 
-  // Resizing Logic
+  // Resizing Logic (Kept same)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
@@ -268,39 +272,23 @@ function ViewerContent() {
   const handleNextStep = async () => {
     // Stage 1: Michelin Rating Validation
     if (currentStep === 0) {
-        if (!michelinRef.current?.isValid()) return;
-        
-        setConfirmModal({
-            isOpen: true,
-            title: "평가 점수를 확정하시겠습니까?",
-            description: "설정한 모든 항목의 평점이 기록됩니다. 다음 단계로 넘어가시겠습니까?",
-            onConfirm: async () => {
-                const success = await michelinRef.current?.submit();
-                if (success) {
-                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    setCurrentStep(1);
-                }
-            }
-        });
+        if (!michelinRef.current?.isValid()) {
+            toast.error("모든 항목을 평가해주세요.");
+            return;
+        }
+        // No API call, just move next
+        setCurrentStep(1);
         return;
     }
     
     // Stage 2: Voting/Poll Validation
     if (currentStep === 1) {
-        if (!pollRef.current?.isValid()) return;
-        
-        setConfirmModal({
-            isOpen: true,
-            title: "피드백 투표를 확정하시겠습니까?",
-            description: "선택하신 옵션이 최종 결과에 반영됩니다. 다음 단계로 넘어가시겠습니까?",
-            onConfirm: async () => {
-                const success = await pollRef.current?.submit();
-                if (success) {
-                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    setCurrentStep(2);
-                }
-            }
-        });
+        if (!pollRef.current?.isValid()) {
+             toast.error("스티커를 선택해주세요.");
+             return;
+        }
+        // No API call, just move next
+        setCurrentStep(2);
         return;
     }
 
@@ -310,16 +298,15 @@ function ViewerContent() {
         const allAnswered = questions.every((q: string) => customAnswers[q]?.trim().length > 0);
         
         if (!allAnswered && questions.length > 0) {
-            toast.error("아직 작성하지 않은 의견이 있습니다.", {
-                description: "작가를 위해 모든 질문에 답변을 남겨주세요!"
-            });
+            toast.error("아직 작성하지 않은 의견이 있습니다.");
             return;
         }
 
+        // Final Confirmation before submit
         setConfirmModal({
             isOpen: true,
             title: "최종 평가를 제출하시겠습니까?",
-            description: "작성하신 모든 내용이 기록되며, 이후 수정이 불가능할 수 있습니다. 제출하시겠습니까?",
+            description: "작성하신 모든 내용이 기록됩니다. 제출하시겠습니까?",
             onConfirm: () => {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 handleFinalSubmit();
@@ -327,42 +314,67 @@ function ViewerContent() {
         });
         return;
     }
-    
-    if (currentStep < steps.length - 2) { 
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleFinalSubmit();
-    }
   };
 
   const handlePrevStep = () => {
     if (currentStep > 0) setCurrentStep(prev => prev - 1);
   };
 
+  // Data Submission logic - Consolidated
   const handleFinalSubmit = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      // Step 3 Subjective answers submission
-      // Note: MichelinRating component handles its own submission for scores. 
-      // FeedbackPoll also handles its own.
-      // We just need to submit the final proposal/answers if any.
-      
-      const res = await fetch(`/api/projects/${Number(projectId)}/rating`, {
+      const currentGuestId = !session ? guestId : undefined;
+      const headers = { 
+        'Content-Type': 'application/json',
+        ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+      };
+
+      // 1. Submit Scores (Michelin)
+      // Calculate Average locally for payload
+      const scoreValues = Object.values(michelinScores);
+      const avgScore = scoreValues.length > 0 
+        ? Number((scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length).toFixed(1)) 
+        : 0;
+
+      const scoreRes = await fetch(`/api/projects/${Number(projectId)}/rating`, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
-        },
+        headers,
         body: JSON.stringify({
-          custom_answers: customAnswers,
-          guest_id: !session ? guestId : undefined
+          scores: michelinScores,
+          score: avgScore,
+          rating_id: undefined, // Let server handle new/update logic
+          guest_id: currentGuestId
         })
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Submission failed");
+      if (!scoreRes.ok) throw new Error("Rating scores submission failed");
       
+      // 2. Submit Vote (Poll)
+      if (pollSelection) {
+        const voteRes = await fetch(`/api/projects/${projectId}/vote`, {
+           method: 'POST',
+           headers,
+           body: JSON.stringify({ 
+               voteType: pollSelection,
+               guest_id: currentGuestId
+           })
+        });
+        if (!voteRes.ok) console.warn("Vote submission warning"); // Non-critical?
+      }
+
+      // 3. Submit Answers (Subjective)
+      if (Object.keys(customAnswers).length > 0) {
+          const answerRes = await fetch(`/api/projects/${Number(projectId)}/rating`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              custom_answers: customAnswers,
+              guest_id: currentGuestId
+            })
+          });
+          if (!answerRes.ok) console.warn("Answers submission warning");
+      }
+
       setIsSubmitted(true);
       setCurrentStep(steps.length - 1); // Go to summary
       toast.success("평가가 제출되었습니다! 🎉");
@@ -449,7 +461,7 @@ function ViewerContent() {
            
            <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
               <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-               <MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} />
+               <MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} onChange={setMichelinScores} />
             </div>
            </div>
         </div>
@@ -471,7 +483,7 @@ function ViewerContent() {
           
           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
             <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-               <FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} />
+               <FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} onChange={setPollSelection} />
             </div>
           </div>
         </div>
@@ -516,6 +528,8 @@ function ViewerContent() {
 
     // Step 4: Summary (Completion)
     if (stepType === 'summary') {
+      const isGuest = !guestId || guestId.startsWith('guest_'); // Simple check, actual check is session
+      
       return (
         <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 animate-in zoom-in-95 duration-700 h-full">
           <div className="relative">
@@ -535,11 +549,34 @@ function ViewerContent() {
             </p>
           </div>
           
-          <div className="pt-8 w-full max-w-xs space-y-3">
+          <div className="pt-8 w-full max-w-xs space-y-3 pb-20">
+             {/* Main Action Button */}
              <Button onClick={() => router.push('/projects')} className="w-full h-16 rounded-2xl bevel-cta bg-orange-600 text-white text-lg font-black hover:bg-orange-700 shadow-xl transition-all hover:scale-105">
                 다른 요리 둘러보기
              </Button>
-             <button onClick={() => router.push('/')} className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest hover:opacity-100 transition-opacity">Return to Studio</button>
+             
+             {/* Secondary Action: View My Result or Login */}
+             {!guestId && ( // Logged in User
+                 <Button 
+                   onClick={() => router.push(`/mypage/evaluations`)} 
+                   variant="outline"
+                   className="w-full h-14 rounded-2xl border-2 border-chef-border text-chef-text font-black hover:bg-chef-panel transition-all"
+                 >
+                    내 평가 결과 보기
+                 </Button>
+             )}
+
+             {guestId && ( // Guest User
+                <div className="bg-chef-panel p-4 rounded-2xl space-y-3 border border-chef-border mt-4">
+                   <p className="text-xs font-bold text-chef-text opacity-60">로그인하고 이 평가 기록을 영구 소장하세요.<br/>활동 포인트도 적립됩니다!</p>
+                   <div className="flex gap-2">
+                      <Button onClick={() => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)} variant="default" className="flex-1 h-10 rounded-xl text-xs font-black">로그인</Button>
+                      <Button onClick={() => router.push(`/signup?returnPath=${encodeURIComponent(window.location.href)}`)} variant="outline" className="flex-1 h-10 rounded-xl text-xs font-black">회원가입</Button>
+                   </div>
+                </div>
+             )}
+
+             <button onClick={() => router.push('/')} className="text-[10px] font-black text-chef-text opacity-20 uppercase tracking-widest hover:opacity-100 transition-opacity pt-4">Return to Home</button>
           </div>
         </div>
       );

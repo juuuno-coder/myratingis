@@ -32,10 +32,10 @@ export async function GET(
         return NextResponse.json({ error: "Forbidden: You are not the owner." }, { status: 403 });
     }
 
-    // 2. Fetch Ratings (Raw Data)
+    // 2. Fetch Ratings with Profiles
     const { data: ratings, error: ratingError } = await supabaseAdmin
       .from("ProjectRating")
-      .select("*")
+      .select("*, profile:profiles(username, expertise, occupation)")
       .eq("project_id", projectId);
 
     if (ratingError) throw ratingError;
@@ -47,7 +47,7 @@ export async function GET(
       .eq("project_id", projectId);
 
     // 4. Aggregation Logic
-    const totalCount = ratings.length;
+    const totalCount = ratings?.length || 0;
     
     // Dynamic Categories from Project Config
     const customConfig = project.custom_data?.audit_config || project.custom_data?.custom_categories;
@@ -56,14 +56,30 @@ export async function GET(
     let averages: Record<string, number> = {};
     let totalAvg = 0;
 
+    // Expertise Distribution
+    const expertiseStats: Record<string, number> = {};
+    const occupationStats: Record<string, number> = {};
+
     if (totalCount > 0) {
       const sums: Record<string, number> = {};
       catIds.forEach((id: string) => sums[id] = 0);
 
-      ratings.forEach((curr: any) => {
+      ratings?.forEach((curr: any) => {
           catIds.forEach((id: string) => {
               sums[id] += (Number(curr[id]) || 0);
           });
+
+          // Aggregate Expertise
+          const exp = (curr.profile as any)?.expertise?.fields || [];
+          exp.forEach((field: string) => {
+              expertiseStats[field] = (expertiseStats[field] || 0) + 1;
+          });
+
+          // Aggregate Occupation
+          const occ = (curr.profile as any)?.occupation;
+          if (occ) {
+              occupationStats[occ] = (occupationStats[occ] || 0) + 1;
+          }
       });
 
       catIds.forEach((id: string) => {
@@ -83,16 +99,18 @@ export async function GET(
     }
 
     // Feedback Comments (Proposal & Custom Answers)
-    // Filter out empty ones or format them nicely
-    const feedbacks = ratings.map((r: any) => ({
+    const feedbacks = ratings?.map((r: any) => ({
         id: r.id,
-        user_id: r.user_id, // can be null
+        user_id: r.user_id,
         guest_id: r.guest_id,
+        username: (r.profile as any)?.username || (r.user_id ? "Expert" : "Guest"),
+        expertise: (r.profile as any)?.expertise?.fields || [],
+        occupation: (r.profile as any)?.occupation,
         score: r.score,
         proposal: r.proposal,
         custom_answers: r.custom_answers,
         created_at: r.created_at
-    })).filter((f: any) => f.proposal || (f.custom_answers && Object.keys(f.custom_answers).length > 0));
+    })) || [];
 
     return NextResponse.json({
       success: true,
@@ -103,8 +121,10 @@ export async function GET(
           totalAvg,
           count: totalCount
         },
-        polls: voteCounts, // Dynamic keys based on vote types
-        feedbacks: feedbacks
+        polls: voteCounts,
+        feedbacks: feedbacks,
+        expertiseDistribution: expertiseStats,
+        occupationDistribution: occupationStats
       }
     });
 

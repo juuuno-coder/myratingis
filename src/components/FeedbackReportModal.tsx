@@ -8,6 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { GENRE_CATEGORIES, FIELD_CATEGORIES } from "@/lib/constants";
+import { faUsersGear } from "@fortawesome/free-solid-svg-icons";
+
+const ALL_LABELS: Record<string, string> = {};
+[...GENRE_CATEGORIES, ...FIELD_CATEGORIES].forEach(c => {
+    ALL_LABELS[c.id] = c.label;
+});
 
 interface FeedbackReportModalProps {
   open: boolean;
@@ -263,6 +270,30 @@ export function FeedbackReportModal({ open, onOpenChange, projectTitle, projectI
                         </div>
                     </div>
                </div>
+                {/* 4. Expert Participation Summary (New) */}
+                {stats.expertiseDistribution && Object.keys(stats.expertiseDistribution).length > 0 && (
+                   <div className="space-y-6 md:col-span-2">
+                       <h3 className="font-black text-slate-900 flex items-center gap-2 text-xl tracking-tight">
+                           <FontAwesomeIcon icon={faUsersGear} className="text-emerald-500" /> 전문가 그룹 참여 현황
+                       </h3>
+                       <div className="bg-emerald-50/30 p-8 rounded-[3rem] border border-emerald-100/50">
+                           <div className="flex flex-wrap gap-3">
+                               {Object.entries(stats.expertiseDistribution).map(([id, count], i) => (
+                                   <div key={i} className="bg-white px-5 py-3 rounded-2xl border border-emerald-100 shadow-sm flex items-center gap-3">
+                                       <span className="text-xs font-black text-slate-400 uppercase tracking-tighter">
+                                           {ALL_LABELS[id] || id}
+                                       </span>
+                                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                       <span className="text-lg font-black text-slate-900">{count as any}</span>
+                                   </div>
+                               ))}
+                           </div>
+                           <p className="mt-6 text-[10px] font-black text-emerald-600/40 uppercase tracking-[0.2em] text-center">
+                               Diversified Expert Insights for Specialized Growth
+                           </p>
+                       </div>
+                   </div>
+                )}
             </div>
             )}
          </div>

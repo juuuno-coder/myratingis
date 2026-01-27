@@ -22,13 +22,13 @@ interface FeedbackPollProps {
   userVote?: 'launch' | 'research' | 'more' | null;
   isDemo?: boolean; // [New] Demo Mode
   guestId?: string; // [New] 게스트 식별자
+  onChange?: (vote: string | null) => void; // [New] 부모에게 투표값 전달
 }
 
 export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>(
-  ({ projectId, initialCounts, userVote, isDemo = false, guestId }, ref) => {
+  ({ projectId, initialCounts, userVote, isDemo = false, guestId, onChange }, ref) => {
   const [selected, setSelected] = useState<string | null>(userVote || null);
   const [counts, setCounts] = useState<Record<string, number>>(initialCounts || { launch: 0, research: 0, more: 0 });
-  const [isVoting, setIsVoting] = useState(false);
   const [projectData, setProjectData] = useState<any>(null);
 
   // Fetch Poll Data on Mount
@@ -58,8 +58,12 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
     fetchPoll();
   }, [projectId, isDemo, guestId]);
 
+  // 부모에게 변경 알림
+  React.useEffect(() => {
+    if (onChange) onChange(selected);
+  }, [selected, onChange]);
+
   const handleVoteLocal = (type: string) => {
-    const prevSelected = selected;
     if (selected === type) {
       setSelected(null);
     } else {
@@ -71,6 +75,7 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
     return selected !== null;
   };
 
+  // [Modified] API Call Removed. Only Validation.
   const handleVoteSubmit = async (): Promise<boolean> => {
     if (!hasSelected()) {
         toast.error("투표 항목을 선택해 주세요.", {
@@ -78,42 +83,8 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
         });
         return false;
     }
-
-    if (isDemo) {
-        toast.info(`[데모] 투표 정보가 준비되었습니다.`);
-        return true;
-    }
-
-    setIsVoting(true);
-    try {
-       const { data: { session } } = await supabase.auth.getSession();
-       const currentGuestId = guestId || localStorage.getItem('guest_id');
-       
-       if (!session && !currentGuestId) {
-           toast.error("투표를 저장하려는데 본인 확인이 안 됩니다.");
-           return false;
-       }
-
-       const res = await fetch(`/api/projects/${projectId}/vote`, {
-           method: 'POST',
-           headers: { 
-               'Content-Type': 'application/json',
-               ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
-           },
-           body: JSON.stringify({ 
-               voteType: selected,
-               guest_id: !session ? currentGuestId : undefined
-           })
-       });
-       if (!res.ok) throw new Error('Vote Failed');
-       return true;
-    } catch (error: any) {
-      console.error(error);
-      toast.error(`투표 저장 실패: ${error.message}`);
-      return false;
-    } finally {
-      setIsVoting(false);
-    }
+    // Parent handles submission
+    return true;
   };
 
   React.useImperativeHandle(ref, () => ({
@@ -123,9 +94,9 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
 
   // Dynamic Options Base
   const DEFAULT_OPTIONS = [
-    { id: 'launch', icon: CheckCircle2, label: "합격입니다. 당장 쓸게요.", color: "text-green-500", bgFrom: "from-green-500/10", bgTo: "to-green-600/20", border: "border-green-200", activeBorder: "border-green-500", desc: "시장에 바로 출시 가능하며 즉시 사용 가치가 검증된 프로젝트", image_url: '/review/a1.jpeg' },
-    { id: 'more', icon: Clock, label: "보류하겠습니다.", color: "text-amber-500", bgFrom: "from-amber-500/10", bgTo: "to-amber-600/20", border: "border-amber-200", activeBorder: "border-amber-500", desc: "기획은 좋으나 디테일이나 UI/UX 측면의 보완이 필요한 경우", image_url: '/review/a2.jpeg' },
-    { id: 'research', icon: XCircle, label: "불합격드리겠습니다. 더 연구해 주세요.", color: "text-red-500", bgFrom: "from-red-500/10", bgTo: "to-red-600/20", border: "border-red-200", activeBorder: "border-red-500", desc: "컨셉의 전면적인 재검토나 핵심 기능의 재정의가 필요한 상태", image_url: '/review/a3.jpeg' }
+    { id: 'launch', icon: CheckCircle2, label: "출시 강추!", color: "text-green-500", bgFrom: "from-green-500/10", bgTo: "to-green-600/20", border: "border-green-200", activeBorder: "border-green-500", desc: "당장 계약하시죠!\n탐나는 결과물", image_url: '/review/a1.jpeg' },
+    { id: 'more', icon: Clock, label: "보류합니다", color: "text-amber-500", bgFrom: "from-amber-500/10", bgTo: "to-amber-600/20", border: "border-amber-200", activeBorder: "border-amber-500", desc: "좋긴 한데...\n한 끗이 아쉽네요", image_url: '/review/a2.jpeg' },
+    { id: 'research', icon: XCircle, label: "다시 기획", color: "text-red-500", bgFrom: "from-red-500/10", bgTo: "to-red-600/20", border: "border-red-200", activeBorder: "border-red-500", desc: "기획부터 다시!\n싹 갈아엎읍시다", image_url: '/review/a3.jpeg' }
   ];
 
   const options = React.useMemo(() => {
@@ -150,8 +121,6 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
     return DEFAULT_OPTIONS.map(opt => ({ ...opt, count: counts[opt.id as keyof typeof counts] || 0 }));
   }, [projectData, counts]);
 
-  const selectedOption = React.useMemo(() => options.find(o => o.id === selected), [options, selected]);
-
   return (
     <div className="w-full relative overflow-hidden group">
       <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -160,10 +129,10 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
       
       <div className="relative z-10">
         <div className={cn(
-          "grid gap-6",
-          options.length === 2 ? "md:grid-cols-2" : 
-          options.length === 4 ? "md:grid-cols-2 lg:grid-cols-4" :
-          options.length >= 5 ? "md:grid-cols-3 lg:grid-cols-5" : "md:grid-cols-3"
+          "grid gap-6 w-full max-w-5xl mx-auto",
+          options.length === 2 ? "grid-cols-1 md:grid-cols-2" : 
+          options.length === 4 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" :
+          options.length >= 5 ? "grid-cols-1 md:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 md:grid-cols-3"
         )}>
           {options.map((opt) => {
             const Icon = opt.icon;
@@ -173,72 +142,48 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
               <button
                 key={opt.id}
                 onClick={() => handleVoteLocal(opt.id)}
-                disabled={isVoting}
                 className={cn(
-                  "relative group flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-500 overflow-hidden min-h-[200px]",
+                  "relative group flex flex-col items-center p-0 rounded-[2.5rem] border-4 transition-all duration-300 overflow-hidden w-full aspect-[3/5] shadow-sm hover:shadow-xl",
                   isSelected 
-                    ? cn(opt.activeBorder, "bg-gradient-to-br", opt.bgFrom, opt.bgTo, "shadow-2xl scale-[1.03] -translate-y-1") 
-                    : cn("bg-gray-50/50 hover:bg-white hover:shadow-xl hover:-translate-y-1 border-gray-100")
+                    ? cn(opt.activeBorder, "bg-white ring-4 ring-offset-4 ring-offset-background", opt.color.replace('text-', 'ring-')) 
+                    : cn("bg-white border-transparent hover:border-slate-200")
                 )}
               >
-                <div className={cn(
-                  "w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-sm transition-all duration-500 group-hover:rotate-12 overflow-hidden",
-                  isSelected ? "bg-white scale-110 shadow-lg rotate-0" : "bg-white"
-                )}>
-                  {opt.image_url ? (
-                    <Image src={opt.image_url} alt={opt.label} width={80} height={80} className="object-cover" />
-                  ) : (
-                    <Icon className={cn("w-10 h-10", opt.color)} />
-                  )}
-                </div>
-                
-                <span className={cn(
-                  "font-black text-[15px] leading-tight text-center transition-colors px-2 whitespace-pre-line",
-                  isSelected ? "text-gray-900" : "text-gray-700"
-                )}>{opt.label}</span>
-                
-                {isSelected && (
-                  <div className="absolute top-4 right-4 animate-in zoom-in duration-300">
-                    <div className={cn("px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest text-white shadow-sm", opt.color?.includes('green') ? 'bg-green-500' : opt.color?.includes('amber') ? 'bg-amber-500' : 'bg-blue-500')}>
-                      선택됨
-                    </div>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        
-        {/* Recommendation Guide - Optimized to explain choosing criteria */}
-        <div className="mt-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
-           <div className="flex items-center gap-4 w-full">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                 <Rocket className="w-5 h-5 text-indigo-500" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">피드백 가이드라인</p>
-                <div className="text-[13px] font-medium text-slate-600 leading-relaxed">
-                   {selectedOption ? (
-                      <div className="animate-in fade-in slide-in-from-left-2 duration-300">
-                         <span className={cn("font-black mr-2", selectedOption.color)}>{selectedOption.label}:</span>
-                         {selectedOption.desc || "상세 설명이 없습니다."}
-                      </div>
+                {/* Image Section (Top, Tall) */}
+                <div className="w-full flex-1 bg-slate-100 relative overflow-hidden group-hover:brightness-110 transition-all">
+                   {opt.image_url ? (
+                     <Image src={opt.image_url} alt={opt.label} fill className="object-cover" />
                    ) : (
-                     <div className="grid gap-1">
-                        {projectData?.custom_data?.poll_desc ? (
-                          <p>{projectData.custom_data.poll_desc}</p>
-                        ) : (
-                          <>
-                             <p><span className="font-black text-green-600">합격:</span> 시장에 바로 출시 가능하며 즉시 사용 가치가 검증된 프로젝트</p>
-                             <p><span className="font-black text-amber-500">보류:</span> 기획은 좋으나 디테일이나 UI/UX 측면의 보완이 필요한 경우</p>
-                             <p><span className="font-black text-red-500">불합격:</span> 컨셉의 전면적인 재검토나 핵심 기능의 재정의가 필요한 상태</p>
-                          </>
-                        )}
+                     <div className="w-full h-full flex items-center justify-center">
+                        <Icon className={cn("w-16 h-16 opacity-50", opt.color)} />
+                     </div>
+                   )}
+                   {/* Overlay Gradient */}
+                   <div className={cn("absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60")} />
+                   
+                   {/* Stamp Effect if selected */}
+                   {isSelected && (
+                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300">
+                        <div className={cn("w-24 h-24 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white/90 backdrop-blur shadow-xl", opt.color.replace('text-', 'border-'))}>
+                           <CheckCircle2 className={cn("w-12 h-12", opt.color)} />
+                        </div>
                      </div>
                    )}
                 </div>
-              </div>
-           </div>
+
+                {/* Content Section (Bottom) */}
+                <div className="w-full bg-white p-6 flex flex-col items-center justify-center gap-2 text-center h-1/3 shrink-0 relative z-20">
+                   {/* Sticker Graphic (Optional) */}
+                   <div className="absolute -top-8 bg-white p-2 rounded-full shadow-md">
+                      <Icon className={cn("w-8 h-8", opt.color)} />
+                   </div>
+
+                   <h3 className="text-2xl font-black text-slate-900 mt-2 break-keep leading-none whitespace-pre-wrap">{opt.label}</h3>
+                   <p className="text-sm font-medium text-slate-500 whitespace-pre-wrap leading-tight break-keep">{opt.desc}</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

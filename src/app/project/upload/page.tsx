@@ -25,8 +25,6 @@ import { ChefHat, Sparkles, Info } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
-import { OnboardingModal } from "@/components/OnboardingModal";
-
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +40,6 @@ export default function ProjectUploadPage() {
   
   const [auditStep, setAuditStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -50,10 +47,7 @@ export default function ProjectUploadPage() {
       router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
-    if (!authLoading && user && !userProfile) {
-      setShowOnboarding(true);
-    }
-  }, [authLoading, user, userProfile, router]);
+  }, [authLoading, user, router]);
 
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -672,16 +666,6 @@ export default function ProjectUploadPage() {
           </AnimatePresence>
         </main>
       </div>
-
-      {user && (
-        <OnboardingModal 
-          open={showOnboarding}
-          onOpenChange={setShowOnboarding}
-          userId={user.id}
-          userEmail={user.email || ""}
-          onComplete={() => setShowOnboarding(false)}
-        />
-      )}
     </div>
   );
 }

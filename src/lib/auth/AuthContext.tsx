@@ -18,6 +18,7 @@ interface UserProfile {
     fields: string[];
   };
   gender?: string;
+  age_group?: string;
   age_range?: string;
   occupation?: string;
 }
@@ -45,24 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
 
-  // ====== Enforce Onboarding ======
   // ====== Enforce Onboarding (Disabled in favor of Modal) ======
-  // useEffect(() => {
-  //   if (!loading && user && userProfile) {
-  //     const isMissingInfo = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
-  //     if (isMissingInfo && pathname !== "/onboarding" && !pathname?.startsWith("/api") && !pathname?.startsWith("/auth")) {
-  //         // console.log("Redirecting to onboarding due to missing info:", { ... });
-  //         // router.replace("/onboarding");
-  //     }
-  //   }
-  // }, [loading, user, userProfile, pathname, router]);
 
   // [New] Realtime Profile Update Listener (Expanded to include onboarding fields)
   useEffect(() => {
     if (!user) return;
 
     const profileChannel = supabase
-      .channel(`profile:${user.id}`)
+      .channel(`profile-updates:${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -74,16 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (payload) => {
           const newProfile = payload.new as any;
           if (newProfile) {
+            console.log("[AuthContext] Realtime Update Received:", newProfile);
             setUserProfile((prev) => {
                if(!prev) return null;
-               // Update if onboarding fields or points changed
                return { 
                    ...prev, 
-                   points: newProfile.points,
-                   gender: newProfile.gender,
-                   age_range: newProfile.age_group, // Note: DB column is age_group, Context is age_range (needs mapping fix)
-                   occupation: newProfile.occupation,
-                   expertise: newProfile.expertise,
+                   points: newProfile.points ?? prev.points,
+                   gender: newProfile.gender ?? prev.gender,
+                   age_group: newProfile.age_group || newProfile.age_range || prev.age_group,
+                   age_range: newProfile.age_group || newProfile.age_range || prev.age_range,
+                   occupation: newProfile.occupation ?? prev.occupation,
+                   expertise: newProfile.expertise ?? prev.expertise,
                };
             });
           }
@@ -95,10 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       supabase.removeChannel(profileChannel);
     };
   }, [user]);
+
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
-    // Supabase Auth 자체 메타데이터 우선 사용
     const metadata = currentUser.user_metadata || {};
-    
     return {
       username: metadata.full_name || metadata.name || metadata.nickname || currentUser.email?.split("@")[0] || "User",
       profile_image_url: metadata.avatar_url || metadata.picture || "/globe.svg",
@@ -108,21 +99,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // ====== 상태 업데이트 통합 관리 ======
   const updateState = useCallback(async (s: Session | null, u: User | null) => {
-    // 1. 상태 업데이트 (로딩 중에도 유저가 있으면 세팅)
     setSession(s);
     setUser(u);
     
     if (u) {
-      // 2. 기초 프로필 생성 (Metadata에서)
       const base = loadProfileFromMetadata(u);
-      
       try {
-        // 3. DB 상세 프로필 조회
-        // age_group 혹은 age_range 둘 중 하나라도 가져오기 위해 시도
-        // Note: 'role'이나 'points' 컬럼이 없어서 에러가 나는 경우를 방지하기 위해 일단 select에서 제외하거나 * 사용
-        // * 를 사용하면 없는 컬럼은 안 가져오고 있는 건 다 가져오므로 더 안전함
         const { data: db, error } = await supabase
           .from('profiles')
           .select('*') 
@@ -130,30 +113,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (error) {
-           console.error("[AuthContext] Profile Fetch Error:", error);
-           // DB 에러가 나면 메타데이터 기반 기본값 사용
+           console.warn("[AuthContext] Profile Fetch Warning:", error.message);
         }
 
-        if (db && !error) {
-          console.log("[AuthContext] Profile Loaded:", db);
-          // 서비스 내부에서 설정한 이미지가 있는지 우선 확인
+        if (db) {
+          console.log("[AuthContext] DB Profile Found:", db);
           const customImage = (db as any).profile_image_url || (db as any).avatar_url;
           
-          const finalProfile = {
+          setUserProfile({
             username: (db as any).username || base.username,
-            // 우선순위: Vibefolio 커스텀 이미지 > 구글/소셜 이미지 > 기본 로고
             profile_image_url: customImage || base.profile_image_url,
             role: (db as any).role || base.role,
             points: (db as any).points || 0,
             interests: (db as any).interests || base.interests,
             expertise: (db as any).expertise || base.expertise,
             gender: (db as any).gender,
-            // age_group과 age_range 둘 다 채워줌 (호환성)
             age_group: (db as any).age_group || (db as any).age_range,
             age_range: (db as any).age_group || (db as any).age_range, 
             occupation: (db as any).occupation,
-          };
-          setUserProfile(finalProfile);
+          });
         } else {
           setUserProfile(base);
         }

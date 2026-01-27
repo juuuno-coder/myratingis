@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 필요한 필드만 선택 (최적화) - 안전하게 모든 컬럼 조회 (관계 제거)
     let query = (supabaseAnon as any)
       .from('Project')
-      .select('project_id, title, thumbnail_url, views_count, likes_count, created_at, user_id, category_id, summary, description, custom_data, audit_deadline, site_url, visibility, scheduled_at, is_growth_requested') 
+      .select('project_id, title, thumbnail_url, views_count, likes_count, rating_count, created_at, user_id, category_id, summary, description, custom_data, audit_deadline, site_url, visibility, scheduled_at, is_growth_requested') 
       .is('deleted_at', null) 
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -122,29 +122,25 @@ export async function GET(request: NextRequest) {
       const userIds = [...new Set(data.map((p: any) => p.user_id).filter(Boolean))] as string[];
       const projectIds = data.map((p: any) => p.project_id);
 
-      // [Dual Fetching] - Fetch Audit Counts & User Info
+      // [Optimized] Only fetch "My Rating" status. Total counts are now on the Project table.
       const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
       
-      const [ratingsData, myRatingsData] = await Promise.all([
-          // 1. All rating records for these projects to count them
-          (targetClient.from('ProjectRating' as any) as any).select('project_id').in('project_id', projectIds),
-          // 2. Ratings by current user (if logged in)
-          currentAuthenticatedUserId 
-            ? (targetClient.from('ProjectRating' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds)
-            : Promise.resolve({ data: null })
-      ]);
-
-      const ratingCountMap = new Map();
-      ratingsData.data?.forEach((r: any) => {
-          ratingCountMap.set(r.project_id, (ratingCountMap.get(r.project_id) || 0) + 1);
-      });
-
-      const myRatingsSet = new Set(myRatingsData.data?.map((r: any) => r.project_id) || []);
+      let myRatingsSet = new Set();
+      if (currentAuthenticatedUserId) {
+          const { data: myRatings } = await (targetClient.from('ProjectRating' as any) as any)
+             .select('project_id')
+             .eq('user_id', currentAuthenticatedUserId)
+             .in('project_id', projectIds);
+          
+          if (myRatings) {
+             myRatings.forEach((r: any) => myRatingsSet.add(r.project_id));
+          }
+      }
 
       const userMap = new Map();
       if (userIds.length > 0) {
-        // users 테이블 조회
-        const possibleTables = ['users', 'profiles', 'User'];
+        // users 테이블 조회 (Optimized: Try 'profiles' first as it is the standard now)
+        const possibleTables = ['profiles', 'users', 'User'];
         let usersData: any[] | null = null;
 
         for (const tableName of possibleTables) {
@@ -172,7 +168,9 @@ export async function GET(request: NextRequest) {
 
       data.forEach((project: any) => {
         project.User = userMap.get(project.user_id) || { username: 'Unknown', avatar_url: '/globe.svg' };
-        project.rating_count = ratingCountMap.get(project.project_id) || 0;
+        // Use the pre-calculated column. If null (old row), default to 0. 
+        // Note: The SQL migration updates existing rows, so this should be accurate.
+        project.rating_count = project.rating_count || 0; 
         project.has_rated = myRatingsSet.has(project.project_id);
       });
     }

@@ -83,23 +83,23 @@ export default function FAQPage() {
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/20"
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500 text-white rounded-full text-xs font-bold shadow-lg shadow-orange-500/20"
           >
-            Support Center
+            고객 안내
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-black text-chef-text tracking-tighter italic uppercase"
+            className="text-4xl md:text-6xl font-bold text-chef-text leading-tight"
           >
-            Frequently Asked <br/> Questions
+            자주 묻는 질문
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-chef-text opacity-40 font-bold max-w-xl mx-auto"
+            className="text-chef-text opacity-60 font-medium max-w-xl mx-auto"
           >
             질문이 있으신가요? 제 평가는요? 사용에 관한 가장 빈번한 질문들을 모았습니다. <br/>
             찾으시는 질문이 없다면 고객 지원으로 문의해주세요.
@@ -116,7 +116,7 @@ export default function FAQPage() {
               transition={{ delay: idx * 0.1 }}
               className="space-y-6"
             >
-              <h2 className="text-xl font-black text-chef-text border-l-4 border-orange-500 pl-4 py-1 italic uppercase tracking-widest">
+              <h2 className="text-xl font-bold text-chef-text border-l-4 border-orange-500 pl-4 py-1">
                 {category.category}
               </h2>
               
@@ -132,13 +132,13 @@ export default function FAQPage() {
                         <div className="w-10 h-10 bg-chef-panel rounded-xl flex items-center justify-center text-orange-500 shrink-0 border border-chef-border/50">
                            <item.icon className="w-5 h-5" />
                         </div>
-                        <span className="text-lg font-black text-chef-text tracking-tight group-hover:text-orange-500 transition-colors">
+                        <span className="text-lg font-bold text-chef-text tracking-tight group-hover:text-orange-500 transition-colors">
                           {item.q}
                         </span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pb-8 pt-2 pl-14">
-                      <p className="text-sm text-chef-text opacity-50 font-medium leading-relaxed max-w-2xl whitespace-pre-wrap">
+                      <p className="text-sm text-chef-text opacity-70 font-medium leading-relaxed max-w-2xl whitespace-pre-wrap">
                         {item.a}
                       </p>
                     </AccordionContent>
@@ -156,7 +156,7 @@ export default function FAQPage() {
           viewport={{ once: true }}
           className="mt-32 p-12 bg-chef-text text-chef-bg rounded-[3rem] text-center space-y-6 shadow-2xl"
         >
-           <h3 className="text-3xl font-black italic uppercase tracking-tighter">Still have questions?</h3>
+           <h3 className="text-3xl font-bold tracking-tight">더 궁금한 점이 있으신가요?</h3>
            <p className="text-chef-bg opacity-60 font-medium max-w-sm mx-auto">
               도움이 더 필요하신가요? 저희 팀이 영업일 기준 24시간 이내에 답변을 드립니다.
            </p>

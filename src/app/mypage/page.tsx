@@ -108,7 +108,6 @@ export default function MyPage() {
       setUserId(authUser.id);
       
       try {
-      try {
         const { data: dbProfile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -467,7 +466,7 @@ export default function MyPage() {
   }
 
   const tabs = [
-    { id: 'projects' as TabType, label: '나의 키친', icon: ChefHat, color: 'text-chef-text', bgColor: 'bg-chef-text' },
+    { id: 'projects' as TabType, label: '나의 평가의뢰', icon: ChefHat, color: 'text-chef-text', bgColor: 'bg-chef-text' },
     // { id: 'audit_requests' as TabType, label: '의뢰 현황', icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-600' }, // Hidden
     { id: 'comments' as TabType, label: '참여한 평가', icon: MessageCircle, color: 'text-chef-text', bgColor: 'bg-chef-text' },
     { id: 'likes' as TabType, label: '좋아요', icon: Heart, color: 'text-red-500', bgColor: 'bg-red-500' },
@@ -568,19 +567,49 @@ export default function MyPage() {
                           </div>
                         )}
                         {/* ... rest of project card remains same ... */}
-                        <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-                           <img src={project.thumbnail_url || '/placeholder.jpg'} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                           <div className="absolute inset-x-4 bottom-4 z-10 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 flex gap-2">
-                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} className="flex-1 bg-chef-card text-chef-text border border-chef-border rounded-xl font-black text-[10px] uppercase tracking-widest h-11 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-2xl">
-                                  <Settings className="w-3.5 h-3.5 mr-2" /> EDIT
+                        <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden group">
+                           {project.thumbnail_url?.includes('placeholder') ? (
+                             <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                               <Camera size={48} />
+                             </div>
+                           ) : (
+                             <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                           )}
+                           
+                           {/* Action Overlay */}
+                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end gap-2">
+                                <Button 
+                                  onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} 
+                                  className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/20 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 transition-all"
+                                >
+                                  <Edit className="w-3.5 h-3.5 mr-2" /> 수정
                                 </Button>
-                                <Button onClick={(e) => { e.stopPropagation(); router.push(`/review/viewer?projectId=${project.id}`); }} className="flex-1 bg-chef-text text-chef-bg rounded-xl font-black text-[10px] uppercase tracking-widest h-11 transition-all shadow-2xl">
-                                  <Eye className="w-3.5 h-3.5 mr-2" /> AUDIT RESULT
+                                <Button 
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }} 
+                                  className="w-10 bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm border border-red-500/20 rounded-xl h-10 transition-all p-0 flex items-center justify-center"
+                                >
+                                  <Trash2 className="w-4 h-4" />
                                 </Button>
                            </div>
+                           
+                           {/* Result Button (Always Visible or Hover?) - Let's keep it clean, maybe separate row */}
                         </div>
-                        <div className="p-5 space-y-3">
-                           <h3 className="font-black text-chef-text uppercase tracking-tight text-sm line-clamp-1">{project.title}</h3>
+                        
+                        <div className="p-5 space-y-4">
+                           <div className="space-y-1">
+                             <h3 className="font-black text-chef-text uppercase tracking-tight text-sm line-clamp-1">{project.title}</h3>
+                             <p className="text-[10px] text-gray-400 font-medium line-clamp-1">{project.description || "작성된 설명이 없습니다."}</p>
+                           </div>
+
+                           <div className="flex items-center gap-2">
+                              <Button 
+                                onClick={(e) => { e.stopPropagation(); router.push(`/project/${project.id}/report`); }} 
+                                className="flex-1 bg-chef-text text-chef-bg hover:bg-orange-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-10 transition-all shadow-md group-hover:shadow-lg"
+                              >
+                                <BarChart className="w-3.5 h-3.5 mr-2" /> 결과 리포트
+                              </Button>
+                           </div>
+
                            {project.audit_deadline && (
                              <div className="flex items-center gap-2 text-[10px] font-black text-chef-text opacity-40 bg-chef-panel p-2 rounded-xl">
                                 <Clock size={14} className="text-orange-500" />

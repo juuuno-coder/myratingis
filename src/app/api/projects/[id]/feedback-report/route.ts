@@ -11,38 +11,43 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const projectId = params.id;
 
   try {
-    // 1. Fetch Ratings
+    // 1. Fetch Ratings with profiles for expertise distribution
     const { data: allRatings, error: ratingError } = await supabaseAdmin
       .from('ProjectRating')
-      .select('score, score_1, score_2, score_3, score_4')
+      .select('score, score_1, score_2, score_3, score_4, profile:profiles(expertise)')
       .eq('project_id', projectId);
 
     if (ratingError) throw ratingError;
 
     // Process Ratings
     let michelinAvg = 0;
-    let categoryAvgs = [0, 0, 0, 0, 0]; // 0: UX/UI, 1: Idea, 2: Biz, 3: Tech, 4: Design (Approx)
-    let totalRatings = allRatings.length;
-    let scoreDistribution = [0, 0, 0, 0, 0]; // 5, 4, 3, 2, 1 점대 개수
+    let categoryAvgs = [0, 0, 0, 0, 0];
+    let totalRatings = allRatings?.length || 0;
+    let scoreDistribution = [0, 0, 0, 0, 0];
+    const expertiseStats: Record<string, number> = {};
 
     if (totalRatings > 0) {
-       const sum = allRatings.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0);
+       const sum = allRatings?.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) || 0;
        michelinAvg = Number((sum / totalRatings).toFixed(1));
 
-       // Category-wise averages
-       const sums = allRatings.reduce((acc, curr) => [
+       const sums = allRatings?.reduce((acc, curr) => [
           acc[0] + (Number(curr.score) || 0),
           acc[1] + (Number(curr.score_1) || 0),
           acc[2] + (Number(curr.score_2) || 0),
           acc[3] + (Number(curr.score_3) || 0),
           acc[4] + (Number(curr.score_4) || 0),
-       ], [0, 0, 0, 0, 0]);
+       ], [0, 0, 0, 0, 0]) || [0, 0, 0, 0, 0];
        categoryAvgs = sums.map(s => Number((s / totalRatings).toFixed(1)));
 
-       // Calculate Distribution (Integral part of score)
-       allRatings.forEach(r => {
+       allRatings?.forEach(r => {
           const s = Math.round(Number(r.score) || 0);
           if (s >= 1 && s <= 5) scoreDistribution[5 - s]++; 
+          
+          // Expertise distribution
+          const fields = (r.profile as any)?.expertise?.fields || [];
+          fields.forEach((f: string) => {
+              expertiseStats[f] = (expertiseStats[f] || 0) + 1;
+          });
        });
     }
 
@@ -59,7 +64,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         research: 0,
         more: 0
     };
-    polls.forEach(p => {
+    polls?.forEach(p => {
         if (p.vote_type === 'launch' || p.vote_type === 'launch_now') pollCounts.launch++;
         else if (p.vote_type === 'research' || p.vote_type === 'need_research') pollCounts.research++;
         else if (p.vote_type === 'more' || p.vote_type === 'develop_more') pollCounts.more++;
@@ -91,10 +96,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             michelinAvg,
             categoryAvgs,
             totalRatings,
-            scoreDistribution, // [5점개수, 4점개수 ... 1점개수]
+            scoreDistribution,
             topStickers,
             secretProposals: secretCount || 0,
-            totalComments: totalComments || 0
+            totalComments: totalComments || 0,
+            expertiseDistribution: expertiseStats
         }
     });
 

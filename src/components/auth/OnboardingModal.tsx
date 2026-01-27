@@ -89,12 +89,15 @@ export function OnboardingModal() {
       
       console.log("Onboarding Success:", data);
 
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
+
       toast.success("프로필 설정이 완료되었습니다!");
       
-      // Force reload to ensure absolutely fresh state and clear any stuck modal logic
-      window.location.reload(); 
-      
-      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error: any) {
       console.error("Onboarding Catch Error Object:", error);
       const errorMsg = error.message || error.details || JSON.stringify(error) || "알 수 없는 오류";

@@ -24,6 +24,13 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
+import { GENRE_CATEGORIES, FIELD_CATEGORIES } from '@/lib/constants';
+
+// Pre-map labels for fast lookup
+const ALL_LABELS: Record<string, string> = {};
+[...GENRE_CATEGORIES, ...FIELD_CATEGORIES].forEach(c => {
+    ALL_LABELS[c.id] = c.label;
+});
 
 export default function ReportPage() {
   const params = useParams();
@@ -109,7 +116,9 @@ export default function ReportPage() {
             barData,
             overallAvg: reportData.michelin?.totalAvg || "0.0",
             participantCount: reportData.totalReviewers,
-            categories
+            categories,
+            expertiseDistribution: reportData.expertiseDistribution || {},
+            occupationDistribution: reportData.occupationDistribution || {}
         };
     }
 
@@ -146,7 +155,9 @@ export default function ReportPage() {
       barData, 
       overallAvg, 
       participantCount: ratings.length,
-      categories 
+      categories,
+      expertiseDistribution: {},
+      occupationDistribution: {}
     };
   }, [project, ratings, reportData]);
 
@@ -309,6 +320,56 @@ export default function ReportPage() {
                   ))}
                </div>
             </motion.div>
+
+            {/* Expert Participation by Field */}
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 lg:col-span-2">
+               <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-black flex items-center gap-3">
+                     <div className="w-1.5 h-6 bg-blue-600 rounded-full" /> Expert Participation by Field
+                  </h3>
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Participation Insight</div>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="h-[250px] w-full">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(reportStats?.expertiseDistribution || {}).map(([id, count]) => ({
+                           name: ALL_LABELS[id] || id,
+                           value: count
+                        }))}>
+                           <XAxis dataKey="name" tick={{ fill: '#ffffff40', fontSize: 10 }} axisLine={false} tickLine={false} />
+                           <YAxis hide />
+                           <Tooltip 
+                              cursor={{ fill: 'transparent' }}
+                              contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '16px' }}
+                              itemStyle={{ color: '#fff' }}
+                           />
+                           <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]}>
+                              {(Object.entries(reportStats?.expertiseDistribution || {})).map((_, index) => (
+                                 <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#6366f1' : '#818cf8'} />
+                              ))}
+                           </Bar>
+                        </BarChart>
+                     </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-wrap gap-2 content-center items-center h-full">
+                     {Object.entries(reportStats?.expertiseDistribution || {}).map(([id, count], i) => (
+                        <div key={i} className="px-5 py-3 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4 hover:border-blue-500/50 transition-all">
+                           <div className="flex flex-col">
+                              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none mb-1">Field Specialist</span>
+                              <span className="text-sm font-bold text-white/80">{ALL_LABELS[id] || id}</span>
+                           </div>
+                           <div className="h-8 w-px bg-white/10 mx-1" />
+                           <span className="text-xl font-black text-blue-400">{count as any}</span>
+                        </div>
+                     ))}
+                     {Object.keys(reportStats?.expertiseDistribution || {}).length === 0 && (
+                        <div className="w-full p-8 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                           <p className="text-white/20 font-bold italic">참여 전문가의 전문 분야 통계가 아직 집계되지 않았습니다.</p>
+                        </div>
+                     )}
+                  </div>
+               </div>
+            </motion.div>
          </section>
 
          {/* Detailed Evaluation Table */}
@@ -331,14 +392,23 @@ export default function ReportPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {ratings.length > 0 ? (
+                         {ratings.length > 0 ? (
                           [...ratings].sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((r, i) => (
                             <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                                 <td className="px-8 py-6 text-sm font-black text-white/20">{(i+1).toString().padStart(2, '0')}</td>
                                 <td className="px-8 py-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black border border-white/10">E</div>
-                                        <span className="text-sm font-bold">Expert Panel</span>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black border border-white/10">E</div>
+                                            <span className="text-sm font-bold">{r.username || 'Anonymous'}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {r.expertise && r.expertise.map((exp: string, idx: number) => (
+                                                <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                                    {ALL_LABELS[exp] || exp}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </td>
                                 <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleString('ko-KR')}</td>
@@ -348,7 +418,7 @@ export default function ReportPage() {
                                 <td className="px-8 py-6">
                                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black border border-green-500/20">
                                         <div className="w-1 h-1 bg-green-500 rounded-full" />
-                                        VERIFIED
+                                        {r.occupation || "VERIFIED"}
                                     </div>
                                 </td>
                             </tr>
@@ -379,16 +449,30 @@ export default function ReportPage() {
                     className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all space-y-6"
                   >
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter">
-                               EXP {i+1}
-                           </div>
-                           <h4 className="text-sm font-black">Anonymous Expert</h4>
-                        </div>
-                        <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black text-orange-400 border border-orange-500/20">
-                           AVG {r.score?.toFixed(1) || '0.0'}
-                        </div>
-                     </div>
+                         <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter">
+                                 {r.username ? r.username.substring(0, 1) : `E${i+1}`}
+                            </div>
+                            <div className="flex flex-col">
+                                <h4 className="text-sm font-black">{r.username || 'Anonymous Expert'}</h4>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {(r.expertise || []).map((exp: string, idx: number) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-white/5 text-[9px] font-bold text-white/40 rounded border border-white/10">
+                                            #{ALL_LABELS[exp] || exp}
+                                        </span>
+                                    ))}
+                                    {r.occupation && (
+                                        <span className="px-2 py-0.5 bg-blue-500/10 text-[9px] font-bold text-blue-400 rounded border border-blue-500/10 uppercase tracking-tighter">
+                                            {r.occupation}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                         </div>
+                         <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black text-orange-400 border border-orange-500/20 shadow-lg">
+                            AVG {r.score?.toFixed(1) || '0.0'}
+                         </div>
+                      </div>
                      
                      {/* Custom Answers */}
                      {Object.entries(r.custom_answers || {}).map(([q, a], qIdx) => (

@@ -41,6 +41,11 @@ export function MyRatingIsHeader() {
                 서비스 소개
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
              </Link>
+             <Link href="/growth" className="text-[10px] font-black text-chef-text opacity-60 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative flex items-center gap-1.5">
+                성장하기
+                <span className="bg-orange-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black italic shadow-sm shadow-orange-500/20">NEW</span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+             </Link>
              <Link href="/faq" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
                 자주 묻는 질문
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
@@ -58,11 +63,11 @@ export function MyRatingIsHeader() {
           {isAuthenticated && user ? (
             <>
               <Button
-                onClick={() => router.push("/project/upload")}
+                onClick={() => router.push("/project/upload?mode=audit")}
                 className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-[11px] uppercase tracking-widest flex items-center gap-2"
               >
                 <ChefHat className="w-4 h-4" />
-                의뢰하기
+                피드백 요청하기
               </Button>
               <div className="relative">
                 <button
@@ -89,7 +94,7 @@ export function MyRatingIsHeader() {
                       className="w-full text-left px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2 text-xs font-black text-chef-text opacity-70 hover:opacity-100 transition-all"
                     >
                       <User className="w-4 h-4" />
-                      마이 스튜디오
+                      마이페이지
                     </button>
                     <button
                       onClick={() => {
@@ -149,13 +154,13 @@ export function MyRatingIsHeader() {
                 <>
                   <Button
                     onClick={() => {
-                      router.push("/project/upload");
+                      router.push("/project/upload?mode=audit");
                       setIsMenuOpen(false);
                     }}
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-2xl h-14 font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-600/20"
                   >
                     <ChefHat className="w-5 h-5 mr-3" />
-                    평가 의뢰하기
+                    피드백 요청하기
                   </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
@@ -168,7 +173,7 @@ export function MyRatingIsHeader() {
                       className="w-full rounded-2xl h-14 font-black text-chef-text border-chef-border text-[11px] uppercase tracking-widest bg-white/5"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      마이 스튜디오
+                      마이페이지
                     </Button>
                     <Button
                       onClick={() => {
@@ -199,15 +204,21 @@ export function MyRatingIsHeader() {
               )}
               
               {/* Secondary Links for Mobile */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="grid grid-cols-3 gap-2 mt-2">
                  <Link href="/about/features" onClick={() => setIsMenuOpen(false)}>
-                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       서비스 소개
+                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[9px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
+                       소개
+                    </div>
+                 </Link>
+                 <Link href="/growth" onClick={() => setIsMenuOpen(false)}>
+                    <div className="h-12 flex flex-col items-center justify-center bg-white/5 rounded-xl border border-orange-500/20 text-[9px] font-black text-orange-400 uppercase tracking-widest italic relative">
+                       성장하기
+                       <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[7px] px-1 rounded-sm">NEW</span>
                     </div>
                  </Link>
                  <Link href="/faq" onClick={() => setIsMenuOpen(false)}>
-                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       자주 묻는 질문
+                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[9px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
+                       FAQ
                     </div>
                  </Link>
               </div>

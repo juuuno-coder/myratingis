@@ -27,6 +27,7 @@ interface MichelinRatingProps {
   isDemo?: boolean; 
   activeCategoryIndex?: number; // [New] 단계별 노출을 위한 인덱스
   guestId?: string; // [New] 게스트 식별자
+  onChange?: (scores: Record<string, number>) => void; // [New] 부모에게 점수 전달
 }
 
 const DEFAULT_CATEGORIES = [
@@ -41,7 +42,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRatingProps>(
-  ({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId }, ref) => {
+  ({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId, onChange }, ref) => {
   const [projectData, setProjectData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -67,6 +68,11 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
     const sum = activeScores.reduce((a, b) => a + b, 0);
     return Number((sum / activeScores.length).toFixed(1));
   }, [scores]);
+
+  // 부모에게 점수 변경 알림
+  useEffect(() => {
+    if (onChange) onChange(scores);
+  }, [scores, onChange]);
 
   const fetchAIAnalysis = async (scoresToAnalyze: any) => {
     if (isDemo) {
@@ -155,8 +161,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
             setScores(updatedScores);
           }
         }
-
-        // fetchAIAnalysis(data.averages);
       }
     } catch (e) {
       console.error("Failed to load ratings", e);
@@ -173,13 +177,11 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
     }
   }, [projectId, guestId]); // guestId 변경 시에도 다시 로드
 
-  // Auto-submit removed to prevent annoying interruptions and resets.
-  // Now parent controls submission via Ref.
-
   const isAllRated = () => {
     return categories.every(cat => (scores[cat.id] || 0) > 0);
   };
 
+  // [Modified] API Submit Logic Removed. Now only performs validation.
   const handleRatingSubmit = async (): Promise<boolean> => {
     if (!isAllRated()) {
         toast.error("아직 평가하지 않은 항목이 있습니다.", {
@@ -187,48 +189,9 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
         });
         return false;
     }
-
-    if (isDemo) {
-        toast.success(`[데모] 평가 정보가 준비되었습니다.`);
-        return true;
-    }
-    const { data: { session } } = await supabase.auth.getSession();
     
-    let currentGuestId = guestId;
-    if (!currentGuestId) {
-        currentGuestId = localStorage.getItem('guest_id') || undefined;
-    }
-    
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(`/api/projects/${Number(projectId)}/rating`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
-        },
-        body: JSON.stringify({
-          scores: scores,
-          score: currentTotalAvg,
-          rating_id: ratingId ? Number(ratingId) : undefined,
-          guest_id: !session ? currentGuestId : undefined 
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to submit rating');
-      
-      setIsEditing(false);
-      // Removed immediate fetchRatingData() to keep UI state stable during wizard
-      // fetchRatingData(); 
-      return true;
-    } catch (e: any) {
-      console.error(e);
-      toast.error(`평가 저장 실패: ${e.message}`);
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Parents will handle actual submission
+    return true;
   };
 
   React.useImperativeHandle(ref, () => ({

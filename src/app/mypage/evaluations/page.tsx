@@ -84,16 +84,16 @@ export default function MyEvaluationsPage() {
               <ArrowLeft size={20} />
             </Button>
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">내 피드백</h1>
-              <p className="text-slate-500 text-sm font-medium mt-1">내가 작성한 총 {evaluations.length}개의 정밀 평가 기록입니다.</p>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">참여한 평가</h1>
+              <p className="text-slate-500 text-sm font-medium mt-1">마이페이지에서 관리하는 나의 평가 활동 내역입니다.</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Link href="/projects">
+            <Link href="/growth">
               <Button variant="outline" className="hidden md:flex items-center gap-2 border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full px-5 h-11 font-bold transition-all">
                 <Eye className="w-4 h-4" />
-                평가 목록보기
+                성장하기 (평가하러 가기)
               </Button>
             </Link>
             <Link href="/project/upload?mode=audit">
@@ -119,8 +119,8 @@ export default function MyEvaluationsPage() {
             <Star className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-slate-900 mb-2">아직 남긴 평가가 없습니다</h2>
             <p className="text-slate-500 mb-8 max-w-xs mx-auto">새로운 프로젝트들을 평가하고 나만의 인사이트를 공유해보세요!</p>
-            <Button onClick={() => router.push('/projects')} className="bg-slate-900 hover:bg-green-600 transition-all rounded-2xl px-8 h-12 font-black">
-              프로젝트 구경가기
+            <Button onClick={() => router.push('/growth')} className="bg-slate-900 hover:bg-green-600 transition-all rounded-2xl px-8 h-12 font-black">
+              성장하기 페이지로 이동
             </Button>
           </div>
         ) : (
