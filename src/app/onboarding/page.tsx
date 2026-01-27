@@ -64,16 +64,17 @@ export default function OnboardingPage() {
       if (!user) throw new Error("로그인이 필요합니다.");
 
       const updatePayload: any = {
+        id: user.id, // 필수: upsert시 id가 있어야 RLS 정책(auth.uid() = id)을 통과함
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
-        expertise: { fields: formData.expertise } // Saving as JSONB structure consistent with ProfileManager
+        expertise: { fields: formData.expertise },
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
         .from('profiles')
-        .upsert(updatePayload) // Changed from update to upsert to handle missing rows
-        .eq('id', user.id);
+        .upsert(updatePayload);
 
       if (error) throw error;
 
