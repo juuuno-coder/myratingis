@@ -44,24 +44,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+
   // ====== Enforce Onboarding ======
   useEffect(() => {
     if (!loading && user && userProfile) {
       // Check if essential fields are missing
       const isMissingInfo = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
-      // Allow access to onboarding, logout, api, and non-protected routes (if needed, but simpler to just protect everything for logged in users)
-      // We must avoid redirect loop if already on /onboarding
+      
+      // Allow access to onboarding, logout, api, and non-protected routes
       if (isMissingInfo && pathname !== "/onboarding" && !pathname?.startsWith("/api") && !pathname?.startsWith("/auth")) {
-          // If on MyPage or other pages, force redirect
-          // But maybe allow "Logout" via UI? UI might be blocked by redirect.
-          // Just redirect to onboarding.
-          // Add a toast if not already shown? No, just redirect.
+          console.log("Redirecting to onboarding due to missing info:", { gender: userProfile.gender, age: userProfile.age_range, job: userProfile.occupation });
           router.replace("/onboarding");
       }
     }
   }, [loading, user, userProfile, pathname, router]);
 
-  // ====== Supabase Metadata에서 프로필 로드 ======
+  // [New] Realtime Profile Update Listener (Expanded to include onboarding fields)
+  useEffect(() => {
+    if (!user) return;
+
+    const profileChannel = supabase
+      .channel(`profile:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newProfile = payload.new as any;
+          if (newProfile) {
+            setUserProfile((prev) => {
+               if(!prev) return null;
+               // Update if onboarding fields or points changed
+               return { 
+                   ...prev, 
+                   points: newProfile.points,
+                   gender: newProfile.gender,
+                   age_range: newProfile.age_group, // Note: DB column is age_group, Context is age_range (needs mapping fix)
+                   occupation: newProfile.occupation,
+                   expertise: newProfile.expertise,
+               };
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+    };
+  }, [user]);
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
     // Supabase Auth 자체 메타데이터 우선 사용
     const metadata = currentUser.user_metadata || {};
@@ -106,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             interests: (db as any).interests || base.interests,
             expertise: (db as any).expertise || base.expertise,
             gender: (db as any).gender,
-            age_range: (db as any).age_range,
+            age_range: (db as any).age_group, // Map DB 'age_group' to Context 'age_range'
             occupation: (db as any).occupation,
           };
           setUserProfile(finalProfile);
