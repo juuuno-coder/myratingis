@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Rocket, Sparkles, Star } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
