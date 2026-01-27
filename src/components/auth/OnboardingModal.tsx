@@ -112,42 +112,38 @@ export function OnboardingModal() {
           <DialogDescription>서비스 이용을 위한 필수 정보를 입력합니다.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col md:flex-row flex-1 h-full overflow-hidden">
-            {/* Left/Top Side: Progress & Info */}
-            <div className="w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-gray-100 p-4 md:p-8 flex flex-col justify-between shrink-0">
-                <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
-                    <h1 className="font-black text-xl md:text-2xl italic tracking-tighter mb-0 md:mb-8 text-slate-900 whitespace-nowrap">
-                       제 평가는요?
-                    </h1>
-                    
-                    {/* Steps Container */}
-                    <div className="flex flex-row md:flex-col gap-2 md:gap-6 overflow-x-auto no-scrollbar items-center md:items-start">
-                        {[
-                            { step: 1, label: "환영" },
-                            { step: 2, label: "정보" },
-                            { step: 3, label: "직업" },
-                            { step: 4, label: "분야" },
-                        ].map((s) => (
-                            <div key={s.step} className="flex items-center gap-2 shrink-0">
-                                <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold transition-all ${
-                                    step >= s.step ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-400"
-                                }`}>
-                                    {step > s.step ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : s.step}
-                                </div>
-                                <span className={`text-xs md:text-sm font-bold hidden sm:inline-block ${step === s.step ? "text-slate-900" : "text-gray-400"}`}>
-                                    {s.label}
-                                </span>
+        <div className="flex flex-col flex-1 h-full overflow-hidden">
+            {/* Top Bar: Progress & Info */}
+            <div className="w-full bg-slate-50 border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0">
+                <h1 className="font-black text-xl italic tracking-tighter text-slate-900 hidden sm:block">
+                    제 평가는요?
+                </h1>
+                
+                {/* Steps Container - Horizontal Scroll if needed */}
+                <div className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar mx-auto sm:mx-0">
+                    {[
+                        { step: 1, label: "환영" },
+                        { step: 2, label: "정보" },
+                        { step: 3, label: "직업" },
+                        { step: 4, label: "분야" },
+                    ].map((s) => (
+                        <div key={s.step} className="flex items-center gap-2 shrink-0">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm ${
+                                step >= s.step ? "bg-orange-600 text-white" : "bg-white border text-gray-300"
+                            }`}>
+                                {step > s.step ? <Check className="w-4 h-4" /> : s.step}
                             </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="hidden md:block text-xs text-gray-400">
-                    <p>모든 정보는 안전하게 암호화되어 저장됩니다.</p>
+                            <span className={`text-sm font-bold ${step === s.step ? "text-slate-900" : "text-gray-300"}`}>
+                                {s.label}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Right/Bottom Side: Content */}
-            <div className="flex-1 p-6 md:p-12 overflow-y-auto relative bg-white">
+            {/* Main Content Area */}
+            <div className="flex-1 p-6 md:p-10 overflow-y-auto bg-white flex flex-col items-center">
+                <div className="w-full max-w-2xl">
                 <AnimatePresence mode="wait">
                     
                     {/* STEP 1: WELCOME */}
@@ -325,6 +321,7 @@ export function OnboardingModal() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                </div>
             </div>
         </div>
       </DialogContent>
