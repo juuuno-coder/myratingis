@@ -122,11 +122,14 @@ export function OnboardingModal() {
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if(!val && isSubmitting) return; }}>
+    <Dialog open={open} onOpenChange={(val) => { 
+      if(!val && isSubmitting) return; 
+      setOpen(val);
+    }}>
       <DialogContent 
         className="max-w-4xl h-[90vh] md:h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-white text-black border-none shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()} 
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        // onEscapeKeyDown removed to allow ESC
         showCloseButton={false}
       >
         <DialogHeader className="sr-only">
