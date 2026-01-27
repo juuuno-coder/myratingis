@@ -121,9 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // 3. DB 상세 프로필 조회
         // age_group 혹은 age_range 둘 중 하나라도 가져오기 위해 시도
+        // Note: 'role'이나 'points' 컬럼이 없어서 에러가 나는 경우를 방지하기 위해 일단 select에서 제외하거나 * 사용
+        // * 를 사용하면 없는 컬럼은 안 가져오고 있는 건 다 가져오므로 더 안전함
         const { data: db, error } = await supabase
           .from('profiles')
-          .select('username, avatar_url, profile_image_url, role, interests, expertise, points, gender, age_group, occupation')
+          .select('*') 
           .eq('id', u.id)
           .single();
 

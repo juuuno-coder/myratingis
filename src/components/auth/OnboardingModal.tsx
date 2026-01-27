@@ -76,10 +76,11 @@ export function OnboardingModal() {
 
       console.log("Onboarding Payload:", updatePayload);
 
+      // Select ID only to verify success, avoid selecting columns that might be missing (role/points)
       const { data, error } = await supabase
         .from('profiles')
         .upsert(updatePayload)
-        .select();
+        .select('id');
 
       if (error) {
         console.error("Onboarding Save Error:", error);

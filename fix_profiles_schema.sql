@@ -9,6 +9,8 @@ create table if not exists public.profiles (
   gender text,
   age_group text,
   occupation text,
+  role text default 'user',
+  points integer default 0,
   expertise jsonb default '[]'::jsonb,
   interests jsonb default '[]'::jsonb,
   updated_at timestamp with time zone,
