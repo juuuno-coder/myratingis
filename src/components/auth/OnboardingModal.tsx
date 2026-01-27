@@ -93,12 +93,17 @@ export function OnboardingModal() {
       // Force reload to ensure absolutely fresh state and clear any stuck modal logic
       window.location.reload(); 
       
+      
     } catch (error: any) {
       console.error("Onboarding Catch:", error);
       const errorMsg = error.message || error.details || JSON.stringify(error) || "알 수 없는 오류";
-      // Explicitly alert the user as requested so they know the exact cause
-      alert(`저장 중 오류가 발생했습니다:\n${errorMsg}\n\n잠시 후 다시 시도하거나 관리자에게 문의하세요.`);
-      toast.error(`저장 실패: ${errorMsg}`);
+      
+      // 사용자 요청: "저장이 안되도 일단 꺼지던가" 반영
+      // 에러가 나도 일단 새로고침하여, 만약 실제로는 저장되었는데 에러로 오인된 경우(혹은 캐시 문제)를 해결하고, 
+      // 진짜 실패했더라도 사용자가 갇히지 않게 함.
+      alert(`저장 중 다음과 같은 문제가 발생했지만, 화면을 갱신합니다.\n(문제가 지속되면 SQL 설정을 확인해주세요)\n\n에러 내용: ${errorMsg}`);
+      window.location.reload();
+      
     } finally {
       setIsSubmitting(false);
     }

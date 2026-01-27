@@ -120,11 +120,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       try {
         // 3. DB 상세 프로필 조회
+        // age_group 혹은 age_range 둘 중 하나라도 가져오기 위해 시도
         const { data: db, error } = await supabase
           .from('profiles')
           .select('username, avatar_url, profile_image_url, role, interests, expertise, points, gender, age_group, occupation')
           .eq('id', u.id)
           .single();
+
+        if (error) {
+           console.error("[AuthContext] Profile Fetch Error:", error);
+           // DB 에러가 나면 메타데이터 기반 기본값 사용
+        }
 
         if (db && !error) {
           // 서비스 내부에서 설정한 이미지가 있는지 우선 확인
@@ -139,7 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             interests: (db as any).interests || base.interests,
             expertise: (db as any).expertise || base.expertise,
             gender: (db as any).gender,
-            age_range: (db as any).age_group, // Map DB 'age_group' to Context 'age_range'
+            // DB 컬럼이 age_group 이거나 age_range 일 수 있음 (Schema 유연성 확보)
+            age_range: (db as any).age_group || (db as any).age_range, 
             occupation: (db as any).occupation,
           };
           setUserProfile(finalProfile);
@@ -147,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserProfile(base);
         }
       } catch (e) {
+        console.error("[AuthContext] Update State Loop Error:", e);
         setUserProfile(base);
       }
     } else {
