@@ -31,6 +31,9 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
     username: "",
     nickname: "",
     bio: "",
+    gender: "",
+    age_group: "",
+    occupation: "",
     website: "",
     github: "",
     twitter: "",
@@ -67,6 +70,9 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
         username: user.username || "",
         nickname: user.nickname || user.username || "",
         bio: user.bio || "",
+        gender: user.gender || "",
+        age_group: user.age_group || "",
+        occupation: user.occupation || "",
         website: user.social_links?.website || "",
         github: user.social_links?.github || "",
         twitter: user.social_links?.twitter || "",
@@ -179,6 +185,9 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
         username: formData.username,
         nickname: formData.nickname,
         bio: formData.bio,
+        gender: formData.gender,
+        age_group: formData.age_group,
+        occupation: formData.occupation,
         social_links: {
           website: formData.website,
           github: formData.github,
@@ -351,44 +360,59 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             </div>
         </section>
 
-        {/* 2. 관심사 설정 */}
+        {/* 2. 추가 정보 (온보딩) - 관심사 영역 대체 */ }
         <section className="space-y-6">
-            <h2 className="text-xl font-bold border-b pb-4">관심사 및 활동 분야</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                    <Label className="text-lg">관심 장르</Label>
-                    <div className="flex flex-wrap gap-2">
-                        {GENRE_CATEGORIES_WITH_ICONS.map(g => (
+            <h2 className="text-xl font-bold border-b pb-4">추가 정보</h2>
+            <div className="space-y-6">
+                <div className="space-y-3">
+                    <Label className="text-base">성별</Label>
+                    <div className="flex gap-2">
+                        {['남성', '여성', '기타'].map((g) => (
                             <button
-                                key={g.value}
-                                onClick={() => toggleGenre(g.value)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
-                                    interests.genres.includes(g.value)
-                                    ? 'bg-orange-50 border-orange-500 text-orange-700'
-                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                }`}
+                                key={g}
+                                onClick={() => setFormData({ ...formData, gender: g })}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
+                                    ? 'bg-orange-500 border-orange-500 text-white'
+                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    }`}
                             >
-                                {g.label}
+                                {g}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    <Label className="text-lg">활동 형태</Label>
+                <div className="space-y-3">
+                    <Label className="text-base">연령대</Label>
                     <div className="flex flex-wrap gap-2">
-                        {FIELD_CATEGORIES_WITH_ICONS.map(f => (
+                        {['10대', '20대', '30대', '40대', '50대 이상'].map((age) => (
                             <button
-                                key={f.value}
-                                onClick={() => toggleField(f.value)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
-                                    interests.fields.includes(f.value)
-                                    ? 'bg-purple-50 border-purple-500 text-purple-700'
-                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                }`}
+                                key={age}
+                                onClick={() => setFormData({ ...formData, age_group: age })}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
+                                    ? 'bg-orange-500 border-orange-500 text-white'
+                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    }`}
                             >
-                                {f.label}
+                                {age}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <Label className="text-base">직업군</Label>
+                    <div className="flex flex-wrap gap-2">
+                        {['학생', '직장인', '프리랜서', '사업가', '구직자', '기타'].map((job) => (
+                            <button
+                                key={job}
+                                onClick={() => setFormData({ ...formData, occupation: job })}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.occupation === job
+                                    ? 'bg-orange-500 border-orange-500 text-white'
+                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {job}
                             </button>
                         ))}
                     </div>
@@ -467,118 +491,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             </div>
         </section>
 
-        {/* 3. 소셜 링크 */}
-        <section className="space-y-6">
-            <h2 className="text-xl font-bold border-b pb-4">소셜 링크</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Globe className="w-4 h-4"/>웹사이트</Label>
-                    <Input value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://" className="h-11 shadow-sm" />
-                </div>
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Github className="w-4 h-4"/>GitHub</Label>
-                    <Input value={formData.github} onChange={e => setFormData({...formData, github: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
-                </div>
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Twitter className="w-4 h-4"/>Twitter (X)</Label>
-                    <Input value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
-                </div>
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Instagram className="w-4 h-4"/>Instagram</Label>
-                    <Input value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} placeholder="URL" className="h-11 shadow-sm" />
-                </div>
-            </div>
-        </section>
-
-        {/* 4. API Key 관리 */}
-        <section className="space-y-6 pt-8 border-t">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-                        <Terminal className="w-6 h-6 text-gray-700" />
-                        Developer API
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        외부 애플리케이션에서 MyRatingIs 프로젝트를 업로드할 수 있는 API Key입니다.
-                        <br/>
-                        <span className="text-red-500 font-medium">* API Key는 타인에게 절대 노출하지 마세요.</span>
-                    </p>
-                </div>
-                <Button onClick={generateApiKey} className="bg-gray-900 text-white hover:bg-gray-800">
-                    <Plus className="w-4 h-4 mr-2" /> 새 키 발급
-                </Button>
-            </div>
-
-            {/* 새 키 발급 알림 */}
-            {newKey && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 animate-in zoom-in-95 duration-300">
-                    <h4 className="font-bold text-green-800 mb-2 flex items-center gap-2">
-                        <Check className="w-5 h-5" /> 새 API Key가 발급되었습니다!
-                    </h4>
-                    <p className="text-sm text-green-700 mb-4">
-                        이 키는 <strong>지금만 확인할 수 있습니다.</strong> 반드시 복사하여 안전한 곳에 보관하세요.
-                    </p>
-                    <div className="flex items-center gap-2 bg-white p-3 rounded border border-green-200 font-mono text-sm shadow-inner overflow-hidden">
-                        <Key className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <span className="flex-1 truncate select-all font-bold text-gray-800">{newKey}</span>
-                        <Button
-                            size="sm" variant="ghost" className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => {
-                                navigator.clipboard.writeText(newKey);
-                                toast.success("API Key 복사 완료!");
-                            }}
-                        >
-                            <Copy className="w-4 h-4" />
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {/* 키 목록 */}
-            <div className="space-y-3">
-                 {loadingKeys ? (
-                     <div className="text-center py-4 text-gray-400"><Loader2 className="w-6 h-6 animate-spin mx-auto"/></div>
-                 ) : apiKeys.length === 0 ? (
-                     <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400">
-                         발급된 API Key가 없습니다.
-                     </div>
-                 ) : (
-                     <div className="border rounded-xl overflow-hidden divide-y">
-                         {apiKeys.map((key) => (
-                             <div key={key.key_id} className="p-4 bg-white flex items-center justify-between hover:bg-gray-50">
-                                 <div className="flex items-center gap-3">
-                                     <div className="bg-gray-100 p-2 rounded text-gray-600">
-                                         <Terminal className="w-4 h-4" />
-                                     </div>
-                                     <div>
-                                         <div className="font-bold text-sm text-gray-900">{key.key_name || 'Personal Key'}</div>
-                                         <div className="font-mono text-xs text-gray-400">
-                                             {key.api_key.substring(0, 8)}...****************
-                                         </div>
-                                     </div>
-                                 </div>
-                                 <div className="flex items-center gap-3 text-sm text-gray-500">
-                                     <span>{new Date(key.created_at).toLocaleDateString()} 발급</span>
-                                     <Button 
-                                        size="icon" variant="ghost" className="text-red-400 hover:text-red-500 hover:bg-red-50 w-8 h-8"
-                                        onClick={() => deleteApiKey(key.key_id)}
-                                     >
-                                        <Trash2 className="w-4 h-4" />
-                                     </Button>
-                                 </div>
-                             </div>
-                         ))}
-                     </div>
-                 )}
-            </div>
-            
-            <div className="bg-slate-50 p-4 rounded-lg text-xs font-mono text-slate-600 space-y-1">
-                <div className="font-bold mb-2 text-slate-900">[API Usage Example]</div>
-                <div>POST https://myratingis.vercel.app/api/projects</div>
-                <div>Authorization: Bearer {'<YOUR_API_KEY>'}</div>
-                <div>Content-Type: application/json</div>
-            </div>
-        </section>
+        {/* Social & API Hidden */}
         
         {/* 하단 저장 버튼 (Floating also possible) */}
         <div className="flex justify-end pt-8">

@@ -10,6 +10,8 @@ import { ChefHat, Rocket, Sparkles, Star } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 
+export default function Home() {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
 
   return (

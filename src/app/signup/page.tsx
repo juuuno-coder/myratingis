@@ -49,7 +49,7 @@ export default function SignupPage() {
 
       if (data.session) {
         toast.success("회원가입이 완료되었습니다!");
-        router.push("/");
+        router.push("/onboarding");
       } else {
         toast.success("회원가입 확인 이메일이 발송되었습니다!", {
           description: "이메일을 확인하여 계정을 활성화해주세요.",
@@ -70,7 +70,7 @@ export default function SignupPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
         },
       });
       if (error) throw error;
