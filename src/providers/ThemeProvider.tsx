@@ -16,16 +16,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
+  // 로컬 스토리지에 테마 저장
   // 초기 테마 설정
   useEffect(() => {
     setMounted(true);
+    // 기본적으로 dark 모드라고 전제 (초기값 State가 'dark')
+    // 로컬스토리지에 저장된 값이 있다면 그것을 우선시함 (light일 수도 있으므로)
     const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
+    if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
       setTheme(savedTheme);
-    } else {
-      // 기본값 dark 유지 (시스템 설정보다 우선하거나 시스템이 dark인 경우)
-      setTheme("dark");
-    }
+    } 
+    // 저장된 값이 없다면 초기값(dark) 유지
   }, []);
 
   // 테마 변경 시 적용
