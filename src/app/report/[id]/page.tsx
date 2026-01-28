@@ -201,70 +201,6 @@ export default function ReportPage() {
             </motion.p>
          </section>
 
-         {/* Summary Stats */}
-         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: '참여 전문가', value: reportStats?.participantCount || 0, icon: Users, color: 'text-blue-400' },
-              { label: '종합 미슐랭 지수', value: reportStats?.overallAvg || '0.0', icon: Star, color: 'text-orange-400' },
-              { label: '최고 평가 항목', value: reportStats?.radarData ? [...reportStats.radarData].sort((a:any, b:any) => b.value - a.value)[0]?.subject : '-', icon: Trophy, color: 'text-amber-300' },
-              { label: '바이럴 점수', value: 'TOP 5%', icon: Rocket, color: 'text-emerald-400' },
-            ].map((stat, i) => (
-              <motion.div key={i} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i*0.1 }} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] hover:bg-white/[0.08] transition-colors group">
-                 <stat.icon className={cn("w-6 h-6 mb-4", stat.color)} />
-                 <p className="text-white/30 text-[10px] font-black mb-1 uppercase tracking-widest">{stat.label}</p>
-                 <h3 className="text-3xl font-black">{stat.value}</h3>
-              </motion.div>
-            ))}
-         </section>
-
-         {/* Actions Section */}
-         <section className="flex flex-wrap items-center justify-center gap-4 border-y border-white/5 py-10">
-            <Button 
-                onClick={() => window.print()}
-                className="h-14 px-8 rounded-2xl bg-white text-black font-black hover:bg-gray-200 gap-2 shadow-xl shadow-white/5"
-            >
-                <Download size={18} /> PDF 리포트 다운로드
-            </Button>
-            <Button 
-                onClick={() => {
-                   const headers = ["ID", "Score", "Date", "Opinions"];
-                   const csvContent = [
-                       headers.join(","),
-                       ...ratings.map((r, i) => [
-                           `Expert ${i+1}`,
-                           r.score || 0,
-                           new Date(r.created_at).toLocaleDateString(),
-                           `"${(r.proposal || "").replace(/"/g, '""')}"`
-                       ].join(","))
-                   ].join("\n");
-                   
-                   const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-                   const url = URL.createObjectURL(blob);
-                   const link = document.createElement("a");
-                   link.setAttribute("href", url);
-                   link.setAttribute("download", `evaluation_report_${projectId}.csv`);
-                   document.body.appendChild(link);
-                   link.click();
-                   document.body.removeChild(link);
-                }}
-                variant="outline"
-                className="h-14 px-8 rounded-2xl border-white/10 bg-transparent text-white hover:bg-white/5 font-black gap-2"
-            >
-                <Download size={18} /> CSV 데이터 추출
-            </Button>
-            <Button 
-                onClick={() => {
-                   const url = `${window.location.origin}/review/viewer?projectId=${projectId}`;
-                   navigator.clipboard.writeText(url);
-                   toast.success("평가 링크가 복사되었습니다!");
-                }}
-                variant="outline"
-                className="h-14 px-8 rounded-2xl border-white/10 bg-transparent text-white hover:bg-white/5 font-black gap-2"
-            >
-                <Share2 size={18} /> 평가 링크 공유
-            </Button>
-         </section>
-
          {/* Charts Grid */}
          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Michelin Radar */}
@@ -381,6 +317,22 @@ export default function ReportPage() {
                   </div>
                </div>
             </motion.div>
+         </section>
+
+         {/* Summary Stats */}
+         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: '참여 전문가', value: reportStats?.participantCount || 0, icon: Users, color: 'text-blue-400' },
+              { label: '종합 평점', value: reportStats?.overallAvg || '0.0', icon: Star, color: 'text-orange-400' },
+              { label: '최고 평가 항목', value: reportStats?.radarData ? [...reportStats.radarData].sort((a:any, b:any) => b.value - a.value)[0]?.subject : '-', icon: Trophy, color: 'text-amber-300' },
+              { label: '바이럴 점수', value: 'TOP 5%', icon: Rocket, color: 'text-emerald-400' },
+            ].map((stat, i) => (
+              <motion.div key={i} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i*0.1 }} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] hover:bg-white/[0.08] transition-colors group">
+                 <stat.icon className={cn("w-6 h-6 mb-4", stat.color)} />
+                 <p className="text-white/30 text-[10px] font-black mb-1 uppercase tracking-widest">{stat.label}</p>
+                 <h3 className="text-3xl font-black">{stat.value}</h3>
+              </motion.div>
+            ))}
          </section>
 
          {/* Detailed Evaluation Table */}

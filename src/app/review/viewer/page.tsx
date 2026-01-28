@@ -171,6 +171,7 @@ function ViewerContent() {
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [guestId, setGuestId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Refs for validation
   const michelinRef = React.useRef<MichelinRatingRef>(null);
@@ -189,8 +190,13 @@ function ViewerContent() {
       onConfirm: () => {},
   });
 
+
   useEffect(() => {
-    // ... (GuestID logic kept same)
+    // Check Auth first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        setIsAuthenticated(!!session);
+    });
+
     const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
     if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
     setGuestId(gid);
@@ -519,7 +525,6 @@ function ViewerContent() {
 
     // Step 4: Summary (Completion)
     if (stepType === 'summary') {
-      const isGuest = !guestId || guestId.startsWith('guest_'); // Simple check, actual check is session
       
       return (
         <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 animate-in zoom-in-95 duration-700 h-full">
@@ -543,11 +548,11 @@ function ViewerContent() {
           <div className="pt-8 w-full max-w-xs space-y-3 pb-20">
              {/* Main Action Button */}
              <Button onClick={() => router.push('/projects')} className="w-full h-16 rounded-2xl bevel-cta bg-orange-600 text-white text-lg font-black hover:bg-orange-700 shadow-xl transition-all hover:scale-105">
-                다른 요리 둘러보기
+                다른 요리(프로젝트) 둘러보기
              </Button>
              
              {/* Secondary Action: View My Result or Login */}
-             {!guestId && ( // Logged in User
+             {isAuthenticated ? ( // Logged in User
                  <Button 
                    onClick={() => router.push(`/mypage/evaluations`)} 
                    variant="outline"
@@ -555,11 +560,9 @@ function ViewerContent() {
                  >
                     내 평가 결과 보기
                  </Button>
-             )}
-
-             {guestId && ( // Guest User
+             ) : ( // Guest User
                 <div className="bg-chef-panel p-4 rounded-2xl space-y-3 border border-chef-border mt-4">
-                   <p className="text-xs font-bold text-chef-text opacity-60">로그인하고 이 평가 기록을 영구 소장하세요.<br/>활동 포인트도 적립됩니다!</p>
+                   <p className="text-xs font-bold text-chef-text opacity-60">로그인하고 이 평가 기록을 영구 소장하세요.</p>
                    <div className="flex gap-2">
                       <Button onClick={() => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)} variant="default" className="flex-1 h-10 rounded-xl text-xs font-black">로그인</Button>
                       <Button onClick={() => router.push(`/signup?returnPath=${encodeURIComponent(window.location.href)}`)} variant="outline" className="flex-1 h-10 rounded-xl text-xs font-black">회원가입</Button>

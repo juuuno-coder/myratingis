@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
-import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight, Sparkles, Heart, Bookmark, Send } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
 
@@ -49,7 +50,7 @@ export default function ProjectsPage() {
                  <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Ongoing Audit Requests</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-black text-chef-text tracking-tighter italic uppercase">
-                프로젝트 둘러보기
+                평가 참여하기
               </h1>
               <p className="text-chef-text opacity-40 font-bold max-w-xl text-lg">
                 도전하는 창작자들의 다양한 프로젝트를 만나보세요.<br />
@@ -223,6 +224,32 @@ export default function ProjectsPage() {
 
                    {/* Right: Actions Section */}
                    <div className="flex flex-col justify-center gap-3 shrink-0 pt-4 md:pt-0 md:border-l md:border-chef-border md:pl-8 md:w-56">
+                      
+                      {/* Social Actions (New) */}
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toast.info("좋아요 기능이 곧 추가됩니다!"); }}
+                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-red-500 hover:border-red-500/30 transition-all"
+                            title="좋아요"
+                          >
+                             <Heart size={18} />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toast.info("컬렉션(북마크) 기능이 곧 추가됩니다!"); }}
+                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-blue-500 hover:border-blue-500/30 transition-all"
+                            title="컬렉션 저장"
+                          >
+                             <Bookmark size={18} />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toast.info("1:1 문의 기능이 곧 추가됩니다!"); }}
+                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-green-500 hover:border-green-500/30 transition-all"
+                            title="1:1 문의"
+                          >
+                             <Send size={18} />
+                          </button>
+                      </div>
+
                       {p.has_rated ? (
                         <Button 
                           onClick={() => router.push(`/report/${p.project_id}`)}
