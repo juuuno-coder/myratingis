@@ -128,7 +128,7 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
       </div>
       
       <div className="relative z-10">
-        <div className="flex flex-col gap-6 w-full max-w-xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
           {options.map((opt) => {
             const Icon = opt.icon;
             const isSelected = selected === opt.id;
@@ -138,44 +138,37 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
                 key={opt.id}
                 onClick={() => handleVoteLocal(opt.id)}
                 className={cn(
-                  "relative group flex flex-col items-center p-0 rounded-[2rem] border-4 transition-all duration-300 overflow-hidden w-full shadow-sm hover:shadow-xl",
-                  "aspect-[16/10]", // Landscape ratio for vertical stack
+                  "relative group flex flex-col items-center p-0 rounded-3xl border-4 transition-all duration-300 overflow-hidden w-full shadow-sm hover:shadow-xl",
+                  "aspect-square", 
                   isSelected 
                     ? cn(opt.activeBorder, "bg-white ring-4 ring-offset-4 ring-offset-background", opt.color.replace('text-', 'ring-')) 
                     : cn("bg-white border-transparent hover:border-slate-200")
                 )}
               >
-                {/* Image Section (Top, Tall) */}
+                {/* Image Section (Flex 1 to take available space) */}
                 <div className="w-full flex-1 bg-slate-100 relative overflow-hidden group-hover:brightness-110 transition-all">
                    {opt.image_url ? (
                      <Image src={opt.image_url} alt={opt.label} fill className="object-cover" />
                    ) : (
                      <div className="w-full h-full flex items-center justify-center">
-                        <Icon className={cn("w-16 h-16 opacity-50", opt.color)} />
+                        <Icon className={cn("w-12 h-12 opacity-50", opt.color)} />
                      </div>
                    )}
-                   {/* Overlay Gradient */}
-                   <div className={cn("absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60")} />
                    
                    {/* Stamp Effect if selected */}
                    {isSelected && (
-                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300">
-                        <div className={cn("w-24 h-24 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white/90 backdrop-blur shadow-xl", opt.color.replace('text-', 'border-'))}>
-                           <CheckCircle2 className={cn("w-12 h-12", opt.color)} />
+                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300 bg-black/20 backdrop-blur-[2px]">
+                        <div className={cn("w-20 h-20 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white shadow-xl", opt.color.replace('text-', 'border-'))}>
+                           <CheckCircle2 className={cn("w-10 h-10", opt.color)} />
                         </div>
                      </div>
                    )}
                 </div>
 
-                {/* Content Section (Bottom) */}
-                <div className="w-full bg-white p-6 flex flex-col items-center justify-center gap-2 text-center h-1/3 shrink-0 relative z-20">
-                   {/* Sticker Graphic (Optional) */}
-                   <div className="absolute -top-8 bg-white p-2 rounded-full shadow-md">
-                      <Icon className={cn("w-8 h-8", opt.color)} />
-                   </div>
-
-                   <h3 className="text-2xl font-black text-slate-900 mt-2 break-keep leading-none whitespace-pre-wrap">{opt.label}</h3>
-                   <p className="text-sm font-medium text-slate-500 whitespace-pre-wrap leading-tight break-keep">{opt.desc}</p>
+                {/* Content Section (Fixed height or auto based on content, below image) */}
+                <div className="w-full bg-white px-2 py-4 flex flex-col items-center justify-center gap-1 text-center min-h-[90px] shrink-0 relative z-20 border-t border-slate-100">
+                   <h3 className="text-lg font-black text-slate-900 break-keep leading-none whitespace-pre-wrap">{opt.label}</h3>
+                   <p className="text-xs font-medium text-slate-500 whitespace-pre-wrap leading-tight break-keep opacity-60 max-w-[90%]">{opt.desc}</p>
                 </div>
               </button>
             );

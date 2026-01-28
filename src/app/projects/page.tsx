@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { InquiryModal } from '@/components/InquiryModal';
+import { CollectionModal } from '@/components/CollectionModal';
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -18,6 +20,10 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
+  
+  // Modals state
+  const [inquiryModal, setInquiryModal] = useState<{open: boolean, project: any}>({ open: false, project: { title: "", user_id: "" } });
+  const [collectionModal, setCollectionModal] = useState<{open: boolean, project: any}>({ open: false, project: { title: "" } });
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -87,42 +93,30 @@ export default function ProjectsPage() {
 
     const originalBookmarked = project.is_bookmarked;
 
-    // Optimistic Update
-    setProjects(prev => prev.map(p => 
-         p.project_id === project.project_id ? { ...p, is_bookmarked: !originalBookmarked } : p
-    ));
+    if (originalBookmarked) {
+        // Remove from Collection (Optimistic)
+        setProjects(prev => prev.map(p => 
+             p.project_id === project.project_id ? { ...p, is_bookmarked: false } : p
+        ));
 
-    try {
-        if (originalBookmarked) {
-             // Remove from all collections for this user for this project
-             // First find the collection(s) - for MVP just finding any collection of this user
+        try {
+            // Remove from all collections for this user for this project
              const { data: collections } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id);
              if (collections && collections.length > 0) {
                  const colIds = collections.map((c: any) => c.collection_id);
                  await (supabase.from('CollectionItem' as any) as any).delete().in('collection_id', colIds).eq('project_id', project.project_id);
              }
-        } else {
-             // Add to 'My Collection' (Create if not exists)
-             let { data: collection } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id).eq('name', 'My Collection').single();
-             
-             if (!collection) {
-                 const { data: newCol, error } = await (supabase.from('Collection' as any) as any).insert({ user_id: user.id, name: 'My Collection' }).select().single();
-                 if (error) throw error;
-                 collection = newCol;
-             }
-
-             if (collection) {
-                 await (supabase.from('CollectionItem' as any) as any).insert({ collection_id: collection.collection_id, project_id: project.project_id });
-                 toast.success("컬렉션에 저장되었습니다.");
-             }
+        } catch (err) {
+            console.error("Bookmark remove error", err);
+            // Revert
+            setProjects(prev => prev.map(p => 
+                 p.project_id === project.project_id ? { ...p, is_bookmarked: true } : p
+            ));
+            toast.error("삭제 실패");
         }
-    } catch (err) {
-        console.error("Bookmark error", err);
-        // Revert
-        setProjects(prev => prev.map(p => 
-             p.project_id === project.project_id ? { ...p, is_bookmarked: originalBookmarked } : p
-        ));
-        toast.error("저장에 실패했습니다.");
+    } else {
+        // Open Modal to Add
+        setCollectionModal({ open: true, project: project });
     }
   };
 
@@ -133,21 +127,14 @@ export default function ProjectsPage() {
           return;
      }
 
-     const message = window.prompt(`[${project.title}] 창작자에게 보낼 문의 내용을 입력하세요:`);
-     if (!message) return;
+     setInquiryModal({ open: true, project: project });
+  };
 
-     try {
-         const { error } = await (supabase.from('ProjectInquiry' as any) as any).insert({
-             project_id: project.project_id,
-             user_id: user.id,
-             content: message
-         });
-
-         if (error) throw error;
-         toast.success("문의가 전달되었습니다.");
-     } catch (err) {
-         toast.error("문의 전송 실패");
-     }
+  const onCollectionSuccess = () => {
+      // Update local state to bookedmarked = true
+      setProjects(prev => prev.map(p => 
+          p.project_id === collectionModal.project.project_id ? { ...p, is_bookmarked: true } : p
+      ));
   };
 
   return (

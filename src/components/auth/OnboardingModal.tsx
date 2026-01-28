@@ -18,6 +18,7 @@ export function OnboardingModal() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    nickname: "",
     gender: "",
     age_group: "",
     occupation: "",
@@ -40,9 +41,18 @@ export function OnboardingModal() {
 
     // Check if profile is loaded but missing info
     if (userProfile) {
-       const isMissing = !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
+       // Check for nickname as well.
+       const isMissing = !(userProfile as any).nickname || !userProfile.gender || !userProfile.age_range || !userProfile.occupation;
        if (isMissing) {
            setOpen(true);
+           // Pre-fill nickname if available but maybe empty string in form? 
+           // Initialize form data only once effectively or when opening
+           if (!formData.nickname) {
+               setFormData(prev => ({
+                   ...prev,
+                   nickname: (userProfile as any).nickname || user.user_metadata?.full_name || ""
+               }));
+           }
        } else {
            setOpen(false);
            // If profile is complete, ensure we don't check again (optional, but good for sync)
@@ -52,17 +62,21 @@ export function OnboardingModal() {
   }, [user, userProfile, loading, pathname]);
 
   const handleNext = () => {
-    if (step === 2 && (!formData.gender || !formData.age_range)) { // userProfile uses age_range, form uses age_group. Unified to age_group in form but check logic.
-      if (!formData.gender || !formData.age_group) {
-          toast.error("성별과 연령대를 선택해주세요.");
-          return;
-      }
+    if (step === 2 && !formData.nickname.trim()) {
+        toast.error("닉네임을 입력해주세요.");
+        return;
     }
-    if (step === 3 && !formData.occupation) {
+    if (step === 3 && (!formData.gender || !formData.age_group)) {
+        if (!formData.gender || !formData.age_group) {
+            toast.error("성별과 연령대를 선택해주세요.");
+            return;
+        }
+    }
+    if (step === 4 && !formData.occupation) {
       toast.error("직업을 선택하거나 입력해주세요.");
       return;
     }
-    if (step < 4) {
+    if (step < 5) {
       setStep(step + 1);
     }
   };
@@ -89,6 +103,7 @@ export function OnboardingModal() {
     try {
       const updatePayload: any = {
         updated_at: new Date().toISOString(),
+        nickname: formData.nickname,
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
@@ -139,10 +154,10 @@ export function OnboardingModal() {
   };
 
   const toggleExpertise = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       expertise: prev.expertise.includes(id) 
-        ? prev.expertise.filter(item => item !== id)
+        ? prev.expertise.filter((item: string) => item !== id)
         : [...prev.expertise, id]
     }));
   };
@@ -169,20 +184,21 @@ export function OnboardingModal() {
                 </h1>
                 
                 {/* Steps Container - Horizontal Scroll if needed */}
-                <div className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar mx-auto sm:mx-0">
+                <div className="flex items-center gap-3 md:gap-6 overflow-x-auto no-scrollbar mx-auto sm:mx-0">
                     {[
                         { step: 1, label: "환영" },
-                        { step: 2, label: "정보" },
-                        { step: 3, label: "직업" },
-                        { step: 4, label: "분야" },
+                        { step: 2, label: "닉네임" },
+                        { step: 3, label: "정보" },
+                        { step: 4, label: "직업" },
+                        { step: 5, label: "분야" },
                     ].map((s) => (
                         <div key={s.step} className="flex items-center gap-2 shrink-0">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm ${
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shadow-sm ${
                                 step >= s.step ? "bg-orange-600 text-white" : "bg-chef-card border border-chef-border text-chef-text opacity-20"
                             }`}>
-                                {step > s.step ? <Check className="w-4 h-4" /> : s.step}
+                                {step > s.step ? <Check className="w-3 h-3" /> : s.step}
                             </div>
-                            <span className={`text-sm font-bold ${step === s.step ? "text-chef-text" : "text-chef-text opacity-20"}`}>
+                            <span className={`text-xs md:text-sm font-bold ${step === s.step ? "text-chef-text" : "text-chef-text opacity-20"}`}>
                                 {s.label}
                             </span>
                         </div>
@@ -208,7 +224,7 @@ export function OnboardingModal() {
                             <div>
                                 <h2 className="text-2xl md:text-3xl font-black mb-2">환영합니다!</h2>
                                 <p className="text-lg md:text-xl font-bold text-orange-600">
-                                    {userProfile?.username || "고객"}님
+                                    {(userProfile as any)?.nickname || userProfile?.username || "고객"}님
                                 </p>
                             </div>
                             <p className="text-sm md:text-base text-chef-text opacity-40 max-w-sm">
@@ -223,10 +239,47 @@ export function OnboardingModal() {
                         </motion.div>
                     )}
 
-                    {/* STEP 2: BASIC INFO */}
+                    {/* STEP 2: NICKNAME */}
                     {step === 2 && (
                         <motion.div 
                             key="step2"
+                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                            className="space-y-6 md:space-y-8 pb-10"
+                        >
+                            <div className="text-center md:text-left">
+                                <h2 className="text-xl md:text-2xl font-black mb-2 text-chef-text">닉네임 설정</h2>
+                                <p className="text-sm text-chef-text opacity-40">서비스에서 사용하실 멋진 이름을 입력해주세요.</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-base font-bold">닉네임</Label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.nickname}
+                                        onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                                        placeholder="닉네임 입력"
+                                        className="w-full h-14 px-4 bg-chef-panel rounded-2xl border-2 border-transparent focus:border-orange-500 outline-none font-bold text-lg text-chef-text transition-all placeholder:text-chef-text/20"
+                                        autoFocus
+                                    />
+                                    <p className="text-xs text-chef-text opacity-40 pl-2">
+                                        * 나중에 언제든지 변경할 수 있습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 md:pt-8">
+                                <Button onClick={handleNext} disabled={!formData.nickname.trim()} className="w-full h-12 md:h-14 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-bold rounded-xl transition-all">
+                                    다음 단계
+                                </Button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* STEP 3: BASIC INFO */}
+                    {step === 3 && (
+                        <motion.div 
+                            key="step3"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-6 md:space-y-8 pb-10"
                         >
@@ -281,10 +334,10 @@ export function OnboardingModal() {
                         </motion.div>
                     )}
 
-                    {/* STEP 3: OCCUPATION */}
-                    {step === 3 && (
+                    {/* STEP 4: OCCUPATION */}
+                    {step === 4 && (
                         <motion.div 
-                            key="step3"
+                            key="step4"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-6 md:space-y-8 pb-10"
                         >
@@ -331,10 +384,10 @@ export function OnboardingModal() {
                         </motion.div>
                     )}
 
-                    {/* STEP 4: EXPERTISE */}
-                    {step === 4 && (
+                    {/* STEP 5: EXPERTISE */}
+                    {step === 5 && (
                         <motion.div 
-                            key="step4"
+                            key="step5"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                             className="space-y-6 md:space-y-8 pb-10"
                         >
