@@ -31,7 +31,8 @@ export function OnboardingModal() {
     if (loading || !user) return;
     
     // Don't show on specific paths if needed, generally show everywhere if logged in & missing info
-    if (pathname?.startsWith("/auth") || pathname?.startsWith("/api")) return;
+    const excludedPaths = ["/auth", "/api", "/faq", "/about", "/support", "/policy"];
+    if (excludedPaths.some(path => pathname?.startsWith(path))) return;
 
     // Check if profile is loaded but missing info
     if (userProfile) {
