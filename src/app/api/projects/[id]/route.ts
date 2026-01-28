@@ -93,10 +93,17 @@ export async function GET(
     data.has_rated = user ? ratingsData?.some((r: any) => r.user_id === user.id) : false;
 
     // 6. Update Views (Admin)
-    await supabaseAdmin
-      .from('Project')
-      .update({ views: (data.views || 0) + 1 })
-      .eq('project_id', Number(id));
+    // 6. Update Views (Admin)
+    // Try RPC first for atomicity, fallback to update
+    const { error: rpcError } = await supabaseAdmin.rpc('increment_views', { project_id: Number(id) });
+    
+    if (rpcError) {
+        // Fallback if RPC not exists
+        await supabaseAdmin
+          .from('Project')
+          .update({ views_count: (data.views_count || 0) + 1 })
+          .eq('project_id', Number(id));
+    }
 
     return NextResponse.json({ project: data });
   } catch (error: any) {
