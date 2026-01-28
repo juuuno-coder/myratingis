@@ -159,6 +159,7 @@ function ViewerContent() {
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [isLoginGuidanceOpen, setIsLoginGuidanceOpen] = useState(false);
   
   // Review State
   const [currentStep, setCurrentStep] = useState(0); 
@@ -240,16 +241,11 @@ function ViewerContent() {
   }, [projectId, router]);
 
   const handleStartReview = async () => {
-    // ... (Start logic kept same)
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        toast.info("게스트 모드로 평가를 시작합니다.", {
-            description: "로그인 후 참여하시면 포인트를 획득할 수 있습니다.",
-            action: {
-                label: "로그인/가입",
-                onClick: () => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)
-            }
-        });
+    // Double check session to be sure
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        setIsLoginGuidanceOpen(true);
+        return;
     }
     setShowIntro(false);
   };
@@ -790,6 +786,41 @@ function ViewerContent() {
               확인 및 다음으로
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Guidance Modal (New) */}
+      <Dialog open={isLoginGuidanceOpen} onOpenChange={setIsLoginGuidanceOpen}>
+        <DialogContent className="max-w-md bg-chef-card border-chef-border p-8 rounded-[2.5rem]">
+          <DialogHeader className="space-y-4">
+            <div className="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center text-indigo-600 mb-2">
+              <ChefHat size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-black text-chef-text">잠시만요! 셰프님 👨‍🍳</DialogTitle>
+            <DialogDescription className="text-chef-text opacity-60 font-bold leading-relaxed">
+              로그인하고 평가를 진행하시면 <span className="text-orange-500">활동 포인트</span>가 적립되고,<br />
+              내가 남긴 평가 기록을 언제든 다시 볼 수 있어요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-8">
+             <Button 
+                onClick={() => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)}
+                className="h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-xl shadow-indigo-600/20"
+            >
+              로그인 / 회원가입
+            </Button>
+            <Button 
+                variant="ghost" 
+                onClick={() => {
+                    setIsLoginGuidanceOpen(false);
+                    setShowIntro(false);
+                    toast.success("게스트 모드로 시작합니다.");
+                }}
+                className="h-12 rounded-2xl text-chef-text opacity-40 hover:opacity-100 hover:bg-chef-panel font-bold"
+            >
+              로그인 없이 게스트로 계속하기
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
