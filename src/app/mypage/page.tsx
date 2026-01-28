@@ -539,16 +539,19 @@ export default function MyPage() {
                 )}
 
                 {projects.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+                  <div className="flex flex-col gap-6 pb-12">
                      {activeTab === 'projects' && (
                         <div 
                           onClick={() => router.push('/project/upload')}
-                          className="bg-chef-panel rounded-[2rem] border-2 border-dashed border-chef-border hover:border-orange-500/50 overflow-hidden hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px]"
+                          className="bg-chef-card rounded-[2rem] border-2 border-dashed border-chef-border hover:border-orange-500/50 overflow-hidden hover:shadow-2xl transition-all cursor-pointer group flex items-center justify-center p-8 gap-6 shadow-sm"
                         >
-                          <div className="w-16 h-16 rounded-3xl bg-chef-card flex items-center justify-center mb-4 transition-all shadow-sm group-hover:shadow-2xl group-hover:bg-orange-600">
+                          <div className="w-16 h-16 rounded-3xl bg-chef-panel flex items-center justify-center transition-all shadow-sm group-hover:shadow-2xl group-hover:bg-orange-600">
                             <Plus className="w-8 h-8 text-chef-text opacity-20 group-hover:text-white group-hover:opacity-100 transition-all" />
                           </div>
-                          <p className="text-chef-text opacity-20 group-hover:opacity-100 font-black text-xs uppercase tracking-widest transition-all">POST NEW PROJECT</p>
+                          <div>
+                            <p className="text-chef-text font-black text-lg uppercase tracking-tight mb-1">새 프로젝트 의뢰하기</p>
+                            <p className="text-chef-text opacity-40 font-bold text-xs uppercase tracking-widest">POST NEW PROJECT FOR AUDIT</p>
+                          </div>
                         </div>
                      )}
                     
@@ -556,68 +559,112 @@ export default function MyPage() {
                       if (activeTab === 'projects' && projectFilter === 'active') return p.visibility === 'public';
                       return true;
                     }).map((project) => (
-                      <div key={project.id} className="bg-chef-card rounded-[2rem] border border-chef-border overflow-hidden hover:shadow-2xl transition-all group relative">
-                        {/* [New] V-Audit Status Badge */}
-                        {(project.custom_data?.audit_config || project.audit_deadline) && (
-                          <div className="absolute top-4 left-4 z-10">
-                             <div className="bg-orange-600/90 text-white px-3 py-1.5 bevel-sm text-[10px] font-black tracking-tighter shadow-lg flex items-center gap-1.5 backdrop-blur-md">
-                                <ChefHat size={14} />
-                                전문 평가 진행 중
-                             </div>
-                          </div>
-                        )}
-                        {/* ... rest of project card remains same ... */}
-                        <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden group">
-                           {project.thumbnail_url?.includes('placeholder') ? (
-                             <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                               <Camera size={48} />
-                             </div>
-                           ) : (
-                             <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                           )}
-                           
-                           {/* Action Overlay */}
-                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end gap-2">
-                                <Button 
-                                  onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} 
-                                  className="flex-1 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/20 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 transition-all"
-                                >
-                                  <Edit className="w-3.5 h-3.5 mr-2" /> 수정
-                                </Button>
-                                <Button 
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }} 
-                                  className="w-10 bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm border border-red-500/20 rounded-xl h-10 transition-all p-0 flex items-center justify-center"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                           </div>
-                           
-                           {/* Result Button (Always Visible or Hover?) - Let's keep it clean, maybe separate row */}
-                        </div>
-                        
-                        <div className="p-5 space-y-4">
-                           <div className="space-y-1">
-                             <h3 className="font-black text-chef-text uppercase tracking-tight text-sm line-clamp-1">{project.title}</h3>
-                             <p className="text-[10px] text-gray-400 font-medium line-clamp-1">{project.description || "작성된 설명이 없습니다."}</p>
-                           </div>
+                       <div key={project.id} className="bg-chef-card rounded-[2.5rem] border border-chef-border shadow-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 relative group transition-all">
+                         {/* Left: Project Image */}
+                         <div className="w-full md:w-72 h-48 md:h-52 bg-chef-panel rounded-[1.5rem] relative overflow-hidden shrink-0 border border-chef-border/50">
+                            {/* V-Audit Status Badge */}
+                            {(project.custom_data?.audit_config || project.audit_deadline) && (
+                               <div className="absolute top-4 left-4 z-10">
+                                  <div className="bg-orange-600/90 text-white px-3 py-1.5 bevel-sm text-[10px] font-black tracking-tighter shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                                     <ChefHat size={14} />
+                                     전문 평가 진행 중
+                                  </div>
+                               </div>
+                            )}
 
-                           <div className="flex items-center gap-2">
-                              <Button 
-                                onClick={(e) => { e.stopPropagation(); router.push(`/report/${project.id}`); }} 
-                                className="flex-1 bg-chef-text text-chef-bg hover:bg-orange-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-10 transition-all shadow-md group-hover:shadow-lg"
-                              >
-                                <BarChart className="w-3.5 h-3.5 mr-2" /> 결과 리포트
-                              </Button>
-                           </div>
+                            {(() => {
+                                const getSmartThumbnail = () => {
+                                    if (project.thumbnail_url && !project.thumbnail_url.includes('placeholder')) {
+                                        return project.thumbnail_url;
+                                    }
+                                    const targetUrl = project.site_url || project.custom_data?.audit_config?.mediaA;
+                                    if (targetUrl && typeof targetUrl === 'string' && (targetUrl.startsWith('http') || targetUrl.includes('.'))) {
+                                        const finalUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
+                                        return `https://api.microlink.io/?url=${encodeURIComponent(finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                                    }
+                                    return null;
+                                };
+                                const SmartThumb = getSmartThumbnail();
+                                
+                                return SmartThumb ? (
+                                    <img 
+                                        src={SmartThumb} 
+                                        alt={project.title} 
+                                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-chef-panel to-chef-card opacity-30">
+                                        <ChefHat className="w-16 h-16 text-chef-text" />
+                                    </div>
+                                );
+                            })()}
+                         </div>
 
-                           {project.audit_deadline && (
-                             <div className="flex items-center gap-2 text-[10px] font-black text-chef-text opacity-40 bg-chef-panel p-2 rounded-xl">
-                                <Clock size={14} className="text-orange-500" />
-                                DEADLINE: <span className="text-orange-600">{new Date(project.audit_deadline).toLocaleDateString()}</span>
+                         {/* Middle: Content Section */}
+                         <div className="flex-1 flex flex-col justify-center min-w-0 py-2">
+                            <div className="flex items-center gap-2 mb-2">
+                               <span className="px-3 py-1 bg-orange-600/10 text-orange-600 text-[8px] font-black uppercase tracking-widest rounded-full">
+                                    {project.custom_data?.audit_config ? "Audit Request" : "Project"}
+                               </span>
+                               <span className="text-[10px] text-chef-text opacity-20 font-black italic">
+                                    {project.visibility === 'public' ? 'Published' : 'Private'}
+                               </span>
+                            </div>
+
+                            <h3 className="text-xl md:text-2xl font-black text-chef-text tracking-tighter truncate mb-2">{project.title}</h3>
+                            <p className="text-sm text-chef-text opacity-40 font-medium line-clamp-2 mb-6 leading-relaxed">
+                                {project.description || "작성된 설명이 없습니다."}
+                            </p>
+
+                            <div className="flex items-center gap-6 mt-auto">
+                                <div className="flex items-center gap-1.5">
+                                   <Eye className="w-3.5 h-3.5 text-chef-text opacity-20" />
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Views {project.views || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                   <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Likes {project.likes || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 ml-auto md:ml-0">
+                                   <Clock className="w-3.5 h-3.5 text-chef-text opacity-20" />
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest leading-none">
+                                        {project.created_at ? new Date(project.created_at).toLocaleDateString() : "-"}
+                                   </span>
+                                </div>
+                            </div>
+                         </div>
+
+                         {/* Right: Actions Section */}
+                         <div className="flex flex-col justify-center gap-3 shrink-0 pt-6 md:pt-0 md:border-l md:border-chef-border md:pl-8 md:w-56">
+                             <Button 
+                                onClick={() => router.push(`/report/${project.id}`)}
+                                className="h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
+                             >
+                                결과 리포트 보기
+                             </Button>
+
+                             <div className="flex gap-2">
+                                 <Button 
+                                    onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} 
+                                    className="flex-1 h-12 rounded-xl bg-chef-panel border border-chef-border text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
+                                 >
+                                    <Edit className="w-3.5 h-3.5 mr-2" /> 수정
+                                 </Button>
+                                 <Button 
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }} 
+                                    className="w-12 h-12 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 transition-all flex items-center justify-center p-0"
+                                 >
+                                    <Trash2 className="w-4 h-4" />
+                                 </Button>
                              </div>
-                           )}
-                        </div>
-                      </div>
+
+                             {project.visibility === 'private' && (
+                                <p className="text-[9px] text-center font-bold text-chef-text opacity-20 uppercase tracking-tighter mt-1 leading-none">
+                                    Private Project
+                                </p>
+                             )}
+                         </div>
+                       </div>
                     ))}
                   </div>
                 ) : (

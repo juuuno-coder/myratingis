@@ -3,7 +3,7 @@
 import React, { forwardRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { OptimizedImage } from '@/components/OptimizedImage';
-import { Heart, BarChart3, Image as ImageIcon, Edit, Rocket, Trash2, Eye, Megaphone } from 'lucide-react';
+import { Heart, BarChart3, Image as ImageIcon, Edit, Rocket, Trash2, Eye, Megaphone, ChefHat } from 'lucide-react';
 import { supabase } from "@/lib/supabase/client";
 import { addCommas } from "@/lib/format/comma";
 import { useLikes } from "@/hooks/useLikes";
@@ -210,8 +210,8 @@ export const ImageCard = forwardRef<HTMLDivElement, ImageCardProps>(
           {/* [Removed] 카테고리 & 분야 뱃지 제거됨 */}
           
             {imgError ? (
-            <div className="w-full h-full flex items-center justify-center text-chef-text opacity-20 bg-chef-panel">
-              <ImageIcon className="w-12 h-12" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-chef-panel to-chef-card opacity-30">
+              <ChefHat className="w-12 h-12 text-chef-text" />
             </div>
           ) : (
             <>
