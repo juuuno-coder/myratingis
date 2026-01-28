@@ -49,6 +49,14 @@ export default function ProjectUploadPage() {
     }
   }, [authLoading, user, router]);
 
+  if (authLoading) {
+     return (
+        <div className="min-h-screen flex items-center justify-center chef-bg-page">
+            <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full" />
+        </div>
+     );
+  }
+
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {

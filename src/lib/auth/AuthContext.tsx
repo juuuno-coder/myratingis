@@ -46,47 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
 
-  // ====== Enforce Onboarding (Disabled in favor of Modal) ======
-
-  // [New] Realtime Profile Update Listener (Expanded to include onboarding fields)
-  useEffect(() => {
-    if (!user) return;
-
-    const profileChannel = supabase
-      .channel(`profile-updates:${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newProfile = payload.new as any;
-          if (newProfile) {
-            console.log("[AuthContext] Realtime Update Received:", newProfile);
-            setUserProfile((prev) => {
-               if(!prev) return null;
-               return { 
-                   ...prev, 
-                   points: newProfile.points ?? prev.points,
-                   gender: newProfile.gender ?? prev.gender,
-                   age_group: newProfile.age_group || newProfile.age_range || prev.age_group,
-                   age_range: newProfile.age_group || newProfile.age_range || prev.age_range,
-                   occupation: newProfile.occupation ?? prev.occupation,
-                   expertise: newProfile.expertise ?? prev.expertise,
-               };
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(profileChannel);
-    };
-  }, [user]);
 
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
     const metadata = currentUser.user_metadata || {};
@@ -154,6 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 초기 세션 확인
     supabase.auth.getSession().then(({ data: { session } }) => {
       updateState(session, session?.user || null);
+    }).catch((err) => {
+       console.warn("[AuthContext] Session fetch warning:", err);
+       // Error recovery: ensure loading disables even on error
+       setLoading(false);
     });
 
     // 상태 변경 리스너
