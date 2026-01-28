@@ -20,7 +20,7 @@ import { supabase } from "@/lib/supabase/client";
 import { 
   Loader2, Globe, Github, Twitter, Instagram, 
   Settings, Check, X, Copy, ExternalLink, 
-  Eye, EyeOff, Terminal, Key, Plus, Trash2, RefreshCw, Lock
+  Eye, EyeOff, Terminal, Key, Plus, Trash2, RefreshCw, Lock, UserCircle
 } from "lucide-react";
 import { GENRE_CATEGORIES_WITH_ICONS, FIELD_CATEGORIES_WITH_ICONS } from "@/lib/ui-constants";
 
@@ -374,7 +374,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             <div className="flex items-center justify-between border-b dark:border-slate-800 pb-4">
                 <div>
                    <h2 className="text-xl font-bold flex items-center gap-2 dark:text-slate-100">
-                       <UserCircle2 className="w-6 h-6 text-orange-500" />
+                       <UserCircle className="w-6 h-6 text-orange-500" />
                        상세 프로필
                    </h2>
                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">성별, 연령, 직업, 전문 분야 정보입니다.</p>

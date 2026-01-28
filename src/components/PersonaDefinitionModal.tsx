@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { UserCircle2, BrainCircuit, Check } from "lucide-react";
+import { UserCircle, BrainCircuit, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface PersonaDefinitionModalProps {
@@ -112,7 +112,7 @@ ${personaData.frustrations}
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <div className="w-32 h-32 rounded-full bg-gray-800 border-4 border-gray-700 mb-4 flex items-center justify-center overflow-hidden">
-                        <UserCircle2 className="w-20 h-20 text-gray-600" />
+                        <UserCircle className="w-20 h-20 text-gray-600" />
                     </div>
                     <div className="w-full">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 block">Demographics</label>

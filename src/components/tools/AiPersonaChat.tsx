@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Wand2, Send, Bot, User, UserCircle2 } from "lucide-react";
+import { Loader2, Wand2, Send, Bot, User, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaData } from "../PersonaDefinitionModal";
 
@@ -121,7 +121,7 @@ export function AiPersonaChat({ onGenerate }: AiPersonaChatProps) {
       <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white/95 backdrop-blur-sm z-10 shrink-0">
         <div>
             <h2 className="text-xl font-black text-gray-900 flex items-center gap-2 mb-1">
-                <UserCircle2 className="mb-0.5 w-6 h-6 text-blue-600"/> 
+                <UserCircle className="mb-0.5 w-6 h-6 text-blue-600"/> 
                 AI 페르소나 정의
             </h2>
             <p className="text-sm text-gray-500 pl-8">

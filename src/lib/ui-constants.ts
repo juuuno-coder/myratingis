@@ -41,5 +41,6 @@ export const GENRE_CATEGORIES_WITH_ICONS = GENRES_CONST.map(g => ({
 // 산업 분야 카테고리
 export const FIELD_CATEGORIES_WITH_ICONS = FIELDS_CONST.map(f => ({
   ...f,
-  value: f.id 
+  value: f.id,
+  icon: faCube
 }));
