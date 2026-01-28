@@ -81,26 +81,32 @@ export function OnboardingModal() {
         return;
     }
     setIsSubmitting(true);
+    
+    // Timeout for safety
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     try {
       const updatePayload: any = {
         updated_at: new Date().toISOString(),
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
-        expertise: { fields: formData.expertise }, // Ensure column is JSONB in DB
+        expertise: { fields: formData.expertise }, 
       };
 
       console.log("Onboarding Payload:", updatePayload);
 
-      // [Stability Fix] Use Server-side API instead of client-side socket
-      // Client-side 'AbortError' often happens due to race conditions or unstable network on mobile/Vercel
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updatePayload)
+        body: JSON.stringify(updatePayload),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
           const resData = await response.json();
@@ -112,23 +118,18 @@ export function OnboardingModal() {
       // Mark as completed in local storage immediately
       localStorage.setItem(`onboarding_skipped_${user.id}`, 'true');
 
-      if (refreshUserProfile) {
-        await refreshUserProfile();
-      }
-
+      // No need to await refreshUserProfile() since we reload
       toast.success("프로필 설정이 완료되었습니다!");
       
-      // Close immediately
+      // Close immediately and reload
       setOpen(false);
       window.location.reload(); 
     } catch (error: any) {
       console.error("Onboarding Save Error:", error);
-      const errorMsg = error.message || "알 수 없는 오류가 발생했습니다.";
+      const errorMsg = error.name === 'AbortError' ? '요청 시간이 초과되었습니다.' : (error.message || "알 수 없는 오류가 발생했습니다.");
       
       toast.error(`저장 실패: ${errorMsg}`);
       
-      // If it's infinite loading loop in user's browser, let's break it
-      // alert for visibility
       if (confirm("저장 중 오류가 발생했습니다. 페이지를 새로고침 하시겠습니까?")) {
          window.location.reload();
       }
