@@ -157,44 +157,14 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
   };
 
   // --- Profile Logic ---
-  const checkUsername = async (username: string) => {
-    if (!username || username === user.username) {
-      setUsernameAvailable(null);
-      return;
-    }
-    if (!/^[a-zA-Z0-9_-]{3,}$/.test(username)) {
-      setUsernameAvailable(false);
-      return;
-    }
-    const reserved = ['admin', 'api', 'login', 'signup', 'mypage', 'auth', 'project', 'recruit'];
-    if (reserved.includes(username)) {
-      setUsernameAvailable(false);
-      return;
-    }
-
-    setChecking(true);
-    try {
-      const { data } = await supabase.from('profiles').select('id').eq('username', username).neq('id', user.id).maybeSingle();
-      setUsernameAvailable(!data);
-    } catch {
-      setUsernameAvailable(false);
-    } finally {
-      setChecking(false);
-    }
-  };
+  // checkUsername Removed
 
   const handleSave = async () => {
-    if (usernameAvailable === false) {
-      toast.error("사용할 수 없는 아이디입니다.");
-      return;
-    }
-
     setLoading(true);
     try {
       const updateData = {
-        username: formData.username,
         nickname: formData.nickname,
-        bio: formData.bio,
+        // bio: formData.bio, // Removed
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
@@ -219,7 +189,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
       try {
         await supabase.from('users').update({ 
             nickname: formData.nickname,
-            username: formData.username
+            // username: formData.username // Removed from update
         }).eq('id', user.id);
       } catch (e) {}
 
@@ -322,29 +292,6 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="text-chef-text opacity-70">아이디 (URL)</Label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-3.5 text-gray-400 text-sm">myratingis.vercel.app/</span>
-                            <Input 
-                                value={formData.username} 
-                                onChange={e => {
-                                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '');
-                                    setFormData({...formData, username: val});
-                                    checkUsername(val);
-                                }}
-                                className="pl-[145px] h-12 rounded-xl bg-chef-panel border-chef-border text-chef-text"
-                                placeholder="username"
-                            />
-                            <div className="absolute right-3 top-3">
-                                {checking ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> :
-                                 usernameAvailable === true ? <Check className="w-4 h-4 text-orange-500" /> :
-                                 usernameAvailable === false ? <X className="w-4 h-4 text-red-500" /> : null}
-                            </div>
-                        </div>
-                        {usernameAvailable === false && <p className="text-xs text-red-500">사용할 수 없는 아이디입니다.</p>}
-                    </div>
-
-                    <div className="space-y-2">
                         <Label className="dark:text-slate-200">닉네임 (표시 이름)</Label>
                         <Input 
                             value={formData.nickname}
@@ -355,18 +302,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label className="dark:text-slate-200">한줄 소개</Label>
-                        <Textarea 
-                            rows={5}
-                            value={formData.bio}
-                            onChange={e => setFormData({...formData, bio: e.target.value})}
-                            placeholder="자기소개를 입력하세요."
-                            className="resize-none rounded-xl bg-white dark:bg-slate-950 border-input dark:border-slate-800 text-slate-900 dark:text-white"
-                        />
-                    </div>
-                </div>
+                {/* 한줄 소개 & 아이디 Removed as per request */}
             </div>
         </section>
 
