@@ -90,26 +90,17 @@ export default function Home() {
         >
           <Button
             onClick={() => router.push("/project/upload")}
-            className="w-full h-16 bg-orange-600 hover:bg-orange-500 text-white text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 bevel-cta border-none rounded-none italic uppercase"
+            className="w-full h-14 md:h-16 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-xl font-black shadow-[0_20px_40px_-15px_rgba(234,88,12,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none italic uppercase"
           >
-            <ChefHat className="w-6 h-6" />
+            <ChefHat className="w-5 h-5 md:w-6 md:h-6" />
             평가 의뢰하기
           </Button>
-          
-          <Button
-            onClick={() => router.push("/growth")}
-            className="w-full h-16 bg-white hover:bg-gray-100 text-gray-900 text-xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 bevel-cta border-none rounded-none italic uppercase"
-          >
-            <Crown className="w-6 h-6 text-orange-500" />
-            명예의 전당
-          </Button>
-
           <Button
             onClick={() => router.push("/projects")}
-            className="w-full h-14 bg-transparent hover:bg-white/5 text-white/40 hover:text-white text-sm font-black transition-all flex items-center justify-center gap-2 italic uppercase tracking-widest"
+            className="w-full h-14 md:h-16 bg-white hover:bg-gray-100 text-gray-900 text-lg md:text-xl font-black shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bevel-cta border-none rounded-none italic uppercase"
           >
-            <Star className="w-4 h-4" />
-            전체 프로젝트 둘러보기
+            <Star className="w-5 h-5 md:w-6 md:h-6" />
+            평가 참여하기
           </Button>
         </motion.div>
 
