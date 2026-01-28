@@ -330,24 +330,28 @@ function ViewerContent() {
         ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
       };
 
-      // 1. Submit Scores (Michelin)
+      // 1. Submit Rating (Scores + Custom Answers)
       // Calculate Average locally for payload
       const scoreValues = Object.values(michelinScores);
       const avgScore = scoreValues.length > 0 
         ? Number((scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length).toFixed(1)) 
         : 0;
 
+      const ratingPayload = {
+          scores: michelinScores,
+          score: avgScore,
+          custom_answers: customAnswers, // [Consolidated] Send answers with scores
+          rating_id: undefined, 
+          guest_id: currentGuestId
+      };
+
       const scoreRes = await fetch(`/api/projects/${Number(projectId)}/rating`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          scores: michelinScores,
-          score: avgScore,
-          rating_id: undefined, // Let server handle new/update logic
-          guest_id: currentGuestId
-        })
+        body: JSON.stringify(ratingPayload)
       });
-      if (!scoreRes.ok) throw new Error("Rating scores submission failed");
+
+      if (!scoreRes.ok) throw new Error("Rating submission failed");
       
       // 2. Submit Vote (Poll)
       if (pollSelection) {
@@ -359,20 +363,7 @@ function ViewerContent() {
                guest_id: currentGuestId
            })
         });
-        if (!voteRes.ok) console.warn("Vote submission warning"); // Non-critical?
-      }
-
-      // 3. Submit Answers (Subjective)
-      if (Object.keys(customAnswers).length > 0) {
-          const answerRes = await fetch(`/api/projects/${Number(projectId)}/rating`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              custom_answers: customAnswers,
-              guest_id: currentGuestId
-            })
-          });
-          if (!answerRes.ok) console.warn("Answers submission warning");
+        if (!voteRes.ok) console.warn("Vote submission warning");
       }
 
       setIsSubmitted(true);

@@ -90,7 +90,7 @@ export default function FeaturesPage() {
                    initial={{ opacity: 0, y: 20 }}
                    animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: 0.2 }}
-                   className="text-xl text-chef-text opacity-50 font-medium max-w-lg leading-relaxed"
+                   className="text-sm text-chef-text opacity-50 font-medium max-w-lg leading-relaxed"
                 >
                   제 평가는요?는 크리에이터의 성장을 위한 마침표를 찍습니다. 
                   단순한 피드백을 넘어, 데이터 기반의 정밀 분석과 
@@ -104,7 +104,7 @@ export default function FeaturesPage() {
                    className="flex gap-4 pt-4"
                 >
                    <Button onClick={() => router.push('/project/upload')} className="h-16 px-10 min-w-[320px] rounded-none bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xl shadow-2xl shadow-orange-600/20 gap-3 group">
-                      의뢰 시작하기 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                      평가 의뢰하기 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                    </Button>
                 </motion.div>
               </div>
@@ -175,7 +175,7 @@ export default function FeaturesPage() {
                 전문가의 진단과 리얼한 시장 반응을 통해 다음 단계로 도약하세요.
               </p>
               <div className="flex justify-center pt-8">
-                  <Button onClick={() => router.push('/signup')} className="h-20 px-16 rounded-none bevel-cta bg-chef-text text-chef-bg hover:opacity-90 font-black text-2xl shadow-4xl gap-6 transition-all hover:scale-105 active:scale-95">
+                  <Button onClick={() => router.push('/signup')} className="h-20 px-16 rounded-none bevel-cta bg-orange-600 text-white hover:bg-orange-700 font-black text-2xl shadow-4xl gap-6 transition-all hover:scale-105 active:scale-95">
                     무료로 시작하기 <ChevronRight size={32} />
                   </Button>
               </div>

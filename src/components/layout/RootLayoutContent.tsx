@@ -33,7 +33,6 @@ export function RootLayoutContent({
           {children}
         </Suspense>
       </main>
-      {!hideLayout && <Footer />}
     </div>
   );
 }

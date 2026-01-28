@@ -140,7 +140,19 @@ export default function ProjectsPage() {
                    >
                       {(() => {
                         const getSmartThumbnail = () => {
-                            if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) return p.thumbnail_url;
+                            // 1. If explicit thumbnail exists and is not a placeholder
+                            if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) {
+                                return p.thumbnail_url;
+                            }
+                            
+                            // 2. If site_url or legacy mediaA exists, try to get OG image via microlink
+                            const targetUrl = p.site_url || p.custom_data?.audit_config?.mediaA;
+                            if (targetUrl && typeof targetUrl === 'string' && (targetUrl.startsWith('http') || targetUrl.includes('.'))) {
+                                const finalUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
+                                return `https://api.microlink.io/?url=${encodeURIComponent(finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                            }
+                            
+                            // 3. Fallback
                             return null;
                         };
                         const SmartThumb = getSmartThumbnail();

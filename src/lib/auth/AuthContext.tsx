@@ -104,7 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
     
     if (u) {
+      // Optimistic Update: Set profile from metadata immediately to unblock UI
       const base = loadProfileFromMetadata(u);
+      setUserProfile(base);
+      setLoading(false); // <--- Critical: Allow UI to render immediately
+
       try {
         const { data: db, error } = await supabase
           .from('profiles')
@@ -117,10 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (db) {
-          console.log("[AuthContext] DB Profile Found:", db);
           const customImage = (db as any).profile_image_url || (db as any).avatar_url;
           
-          setUserProfile({
+          setUserProfile(prev => ({
+            ...prev!, // Safe assertion as we set base above
             username: (db as any).username || base.username,
             profile_image_url: customImage || base.profile_image_url,
             role: (db as any).role || base.role,
@@ -131,18 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             age_group: (db as any).age_group || (db as any).age_range,
             age_range: (db as any).age_group || (db as any).age_range, 
             occupation: (db as any).occupation,
-          });
-        } else {
-          setUserProfile(base);
+          }));
         }
       } catch (e) {
-        console.error("[AuthContext] updateState error:", e);
-        setUserProfile(base);
+        console.error("[AuthContext] Background profile fetch error:", e);
       }
     } else {
       setUserProfile(null);
+      setLoading(false);
     }
-    setLoading(false);
   }, [loadProfileFromMetadata]);
 
   // ====== 초기화 및 관찰자 설정 ======
@@ -158,31 +159,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 상태 변경 리스너
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION'].includes(event)) {
-        updateState(session, session?.user || null);
+        await updateState(session, session?.user || null);
 
-        // [New] Claim guest ratings upon login
+        // [New] Claim guest ratings upon login (Background process)
         if (event === 'SIGNED_IN' && session) {
            const guestId = localStorage.getItem('guest_id');
            if (guestId) {
-              try {
-                const res = await fetch('/api/auth/claim-ratings', {
+              fetch('/api/auth/claim-ratings', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session.access_token}`
                     },
                     body: JSON.stringify({ guest_id: guestId })
-                });
-                if (res.ok) {
-                   const data = await res.json();
-                   if (data.merged_count > 0) {
-                      // localStorage.removeItem('guest_id'); // Optional: Clear after merge
-                      console.log(`[Auth] Merged ${data.merged_count} guest ratings.`);
-                   }
-                }
-              } catch (e) {
-                console.error("[Auth] Guest merge failed:", e);
-              }
+              }).catch(e => console.error("[Auth] Guest merge failed:", e));
            }
         }
       } else if (event === "SIGNED_OUT") {
@@ -193,12 +183,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [updateState]);
 
-  // [New] Realtime Point Update Listener
+  // [New] Realtime Profile Update Listener (Consolidated)
   useEffect(() => {
     if (!user) return;
 
     const profileChannel = supabase
-      .channel(`profile:${user.id}`)
+      .channel(`profile-updates:${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -212,11 +202,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (newProfile) {
             setUserProfile((prev) => {
                if(!prev) return null;
-               // Only update if points changed (or other critical fields)
-               if(newProfile.points !== prev.points) {
-                   return { ...prev, points: newProfile.points };
-               }
-               return prev;
+               return { 
+                   ...prev, 
+                   // Merge all critical fields
+                   points: newProfile.points ?? prev.points,
+                   gender: newProfile.gender ?? prev.gender,
+                   age_group: newProfile.age_group || newProfile.age_range || prev.age_group,
+                   age_range: newProfile.age_group || newProfile.age_range || prev.age_range,
+                   occupation: newProfile.occupation ?? prev.occupation,
+                   expertise: newProfile.expertise ?? prev.expertise,
+                   role: newProfile.role ?? prev.role,
+                   username: newProfile.username ?? prev.username,
+                   profile_image_url: newProfile.profile_image_url ?? newProfile.avatar_url ?? prev.profile_image_url
+               };
             });
           }
         }

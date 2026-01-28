@@ -603,7 +603,7 @@ export default function MyPage() {
 
                            <div className="flex items-center gap-2">
                               <Button 
-                                onClick={(e) => { e.stopPropagation(); router.push(`/project/${project.id}/report`); }} 
+                                onClick={(e) => { e.stopPropagation(); router.push(`/report/${project.id}`); }} 
                                 className="flex-1 bg-chef-text text-chef-bg hover:bg-orange-600 hover:text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-10 transition-all shadow-md group-hover:shadow-lg"
                               >
                                 <BarChart className="w-3.5 h-3.5 mr-2" /> 결과 리포트

@@ -67,7 +67,7 @@ export function MyRatingIsHeader() {
                 className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-[11px] uppercase tracking-widest flex items-center gap-2"
               >
                 <ChefHat className="w-4 h-4" />
-                피드백 요청하기
+                평가 의뢰하기
               </Button>
               <div className="relative">
                 <button
@@ -160,7 +160,7 @@ export function MyRatingIsHeader() {
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-2xl h-14 font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-600/20"
                   >
                     <ChefHat className="w-5 h-5 mr-3" />
-                    피드백 요청하기
+                    평가 의뢰하기
                   </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
