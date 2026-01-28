@@ -132,22 +132,22 @@ export function AiLeanCanvasChat({ onGenerate }: AiLeanCanvasChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
+    <div className="flex flex-col h-full bg-chef-bg relative">
       {/* Header Area */}
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white/95 backdrop-blur-sm z-10 shrink-0">
+      <div className="p-6 border-b border-chef-border flex justify-between items-center bg-chef-card/95 backdrop-blur-sm z-10 shrink-0">
         <div>
-            <h2 className="text-xl font-black text-gray-900 flex items-center gap-2 mb-1">
+            <h2 className="text-xl font-black text-chef-text flex items-center gap-2 mb-1">
                 <Grid className="mb-0.5 w-6 h-6 text-purple-600"/> 
                 AI 린 캔버스
             </h2>
-            <p className="text-sm text-gray-500 pl-8">
+            <p className="text-sm text-chef-text opacity-40 pl-8">
                 AI와 대화하며 비즈니스 아이디어를 구체화하고 린 캔버스를 자동으로 생성하세요.
             </p>
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gray-50/30">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-chef-panel/30">
         {messages.map((m) => (
             <div key={m.id} className={`flex gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
@@ -157,14 +157,14 @@ export function AiLeanCanvasChat({ onGenerate }: AiLeanCanvasChatProps) {
                 )}
                 <div className={`p-4 rounded-2xl max-w-[80%] md:max-w-[70%] text-sm md:text-base shadow-sm leading-relaxed whitespace-pre-wrap animate-in fade-in slide-in-from-bottom-2 duration-300 ${
                     m.role === 'user' 
-                    ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-tr-none shadow-md' 
-                    : 'bg-white border border-gray-200/80 text-gray-800 rounded-tl-none'
+                    ? 'bg-gradient-to-br from-chef-text to-chef-text/80 text-chef-bg rounded-tr-none shadow-md' 
+                    : 'bg-chef-card border border-chef-border text-chef-text rounded-tl-none'
                 }`}>
                     {m.content}
                 </div>
                 {m.role === 'user' && (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0 border border-gray-300">
-                        <User className="w-6 h-6 text-gray-600" />
+                    <div className="w-10 h-10 rounded-full bg-chef-panel flex items-center justify-center shrink-0 border border-chef-border">
+                        <User className="w-6 h-6 text-chef-text opacity-40" />
                     </div>
                 )}
             </div>
@@ -174,7 +174,7 @@ export function AiLeanCanvasChat({ onGenerate }: AiLeanCanvasChatProps) {
                 <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0 border border-purple-200">
                     <Bot className="w-6 h-6 text-purple-600" />
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-gray-200 text-gray-500 rounded-tl-none flex items-center gap-2 shadow-sm">
+                <div className="p-4 rounded-2xl bg-chef-card border border-chef-border text-chef-text opacity-40 rounded-tl-none flex items-center gap-2 shadow-sm">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="animate-pulse">분석 중입니다...</span>
                 </div>
@@ -184,7 +184,7 @@ export function AiLeanCanvasChat({ onGenerate }: AiLeanCanvasChatProps) {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 md:p-6 bg-white border-t border-gray-200 shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
+      <div className="p-4 md:p-6 bg-chef-card border-t border-chef-border shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
         <div className="max-w-4xl mx-auto flex gap-3 items-end">
             <Textarea 
                 value={input}
@@ -196,7 +196,7 @@ export function AiLeanCanvasChat({ onGenerate }: AiLeanCanvasChatProps) {
                     }
                 }}
                 placeholder="아이디어를 자유롭게 설명해주세요... (Shift+Enter로 줄바꿈)"
-                className="min-h-[56px] max-h-[120px] resize-none border-gray-300 focus:border-purple-600 focus:ring-purple-200 bg-gray-50/50 p-3.5 text-base rounded-xl"
+                className="min-h-[56px] max-h-[120px] resize-none border-chef-border focus:border-purple-600 focus:ring-purple-200 bg-chef-panel p-3.5 text-base rounded-xl text-chef-text"
             />
             <div className="flex flex-col gap-2 shrink-0">
                 <Button 

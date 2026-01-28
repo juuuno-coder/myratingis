@@ -107,8 +107,8 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-gray-50/30">
+    <div className="flex flex-col h-full bg-chef-bg relative">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 bg-chef-panel/30">
         {messages.map((m) => (
             <div key={m.id} className={`flex gap-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
@@ -123,7 +123,7 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
                          <div className={`p-4 rounded-2xl text-sm md:text-base shadow-sm leading-relaxed whitespace-pre-wrap ${
                             m.role === 'user' 
                             ? 'bg-gradient-to-br from-indigo-600 to-blue-600 text-white rounded-tr-none shadow-md' 
-                            : 'bg-white border border-gray-200/80 text-gray-800 rounded-tl-none'
+                            : 'bg-chef-card border border-chef-border text-chef-text rounded-tl-none'
                         }`}>
                             {m.content}
                         </div>
@@ -145,8 +145,8 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
                 </div>
 
                 {m.role === 'user' && (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0 border border-gray-300 mt-1">
-                        <User className="w-6 h-6 text-gray-600" />
+                    <div className="w-10 h-10 rounded-full bg-chef-panel flex items-center justify-center shrink-0 border border-chef-border mt-1">
+                        <User className="w-6 h-6 text-chef-text opacity-40" />
                     </div>
                 )}
             </div>
@@ -157,7 +157,7 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
                     <Bot className="w-6 h-6 text-indigo-600" />
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-gray-200 text-gray-500 rounded-tl-none flex items-center gap-2 shadow-sm">
+                <div className="p-4 rounded-2xl bg-chef-card border border-chef-border text-chef-text opacity-40 rounded-tl-none flex items-center gap-2 shadow-sm">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="animate-pulse">정보를 찾고 있습니다...</span>
                 </div>
@@ -166,7 +166,7 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
         <div ref={messagesEndRef} className="h-4" />
       </div>
 
-      <div className="p-4 md:p-6 bg-white border-t border-gray-200 shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
+      <div className="p-4 md:p-6 bg-chef-card border-t border-chef-border shrink-0 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
         <div className="max-w-4xl mx-auto flex gap-3 items-end">
             <Textarea 
                 value={input}
@@ -178,7 +178,7 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
                     }
                 }}
                 placeholder="검색어나 질문을 입력하세요..."
-                className="min-h-[56px] max-h-[120px] resize-none border-gray-300 focus:border-indigo-600 focus:ring-indigo-200 bg-gray-50/50 p-3.5 text-base rounded-xl"
+                className="min-h-[56px] max-h-[120px] resize-none border-chef-border focus:border-indigo-600 focus:ring-indigo-200 bg-chef-panel p-3.5 text-base rounded-xl text-chef-text"
             />
             <div className="flex flex-col gap-2 shrink-0">
                 <Button 
@@ -206,20 +206,20 @@ export function AiOpportunityChat({ category }: AiOpportunityChatProps) {
 function ResultCard({ category, item, onClick }: { category: string, item: any, onClick: () => void }) {
     if (category === 'job') {
         return (
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-chef-card p-4 rounded-xl border border-chef-border shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-md">{item.type || "채용"}</span>
-                    <span className="text-gray-400 text-xs">{item.date}</span>
+                    <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-xs font-bold rounded-md">{item.type || "채용"}</span>
+                    <span className="text-chef-text opacity-40 text-xs">{item.date}</span>
                 </div>
-                <h4 className="font-bold text-gray-900 mb-1">{item.title}</h4>
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                <h4 className="font-bold text-chef-text mb-1">{item.title}</h4>
+                <div className="flex items-center gap-2 text-sm text-chef-text opacity-40 mb-3">
                     <Building className="w-3.5 h-3.5" /> {item.company}
-                    <span className="w-px h-2 bg-gray-300 mx-1"></span>
+                    <span className="w-px h-2 bg-chef-border mx-1"></span>
                     <MapPin className="w-3.5 h-3.5" /> {item.location}
                 </div>
                 <div className="flex gap-2 mb-3 max-w-full overflow-hidden">
                     {item.tags?.map((t: string, i: number) => (
-                        <span key={i} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap">{t}</span>
+                        <span key={i} className="px-2 py-1 bg-chef-panel text-chef-text opacity-60 text-xs rounded-full whitespace-nowrap">{t}</span>
                     ))}
                 </div>
                 <Button 
@@ -241,14 +241,14 @@ function ResultCard({ category, item, onClick }: { category: string, item: any, 
     }
     if (category === 'trend') {
         return (
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-chef-card p-4 rounded-xl border border-chef-border shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-2 mb-2">
                     <Newspaper className="w-4 h-4 text-purple-500" />
-                    <span className="text-xs font-bold text-purple-600">AI 트렌드</span>
+                    <span className="text-xs font-bold text-purple-500">AI 트렌드</span>
                 </div>
-                <h4 className="font-bold text-gray-900 mb-2">{item.title}</h4>
-                <p className="text-sm text-gray-600 line-clamp-2 mb-3">{item.summary}</p>
-                <div className="flex justify-between items-center text-xs text-gray-400">
+                <h4 className="font-bold text-chef-text mb-2">{item.title}</h4>
+                <p className="text-sm text-chef-text opacity-60 line-clamp-2 mb-3">{item.summary}</p>
+                <div className="flex justify-between items-center text-xs text-chef-text opacity-40">
                     <span>{item.source} · {item.date}</span>
                     <button 
                         onClick={() => {
@@ -268,21 +268,21 @@ function ResultCard({ category, item, onClick }: { category: string, item: any, 
     }
     if (category === 'recipe') {
         return (
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex gap-4 cursor-pointer" onClick={() => {
+            <div className="bg-chef-card p-4 rounded-xl border border-chef-border shadow-sm hover:shadow-md transition-shadow flex gap-4 cursor-pointer" onClick={() => {
                 if (item.link) {
                     window.open(item.link, '_blank', 'noopener,noreferrer');
                 } else {
                     onClick();
                 }
             }}>
-                <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                <div className="w-20 h-20 bg-chef-panel rounded-lg shrink-0 overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-amber-500/10 to-orange-500/10 flex items-center justify-center">
                         <Lightbulb className="w-8 h-8 text-amber-500/50" />
                     </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                     <h4 className="font-bold text-gray-900 mb-1 truncate">{item.title}</h4>
-                     <p className="text-xs text-gray-500 mb-2 truncate">{item.model}</p>
+                     <h4 className="font-bold text-chef-text mb-1 truncate">{item.title}</h4>
+                     <p className="text-xs text-chef-text opacity-40 mb-2 truncate">{item.model}</p>
                      <div className="flex gap-1 mb-2">
                          {item.tags?.slice(0, 2).map((t:string,i:number) => (
                              <span key={i} className="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded-md">{t}</span>
@@ -303,7 +303,7 @@ function ResultCard({ category, item, onClick }: { category: string, item: any, 
     }
     // Tool
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+        <div className="bg-chef-card p-4 rounded-xl border border-chef-border shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
             if (item.link) {
                 window.open(item.link, '_blank', 'noopener,noreferrer');
             } else {
@@ -311,15 +311,15 @@ function ResultCard({ category, item, onClick }: { category: string, item: any, 
             }
         }}>
              <div className="flex items-start gap-3">
-                 <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 text-2xl">
+                 <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center shrink-0 text-2xl">
                      {item.icon || "🛠️"}
                  </div>
                  <div className="flex-1">
-                     <h4 className="font-bold text-gray-900">{item.name}</h4>
-                     <p className="text-xs text-blue-600 font-medium mb-1">{item.category}</p>
-                     <p className="text-sm text-gray-600 line-clamp-2 mb-2">{item.desc}</p>
+                     <h4 className="font-bold text-chef-text">{item.name}</h4>
+                     <p className="text-xs text-blue-500 font-medium mb-1">{item.category}</p>
+                     <p className="text-sm text-chef-text opacity-60 line-clamp-2 mb-2">{item.desc}</p>
                      <div className="flex gap-2">
-                         <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">Free</span>
+                         <span className="px-2 py-0.5 bg-chef-panel text-chef-text opacity-40 text-xs rounded-full">Free</span>
                      </div>
                  </div>
                  <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-blue-600">

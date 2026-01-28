@@ -293,8 +293,8 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
         
         {/* 1. 기본 프로필 설정 */}
         <section className="space-y-6">
-            <div className="flex items-center justify-between border-b dark:border-slate-800 pb-4">
-                <h2 className="text-2xl font-bold flex items-center gap-2 dark:text-slate-100">
+            <div className="flex items-center justify-between border-b border-chef-border pb-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-chef-text">
                     <Settings className="w-6 h-6" />
                     기본 설정
                 </h2>
@@ -305,14 +305,14 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* 공개 여부 */}
-                <div className="col-span-full bg-gray-50 dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 flex items-center justify-between">
+                <div className="col-span-full bg-chef-panel p-6 rounded-xl border border-chef-border flex items-center justify-between">
                      <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-full ${isPublic ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-gray-200 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                        <div className={`p-3 rounded-full ${isPublic ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-chef-card text-chef-text opacity-40'}`}>
                             {isPublic ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 dark:text-white">프로필 공개 설정</h3>
-                            <p className="text-sm text-gray-500 dark:text-slate-400">
+                            <h3 className="font-bold text-chef-text">프로필 공개 설정</h3>
+                            <p className="text-sm text-chef-text opacity-40">
                                 {isPublic ? "누구나 내 프로필을 볼 수 있습니다." : "나만 내 프로필을 볼 수 있습니다."}
                             </p>
                         </div>
@@ -322,7 +322,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="dark:text-slate-200">아이디 (URL)</Label>
+                        <Label className="text-chef-text opacity-70">아이디 (URL)</Label>
                         <div className="relative">
                             <span className="absolute left-3 top-3.5 text-gray-400 text-sm">myratingis.vercel.app/</span>
                             <Input 
@@ -332,7 +332,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     setFormData({...formData, username: val});
                                     checkUsername(val);
                                 }}
-                                className="pl-[145px] h-12 rounded-xl bg-white dark:bg-slate-950 border-input dark:border-slate-800 text-slate-900 dark:text-white"
+                                className="pl-[145px] h-12 rounded-xl bg-chef-panel border-chef-border text-chef-text"
                                 placeholder="username"
                             />
                             <div className="absolute right-3 top-3">
@@ -372,17 +372,17 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
         {/* 2. 상세 프로필 (온보딩 정보) - 직접 수정 */}
         <section className="space-y-6">
-            <div className="flex items-center justify-between border-b dark:border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b border-chef-border pb-4">
                 <div>
-                   <h2 className="text-xl font-bold flex items-center gap-2 dark:text-slate-100">
+                   <h2 className="text-xl font-bold flex items-center gap-2 text-chef-text">
                        <UserCircle className="w-6 h-6 text-orange-500" />
                        상세 프로필
                    </h2>
-                   <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">성별, 연령, 직업, 전문 분야 정보입니다.</p>
+                   <p className="text-sm text-chef-text opacity-40 mt-1">성별, 연령, 직업, 전문 분야 정보입니다.</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-8">
+            <div className="bg-chef-card p-6 rounded-2xl border border-chef-border space-y-8">
                  {/* 성별 & 연령대 Grid */}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-3">
@@ -394,7 +394,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     onClick={() => setFormData({ ...formData, gender: g })}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
                                         ? 'bg-orange-600 border-orange-600 text-white shadow-md'
-                                        : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                        : 'bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100'
                                         }`}
                                 >
                                     {g}
@@ -412,7 +412,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     onClick={() => setFormData({ ...formData, age_group: age })}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
                                         ? 'bg-orange-600 border-orange-600 text-white shadow-md'
-                                        : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                        : 'bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100'
                                         }`}
                                 >
                                     {age}
@@ -435,7 +435,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
                                     (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
                                     ? 'bg-orange-600 border-orange-600 text-white shadow-md'
-                                    : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                    : 'bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100'
                                     }`}
                             >
                                 {job}
@@ -449,7 +449,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                 value={formData.occupation} 
                                 onChange={(e) => setFormData({...formData, occupation: e.target.value})}
                                 placeholder="직업을 직접 입력하세요 (예: 작가)" 
-                                className="h-12 rounded-xl bg-white dark:bg-slate-950 border-orange-200 focus:border-orange-500 text-slate-900 dark:text-white font-bold"
+                                className="h-12 rounded-xl bg-chef-panel border-orange-500/30 focus:border-orange-500 text-chef-text font-bold"
                             />
                         </div>
                     )}
@@ -463,7 +463,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                         전문 분야 🎖️
                         <span className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900">Badge Display</span>
                     </Label>
-                    <div className="flex flex-wrap gap-2 p-6 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
+                    <div className="flex flex-wrap gap-2 p-6 bg-chef-panel rounded-2xl border border-chef-border">
                         {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
                             <button
                                 key={item.value}
@@ -471,7 +471,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                 className={`px-3 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
                                     expertise.fields.includes(item.value)
                                     ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
-                                    : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500 dark:hover:text-blue-400'
+                                    : 'bg-chef-card border-chef-border text-chef-text opacity-40 hover:opacity-100'
                                 }`}
                             >
                                 <span><FontAwesomeIcon icon={item.icon} /></span>
@@ -485,11 +485,11 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
 
         {/* 2.7 비밀번호 변경 */}
         <section className="space-y-6">
-            <h2 className="text-xl font-bold border-b dark:border-slate-800 pb-4 flex items-center gap-2 dark:text-slate-100">
-                <Lock className="w-6 h-6 text-gray-700 dark:text-slate-400" />
+            <h2 className="text-xl font-bold border-b border-chef-border pb-4 flex items-center gap-2 text-chef-text">
+                <Lock className="w-6 h-6 text-chef-text opacity-40" />
                 보안 및 비밀번호 변경
             </h2>
-            <div className="bg-gray-50 dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-6">
+            <div className="bg-chef-panel p-6 rounded-2xl border border-chef-border space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <Label className="dark:text-slate-200">새 비밀번호</Label>
@@ -498,7 +498,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                             value={passwords.new}
                             onChange={e => setPasswords({...passwords, new: e.target.value})}
                             placeholder="새 비밀번호 입력"
-                            className="bg-white dark:bg-slate-950 dark:border-slate-800 dark:text-white"
+                            className="bg-chef-card border-chef-border text-chef-text"
                         />
                     </div>
                     <div className="space-y-2">
@@ -508,7 +508,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                             value={passwords.confirm}
                             onChange={e => setPasswords({...passwords, confirm: e.target.value})}
                             placeholder="비밀번호 확인"
-                            className="bg-white dark:bg-slate-950 dark:border-slate-800 dark:text-white"
+                            className="bg-chef-card border-chef-border text-chef-text"
                         />
                     </div>
                 </div>

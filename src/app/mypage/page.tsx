@@ -477,7 +477,7 @@ export default function MyPage() {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-background pb-20 transition-colors duration-300">
+    <div className="w-full min-h-screen bg-chef-bg pb-20 transition-colors duration-300">
       
       <div className="w-full max-w-[1440px] mx-auto px-4 md:px-10 pt-24">
         
@@ -742,21 +742,21 @@ export default function MyPage() {
                 </div>
 
                 {/* 오른쪽 콘텐츠 영역 */}
-                <div className="flex-1 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-0 md:p-0 relative overflow-hidden group">
+                <div className="flex-1 bg-chef-card rounded-[2.5rem] border border-chef-border shadow-sm p-0 md:p-0 relative overflow-hidden group">
                   {/* Futuristic Background Decor */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-50 rounded-full blur-3xl opacity-20 -mr-32 -mt-32 transition-all group-hover:opacity-40 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-20 -ml-16 -mb-16 transition-all group-hover:opacity-40 pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl opacity-20 -mr-32 -mt-32 transition-all group-hover:opacity-40 pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl opacity-20 -ml-16 -mb-16 transition-all group-hover:opacity-40 pointer-events-none" />
                   
                   {['job', 'trend', 'recipe', 'tool'].includes(activeAiTool) ? (
                        <div className="h-full flex flex-col relative z-10">
-                           <div className="p-8 pb-4 border-b border-gray-50 bg-white/50 backdrop-blur-sm">
-                               <h2 className="text-xl font-black text-gray-900 flex items-center gap-2 mb-1">
+                            <div className="p-8 pb-4 border-b border-chef-border bg-chef-card/50 backdrop-blur-sm">
+                               <h2 className="text-xl font-black text-chef-text flex items-center gap-2 mb-1">
                                   {activeAiTool === 'job' && <><Search className="text-blue-500 w-6 h-6"/> AI 채용 정보</>}
                                   {activeAiTool === 'trend' && <><Rocket className="text-purple-500 w-6 h-6"/> AI 트렌드</>}
                                   {activeAiTool === 'recipe' && <><Lightbulb className="text-amber-500 w-6 h-6"/> AI 레시피</>}
                                   {activeAiTool === 'tool' && <><Zap className="text-yellow-500 w-6 h-6"/> AI 도구 추천</>}
                                </h2>
-                               <p className="text-sm text-gray-500 pl-8">
+                               <p className="text-sm text-chef-text opacity-40 pl-8">
                                   {activeAiTool === 'job' && "최신 AI 프롬프트 엔지니어링 채용 공고와 해커톤 정보를 확인하세요."}
                                   {activeAiTool === 'trend' && "매일 업데이트되는 글로벌 AI 업계의 최신 동향과 뉴스 링크를 제공합니다."}
                                   {activeAiTool === 'recipe' && "다양한 이미지 생성 프롬프트 스타일과 워크플로우를 발견하고 적용해보세요."}
@@ -783,38 +783,38 @@ export default function MyPage() {
                    ) : (
                     <div className="relative z-10 flex flex-col items-center justify-center h-full text-center max-w-xl mx-auto space-y-6 py-20 px-8">
                         {/* Fallback Intro or Empty State */}
-                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-400">
+                        <div className="w-20 h-20 rounded-3xl bg-chef-panel flex items-center justify-center text-chef-text opacity-20">
                              <Sparkles className="w-10 h-10" />
                         </div>
-                        <p className="text-gray-500">도구를 선택해주세요.</p>
+                        <p className="text-chef-text opacity-40">도구를 선택해주세요.</p>
                     </div>
                    )}
                 </div>
               </div>
             )}
             {activeTab === 'settings' && userProfile && (
-               <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
+               <div className="bg-chef-card rounded-[2.5rem] border border-chef-border p-8 shadow-sm">
                   <ProfileManager user={userProfile} onUpdate={initStats} />
                </div>
             )}
             {activeTab === 'dashboard' && isAdmin && (
                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                      <div className="bg-chef-card p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
                           <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Total Impressions</p>
                           <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">24,802</h4>
                           <div className="text-xs font-bold text-green-600 flex items-center gap-1">
                              <Rocket size={14} /> +12% from last week
                           </div>
                       </div>
-                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                      <div className="bg-chef-card p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
                           <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Feedback Rate</p>
                           <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">4.8%</h4>
                           <div className="text-xs font-bold text-orange-600 flex items-center gap-1">
                              <Sparkles size={14} /> High Engagement
                           </div>
                       </div>
-                      <div className="bg-white p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
+                      <div className="bg-chef-card p-8 rounded-[2rem] border border-chef-border shadow-sm space-y-2">
                           <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Conversion Point</p>
                           <h4 className="text-4xl font-black italic tracking-tighter text-chef-text">860P</h4>
                           <div className="text-xs font-bold text-blue-600 flex items-center gap-1">
@@ -823,7 +823,7 @@ export default function MyPage() {
                       </div>
                   </div>
                   
-                  <div className="bg-white p-10 rounded-[2.5rem] border border-chef-border shadow-sm min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="bg-chef-card p-10 rounded-[2.5rem] border border-chef-border shadow-sm min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
                       <div className="w-20 h-20 bg-orange-600/10 rounded-full flex items-center justify-center text-orange-600">
                          <BarChart size={40} />
                       </div>
