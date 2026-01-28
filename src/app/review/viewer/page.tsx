@@ -241,13 +241,28 @@ function ViewerContent() {
   }, [projectId, router]);
 
   const handleStartReview = async () => {
-    // Double check session to be sure
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    try {
+        // Double check session to be sure
+        const { data, error } = await supabase.auth.getSession();
+        
+        // If auth check fails (e.g. network issue), treat as guest or show error
+        if (error) {
+            console.error("Auth check failed", error);
+            // Fallback: Open guidance anyway? Or assume guest?
+             setIsLoginGuidanceOpen(true);
+             return;
+        }
+
+        if (!data.session) {
+            setIsLoginGuidanceOpen(true);
+            return;
+        }
+        setShowIntro(false);
+    } catch (e) {
+        console.error("Auth check exception", e);
+        // Fallback
         setIsLoginGuidanceOpen(true);
-        return;
     }
-    setShowIntro(false);
   };
 
   // Resizing Logic (Kept same)
