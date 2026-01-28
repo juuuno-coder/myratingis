@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { ChefHat, User, LogOut, Sun, Moon } from "lucide-react";
+import { ChefHat, User, LogOut, Sun, Moon, ArrowRight } from "lucide-react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,35 +23,41 @@ export function MyRatingIsHeader() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 chef-header-dark shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
-            {theme === 'dark' ? (
-              <img src="/logo-white.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300" />
-            ) : (
-              <img src="/myratingis-logo.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300 brightness-0" />
-            )}
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center">
+        {/* Left: Logo */}
+        <div className="flex-1 flex justify-start">
+          <Link href="/" className="flex items-center">
+              {theme === 'dark' ? (
+                <img src="/logo-white.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300" />
+              ) : (
+                <img src="/myratingis-logo.png" alt="제 평가는요?" className="h-8 w-auto object-contain transition-all duration-300 brightness-0" />
+              )}
+          </Link>
+        </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          {/* Info Links */}
-          <nav className="flex items-center gap-6 mr-4">
-             <Link href="/about/features" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
-                서비스 소개
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-             </Link>
-             <Link href="/growth" className="text-[10px] font-black text-chef-text opacity-60 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative flex items-center gap-1.5">
-                명예의 전당
-                <span className="bg-orange-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black italic shadow-sm shadow-orange-500/20">NEW</span>
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-             </Link>
-             <Link href="/faq" className="text-[10px] font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative">
-                자주 묻는 질문
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-             </Link>
-          </nav>
+        {/* Center: Desktop Navigation */}
+        <nav className="hidden md:flex flex-[2] justify-center items-center gap-10">
+           <Link href="/about/features" className="text-[13px] font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-[0.2em] transition-all group relative">
+              서비스 소개
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+           </Link>
+           <Link href="/projects" className="text-[13px] font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-[0.2em] transition-all group relative flex items-center gap-1.5">
+              평가 참여하기
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+           </Link>
+           <Link href="/growth" className="text-[13px] font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-[0.2em] transition-all group relative flex items-center gap-2">
+              명예의 전당
+              <span className="bg-orange-500/10 text-orange-500 text-[8px] px-1.5 py-0.5 rounded-md font-bold border border-orange-500/20">준비중</span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+           </Link>
+           <Link href="/faq" className="text-[13px] font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-[0.2em] transition-all group relative">
+              자주 묻는 질문
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+           </Link>
+        </nav>
 
+        {/* Right: Actions */}
+        <div className="flex-1 hidden md:flex items-center justify-end gap-6">
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
@@ -204,21 +210,29 @@ export function MyRatingIsHeader() {
               )}
               
               {/* Secondary Links for Mobile */}
-              <div className="grid grid-cols-3 gap-2 mt-2">
+              <div className="grid grid-cols-2 gap-3 mt-2">
                  <Link href="/about/features" onClick={() => setIsMenuOpen(false)}>
-                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[9px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       소개
+                    <div className="h-14 flex items-center px-4 bg-white/5 rounded-2xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-70 uppercase tracking-widest italic justify-between group">
+                       서비스 소개
+                       <ArrowRight size={12} className="opacity-30 group-hover:opacity-100 transition-all" />
+                    </div>
+                 </Link>
+                 <Link href="/projects" onClick={() => setIsMenuOpen(false)}>
+                    <div className="h-14 flex items-center px-4 bg-white/5 rounded-2xl border border-orange-500/20 text-[10px] font-black text-orange-500 uppercase tracking-widest italic justify-between group">
+                       평가 참여하기
+                       <span className="bg-orange-500 text-white text-[7px] px-1 rounded-sm">HOT</span>
                     </div>
                  </Link>
                  <Link href="/growth" onClick={() => setIsMenuOpen(false)}>
-                    <div className="h-12 flex flex-col items-center justify-center bg-white/5 rounded-xl border border-orange-500/20 text-[9px] font-black text-orange-400 uppercase tracking-widest italic relative">
+                    <div className="h-14 flex items-center px-4 bg-white/5 rounded-2xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-70 uppercase tracking-widest italic justify-between group">
                        명예의 전당
-                       <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[7px] px-1 rounded-sm">NEW</span>
+                       <span className="bg-orange-500/10 text-orange-500 text-[8px] px-1.5 py-0.5 rounded-md font-bold border border-orange-500/20 uppercase">Coming</span>
                     </div>
                  </Link>
                  <Link href="/faq" onClick={() => setIsMenuOpen(false)}>
-                    <div className="h-12 flex items-center justify-center bg-white/5 rounded-xl border border-chef-border/30 text-[9px] font-black text-chef-text opacity-60 uppercase tracking-widest italic">
-                       FAQ
+                    <div className="h-14 flex items-center px-4 bg-white/5 rounded-2xl border border-chef-border/30 text-[10px] font-black text-chef-text opacity-70 uppercase tracking-widest italic justify-between group">
+                       자주 묻는 질문
+                       <ArrowRight size={12} className="opacity-30 group-hover:opacity-100 transition-all" />
                     </div>
                  </Link>
               </div>

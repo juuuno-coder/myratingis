@@ -133,7 +133,7 @@ function RankingSection({ title, subtitle, icon: Icon, projects, color }: { titl
 
 function GrowthContent() {
   const router = useRouter();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   
   const [projects, setProjects] = useState<ImageDialogProps[]>([]);
   const [loading, setLoading] = useState(true);
@@ -223,6 +223,41 @@ function GrowthContent() {
   // Derived sections
   const age20Rankings = useMemo(() => [...projects].sort((a,b) => (b.avg_score||0) - (a.avg_score||0)).slice(0, 3), [projects]);
   const proRankings = useMemo(() => [...projects].slice(3, 6), [projects]);
+
+  // [Access Control] Only admin can view Hall of Fame during preparation
+  if (!authLoading && !isAdmin) {
+    return (
+        <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-6 text-center">
+            <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700">
+                <div className="relative mx-auto w-32 h-32">
+                    <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-ping" />
+                    <div className="relative bg-white dark:bg-slate-900 w-full h-full rounded-full border-2 border-orange-500/20 flex items-center justify-center shadow-2xl">
+                        <Crown className="w-16 h-16 text-orange-500" />
+                    </div>
+                </div>
+                
+                <div className="space-y-4">
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter italic uppercase">Coming Soon</h1>
+                    <div className="h-1 w-12 bg-orange-500 mx-auto rounded-full" />
+                    <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                        명예의 전당은 정교한 통계 데이터를 바탕으로<br/>
+                        새롭게 단장 중입니다. 조금만 기다려주세요!<br/><br/>
+                        <span className="text-xs text-orange-600/60 font-black tracking-widest uppercase italic">Preparing for Excellence</span>
+                    </p>
+                </div>
+
+                <div className="pt-8">
+                    <Button 
+                        onClick={() => router.push('/')}
+                        className="w-full h-14 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black font-black italic uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1"
+                    >
+                        메인 페이지로 돌아가기
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
