@@ -248,6 +248,14 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   };
 
   // Generate Polygons
+  const getPolygonPoints = (scale: number) => { // scale 0 to 1
+      const val = scale * 5;
+      return categories.map((_, i) => {
+          const p = valueToPoint(val, i, categories.length);
+          return `${p.x},${p.y}`;
+      }).join(" ");
+  };
+
   const myPoints = categories.map((c, i) => {
       const p = valueToPoint(scores[c.id] || 0, i, categories.length);
       return `${p.x},${p.y}`;
@@ -282,10 +290,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       
       return (
           <g key={c.id}>
-             {/* Interaction Target (Trapezoid or large circle along axis?) 
-                 For simplicity, a large circle at the current point, 
-                 but ideally we want the whole axis to be clickable.
-             */}
+             {/* Interaction Target */}
              <circle
                cx={p.x}
                cy={p.y}
@@ -418,12 +423,12 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerUp}
                 >
-                    {/* Background Grid Circles */}
-                    <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.8} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.6} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.4} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.2} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    {/* Background Grid Polygons */}
+                    <polygon points={getPolygonPoints(1.0)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.8)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.6)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.4)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.2)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
                     
                     {/* Axes */}
                     {axes}
