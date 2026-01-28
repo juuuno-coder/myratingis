@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import { Send, Lock, Loader2 } from "lucide-react";
+import { Send, Lock, Loader2, Sparkles, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -15,46 +17,67 @@ interface InquiryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   project: {
-    project_id?: number | string; // Handle both types just in case
+    project_id?: number | string;
     id?: number | string;
     title: string;
-    user_id: string; // Owner ID
+    user_id: string; 
   };
 }
 
 export function InquiryModal({ open, onOpenChange, project }: InquiryModalProps) {
   const { user } = useAuth();
+  
+  const [inquiryType, setInquiryType] = useState('general'); // general | proposal
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [isPrivate, setIsPrivate] = useState(true);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (open && user) {
+        // Pre-fill user info
+        setContactName(user.user_metadata?.nickname || user.user_metadata?.full_name || "");
+        setContactEmail(user.email || "");
+        setTitle("");
+        setContent("");
+        setContactPhone("");
+        setInquiryType('general');
+    }
+  }, [open, user]);
+
   const handleSubmit = async () => {
-    if (!content.trim()) {
-        toast.error("문의 내용을 입력해주세요.");
-        return;
-    }
-    if (!user) {
-        toast.error("로그인이 필요합니다.");
-        return;
-    }
+    if (!title.trim()) return toast.error("제목을 입력해주세요.");
+    if (!content.trim()) return toast.error("문의 내용을 입력해주세요.");
+    if (!contactEmail.trim()) return toast.error("이메일을 입력해주세요.");
+    if (!user) return toast.error("로그인이 필요합니다.");
 
     setIsSubmitting(true);
     try {
         const projectId = project.project_id || project.id;
         
-        const { error } = await supabase.from('ProjectInquiry').insert({
+        const payload = {
             project_id: projectId,
             user_id: user.id,
+            title: title.trim(),
             content: content.trim(),
+            inquiry_type: inquiryType,
+            contact_name: contactName.trim(),
+            contact_email: contactEmail.trim(),
+            contact_phone: contactPhone.trim(),
             is_private: isPrivate,
             status: 'pending'
-        } as any); // Cast to any if table types are not perfect
+        };
+
+        const { error } = await supabase.from('ProjectInquiry').insert(payload as any);
 
         if (error) throw error;
 
-        toast.success("문의가 등록되었습니다. 작성자에게 전달됩니다.");
+        toast.success(inquiryType === 'proposal' ? "제안서가 전달되었습니다." : "문의가 등록되었습니다.");
         onOpenChange(false);
-        setContent("");
     } catch (error: any) {
         console.error("Inquiry Error:", error);
         toast.error("전송 실패: " + error.message);
@@ -65,25 +88,62 @@ export function InquiryModal({ open, onOpenChange, project }: InquiryModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md bg-chef-card text-chef-text border-chef-border">
+        <DialogContent className="sm:max-w-lg bg-chef-card text-chef-text border-chef-border max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-                    <Send className="w-5 h-5 text-orange-600" />
-                    창작자에게 문의하기
+                <DialogTitle className="flex items-center gap-2 text-2xl font-black">
+                    {inquiryType === 'proposal' ? <Sparkles className="w-6 h-6 text-purple-500" /> : <MessageCircle className="w-6 h-6 text-orange-600" />}
+                    {inquiryType === 'proposal' ? "1:1 제안하기" : "1:1 문의하기"}
                 </DialogTitle>
                 <DialogDescription className="text-chef-text opacity-60">
-                    <span className="font-bold text-chef-text">{project.title}</span> 프로젝트에 대해 궁금한 점을 남겨주세요.
+                    <span className="font-bold text-chef-text">{project.title}</span> 프로젝트에 대해 궁금한 점이나 제안할 내용이 있나요?
                 </DialogDescription>
             </DialogHeader>
-            
-            <div className="space-y-4 py-4">
+
+            <div className="space-y-6 py-4">
+                {/* Type Selection */}
+                <div className="space-y-3">
+                    <Label className="text-sm font-bold opacity-80">문의 유형</Label>
+                    <RadioGroup defaultValue="general" value={inquiryType} onValueChange={setInquiryType} className="grid grid-cols-2 gap-4">
+                        <div className={`flex items-center justify-center space-x-2 border rounded-xl p-4 cursor-pointer transition-all ${inquiryType === 'general' ? 'border-orange-600 bg-orange-50 dark:bg-orange-950/20' : 'border-chef-border hover:bg-chef-panel'}`}>
+                            <RadioGroupItem value="general" id="r-general" />
+                            <Label htmlFor="r-general" className="cursor-pointer font-bold">궁금해요 (문의)</Label>
+                        </div>
+                        <div className={`flex items-center justify-center space-x-2 border rounded-xl p-4 cursor-pointer transition-all ${inquiryType === 'proposal' ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20' : 'border-chef-border hover:bg-chef-panel'}`}>
+                            <RadioGroupItem value="proposal" id="r-proposal" />
+                            <Label htmlFor="r-proposal" className="cursor-pointer font-bold">함께해요 (제안)</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                {/* Contact Info Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>이름 *</Label>
+                        <Input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="홍길동" className="bg-chef-panel border-chef-border" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>이메일 *</Label>
+                        <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="example@email.com" className="bg-chef-panel border-chef-border" />
+                    </div>
+                </div>
+
                 <div className="space-y-2">
-                    <Label>문의 내용</Label>
+                    <Label>연락처</Label>
+                    <Input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="010-1234-5678" className="bg-chef-panel border-chef-border" />
+                </div>
+
+                <div className="space-y-2">
+                    <Label>제목 *</Label>
+                    <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={inquiryType === 'proposal' ? "제안서 제목을 입력해주세요" : "문의 제목을 입력해주세요"} className="bg-chef-panel border-chef-border font-bold" />
+                </div>
+                
+                <div className="space-y-2">
+                    <Label>내용 *</Label>
                     <Textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        placeholder="안녕하세요, 이 프로젝트의 어떤 부분이 궁금합니다..."
-                        className="bg-chef-panel border-chef-border min-h-[120px] resize-none focus-visible:ring-orange-500"
+                        placeholder={inquiryType === 'proposal' ? "제안하실 내용을 자세히 적어주세요." : "문의하실 내용을 자세히 적어주세요."}
+                        className="bg-chef-panel border-chef-border min-h-[150px] resize-none focus-visible:ring-orange-500"
                     />
                 </div>
                 
@@ -101,9 +161,9 @@ export function InquiryModal({ open, onOpenChange, project }: InquiryModalProps)
 
             <DialogFooter className="gap-2 sm:gap-0">
                 <Button variant="ghost" onClick={() => onOpenChange(false)}>취소</Button>
-                <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-orange-600 hover:bg-orange-700 text-white">
+                <Button onClick={handleSubmit} disabled={isSubmitting} className={`text-white font-bold ${inquiryType === 'proposal' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-orange-600 hover:bg-orange-700'}`}>
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                    문의 보내기
+                    {inquiryType === 'proposal' ? "제안서 보내기" : "문의하기"}
                 </Button>
             </DialogFooter>
         </DialogContent>
