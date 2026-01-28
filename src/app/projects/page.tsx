@@ -39,6 +39,117 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
+  // Social Actions
+  const handleLike = async (e: React.MouseEvent, project: any) => {
+    e.stopPropagation();
+    if (!isAuthenticated || !user) {
+        toast.error("로그인이 필요합니다.");
+        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+        return;
+    }
+
+    const originalLiked = project.is_liked;
+    const originalCount = project.likes_count || 0;
+
+    // Optimistic Update
+    setProjects(prev => prev.map(p => 
+        p.project_id === project.project_id 
+            ? { ...p, is_liked: !originalLiked, likes_count: originalLiked ? originalCount - 1 : originalCount + 1 } 
+            : p
+    ));
+
+    try {
+        if (originalLiked) {
+            // Unlike
+            await (supabase.from('ProjectLike' as any) as any).delete().match({ project_id: project.project_id, user_id: user.id });
+        } else {
+            // Like
+            await (supabase.from('ProjectLike' as any) as any).insert({ project_id: project.project_id, user_id: user.id });
+        }
+    } catch (err) {
+        console.error("Like error", err);
+        // Revert
+        setProjects(prev => prev.map(p => 
+            p.project_id === project.project_id 
+                ? { ...p, is_liked: originalLiked, likes_count: originalCount } 
+                : p
+        ));
+        toast.error("요청 처리에 실패했습니다.");
+    }
+  };
+
+  const handleBookmark = async (e: React.MouseEvent, project: any) => {
+    e.stopPropagation();
+    if (!isAuthenticated || !user) {
+         toast.error("로그인이 필요합니다.");
+         return;
+    }
+
+    const originalBookmarked = project.is_bookmarked;
+
+    // Optimistic Update
+    setProjects(prev => prev.map(p => 
+         p.project_id === project.project_id ? { ...p, is_bookmarked: !originalBookmarked } : p
+    ));
+
+    try {
+        if (originalBookmarked) {
+             // Remove from all collections for this user for this project
+             // First find the collection(s) - for MVP just finding any collection of this user
+             const { data: collections } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id);
+             if (collections && collections.length > 0) {
+                 const colIds = collections.map((c: any) => c.collection_id);
+                 await (supabase.from('CollectionItem' as any) as any).delete().in('collection_id', colIds).eq('project_id', project.project_id);
+             }
+        } else {
+             // Add to 'My Collection' (Create if not exists)
+             let { data: collection } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id).eq('name', 'My Collection').single();
+             
+             if (!collection) {
+                 const { data: newCol, error } = await (supabase.from('Collection' as any) as any).insert({ user_id: user.id, name: 'My Collection' }).select().single();
+                 if (error) throw error;
+                 collection = newCol;
+             }
+
+             if (collection) {
+                 await (supabase.from('CollectionItem' as any) as any).insert({ collection_id: collection.collection_id, project_id: project.project_id });
+                 toast.success("컬렉션에 저장되었습니다.");
+             }
+        }
+    } catch (err) {
+        console.error("Bookmark error", err);
+        // Revert
+        setProjects(prev => prev.map(p => 
+             p.project_id === project.project_id ? { ...p, is_bookmarked: originalBookmarked } : p
+        ));
+        toast.error("저장에 실패했습니다.");
+    }
+  };
+
+  const handleInquiry = async (e: React.MouseEvent, project: any) => {
+     e.stopPropagation();
+     if (!isAuthenticated || !user) {
+          toast.error("로그인이 필요합니다.");
+          return;
+     }
+
+     const message = window.prompt(`[${project.title}] 창작자에게 보낼 문의 내용을 입력하세요:`);
+     if (!message) return;
+
+     try {
+         const { error } = await (supabase.from('ProjectInquiry' as any) as any).insert({
+             project_id: project.project_id,
+             user_id: user.id,
+             content: message
+         });
+
+         if (error) throw error;
+         toast.success("문의가 전달되었습니다.");
+     } catch (err) {
+         toast.error("문의 전송 실패");
+     }
+  };
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-500">
       <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
@@ -228,21 +339,31 @@ export default function ProjectsPage() {
                       {/* Social Actions (New) */}
                       <div className="flex items-center justify-center gap-2 mb-2">
                           <button 
-                            onClick={(e) => { e.stopPropagation(); toast.info("좋아요 기능이 곧 추가됩니다!"); }}
-                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-red-500 hover:border-red-500/30 transition-all"
+                            onClick={(e) => handleLike(e, p)}
+                            className={cn(
+                                "w-10 h-10 rounded-full border flex items-center justify-center transition-all",
+                                p.is_liked 
+                                    ? "bg-red-500/10 border-red-500 text-red-500 shadow-md" 
+                                    : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100 hover:text-red-500 hover:border-red-500/30"
+                            )}
                             title="좋아요"
                           >
-                             <Heart size={18} />
+                             <Heart size={18} fill={p.is_liked ? "currentColor" : "none"} />
                           </button>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); toast.info("컬렉션(북마크) 기능이 곧 추가됩니다!"); }}
-                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-blue-500 hover:border-blue-500/30 transition-all"
+                            onClick={(e) => handleBookmark(e, p)}
+                            className={cn(
+                                "w-10 h-10 rounded-full border flex items-center justify-center transition-all",
+                                p.is_bookmarked
+                                    ? "bg-blue-500/10 border-blue-500 text-blue-500 shadow-md"
+                                    : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100 hover:text-blue-500 hover:border-blue-500/30"
+                            )}
                             title="컬렉션 저장"
                           >
-                             <Bookmark size={18} />
+                             <Bookmark size={18} fill={p.is_bookmarked ? "currentColor" : "none"} />
                           </button>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); toast.info("1:1 문의 기능이 곧 추가됩니다!"); }}
+                            onClick={(e) => handleInquiry(e, p)}
                             className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-green-500 hover:border-green-500/30 transition-all"
                             title="1:1 문의"
                           >

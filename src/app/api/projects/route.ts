@@ -126,7 +126,11 @@ export async function GET(request: NextRequest) {
       const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
       
       let myRatingsSet = new Set();
+      let myLikesSet = new Set();
+      let myBookmarksSet = new Set();
+
       if (currentAuthenticatedUserId) {
+          // 1. Ratings
           const { data: myRatings } = await (targetClient.from('ProjectRating' as any) as any)
              .select('project_id')
              .eq('user_id', currentAuthenticatedUserId)
@@ -134,6 +138,27 @@ export async function GET(request: NextRequest) {
           
           if (myRatings) {
              myRatings.forEach((r: any) => myRatingsSet.add(r.project_id));
+          }
+
+          // 2. Likes
+          const { data: myLikes } = await (targetClient.from('ProjectLike' as any) as any)
+             .select('project_id')
+             .eq('user_id', currentAuthenticatedUserId)
+             .in('project_id', projectIds);
+
+          if (myLikes) {
+             myLikes.forEach((l: any) => myLikesSet.add(l.project_id));
+          }
+
+          // 3. Bookmarks (Collections)
+          // Find all collection items for this user's collections that match these projects
+          const { data: myBookmarks } = await (targetClient.from('CollectionItem' as any) as any)
+             .select('project_id, Collection!inner(user_id)')
+             .eq('Collection.user_id', currentAuthenticatedUserId)
+             .in('project_id', projectIds);
+
+          if (myBookmarks) {
+             myBookmarks.forEach((b: any) => myBookmarksSet.add(b.project_id));
           }
       }
 
@@ -172,6 +197,8 @@ export async function GET(request: NextRequest) {
         // Note: The SQL migration updates existing rows, so this should be accurate.
         project.rating_count = project.rating_count || 0; 
         project.has_rated = myRatingsSet.has(project.project_id);
+        project.is_liked = myLikesSet.has(project.project_id);
+        project.is_bookmarked = myBookmarksSet.has(project.project_id);
       });
     }
 
