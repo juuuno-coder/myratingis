@@ -32,7 +32,8 @@ export default function VerifyEmailPage() {
   }, [cooldown, searchParams]);
 
   const handleResendEmail = async () => {
-    if (!email) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
       toast.error("이메일을 입력해주세요");
       return;
     }
@@ -48,7 +49,7 @@ export default function VerifyEmailPage() {
       // Supabase의 resend 기능 사용
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email,
+        email: cleanEmail,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         }
@@ -67,14 +68,18 @@ export default function VerifyEmailPage() {
     } catch (error: any) {
       console.error("[Verify Email] Resend error:", error);
       
-      if (error.message?.includes("Email rate limit exceeded")) {
+      if (error.message?.includes("Email rate limit exceeded") || error.message?.includes("security purposes")) {
         toast.error("너무 많은 요청을 보냈습니다", {
-          description: "잠시 후 다시 시도해주세요.",
+          description: "잠시 후 (약 1~2분 뒤) 다시 시도해주세요.",
         });
-        setCooldown(120); // 2분 쿨다운
+        setCooldown(60); 
+      } else if (error.message?.includes("invalid") || error.code === 'validation_failed') {
+        toast.error("유효하지 않은 이메일 형식입니다.", {
+          description: "이메일 주소에 공백이나 오타가 없는지 확인해주세요.",
+        });
       } else {
         toast.error("이메일 전송 실패", {
-          description: error.message || "다시 시도해주세요.",
+           description: "이미 인증되었거나 가입되지 않은 이메일일 수 있습니다. 로그인이나 '비밀번호 찾기'를 시도해보세요.",
         });
       }
     } finally {
