@@ -369,171 +369,116 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
             </div>
         </section>
 
-        {/* 2. 상세 프로필 (온보딩 정보) - Modal로 관리 */}
+        {/* 2. 상세 프로필 (온보딩 정보) - 직접 수정 */}
         <section className="space-y-6">
             <div className="flex items-center justify-between border-b dark:border-slate-800 pb-4">
                 <div>
                    <h2 className="text-xl font-bold flex items-center gap-2 dark:text-slate-100">
+                       <UserCircle2 className="w-6 h-6 text-orange-500" />
                        상세 프로필
-                       <span className="text-[10px] bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">Onboarding Info</span>
                    </h2>
                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">성별, 연령, 직업, 전문 분야 정보입니다.</p>
                 </div>
-                
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="border-orange-200 dark:border-orange-900/50 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-400">전문가 정보 수정</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                        <DialogHeader>
-                            <DialogTitle className="dark:text-white">상세 프로필 수정</DialogTitle>
-                            <DialogDescription className="dark:text-slate-400">
-                                사용자 맞춤 정보를 위해 정확한 정보를 입력해주세요.
-                            </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-8 py-4">
-                             {/* 성별 */}
-                             <div className="space-y-3">
-                                <Label className="text-base font-bold dark:text-slate-200">성별</Label>
-                                <div className="flex gap-2">
-                                    {['남성', '여성', '기타'].map((g) => (
-                                        <button
-                                            key={g}
-                                            onClick={() => setFormData({ ...formData, gender: g })}
-                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
-                                                ? 'bg-orange-600 border-orange-600 text-white'
-                                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
-                                                }`}
-                                        >
-                                            {g}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* 연령대 */}
-                            <div className="space-y-3">
-                                <Label className="text-base font-bold dark:text-slate-200">연령대</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['10대', '20대', '30대', '40대', '50대 이상'].map((age) => (
-                                        <button
-                                            key={age}
-                                            onClick={() => setFormData({ ...formData, age_group: age })}
-                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
-                                                ? 'bg-orange-600 border-orange-600 text-white'
-                                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
-                                                }`}
-                                        >
-                                            {age}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* 직업군 - New Categories */}
-                            <div className="space-y-3">
-                                <Label className="text-base font-bold dark:text-slate-200">직업 / 소속</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자', '기타'].map((job) => (
-                                        <button
-                                            key={job}
-                                            onClick={() => setFormData({ ...formData, occupation: job === '기타' ? '' : job })}
-                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
-                                                (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
-                                                ? 'bg-orange-600 border-orange-600 text-white'
-                                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
-                                                }`}
-                                        >
-                                            {job}
-                                        </button>
-                                    ))}
-                                </div>
-                                {/* '기타' 직접 입력 */}
-                                {!['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && (
-                                    <div className="mt-2 animate-in fade-in slide-in-from-top-1">
-                                        <Input 
-                                            value={formData.occupation} 
-                                            onChange={(e) => setFormData({...formData, occupation: e.target.value})}
-                                            placeholder="직업을 직접 입력하세요 (예: 작가)" 
-                                            className="font-bold border-orange-200 focus:border-orange-500 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* 전문 분야 */}
-                            <div className="space-y-3">
-                                <Label className="text-base font-bold flex items-center gap-2 dark:text-slate-200">
-                                    전문 분야 🎖️
-                                    <span className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">Badge Display</span>
-                                </Label>
-                                <div className="flex flex-wrap gap-2 p-4 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800">
-                                    {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
-                                        <button
-                                            key={item.value}
-                                            onClick={() => toggleExpertise(item.value)}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                                                expertise.fields.includes(item.value)
-                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
-                                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500 dark:hover:text-blue-400'
-                                            }`}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-800">
-                            <DialogClose asChild><Button variant="ghost" className="dark:text-slate-400 dark:hover:text-white">취소</Button></DialogClose>
-                            <DialogClose asChild><Button onClick={handleSave} className="bg-orange-600 text-white hover:bg-orange-700">저장하기</Button></DialogClose>
-                        </div>
-                    </DialogContent>
-                </Dialog>
             </div>
 
-            {/* Read-Only Summary View */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
-                         <span className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Basic Info</span>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-8">
+                 {/* 성별 & 연령대 Grid */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="space-y-3">
+                        <Label className="text-base font-bold dark:text-slate-200">성별</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {['남성', '여성', '기타'].map((g) => (
+                                <button
+                                    key={g}
+                                    onClick={() => setFormData({ ...formData, gender: g })}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.gender === g
+                                        ? 'bg-orange-600 border-orange-600 text-white shadow-md'
+                                        : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                        }`}
+                                >
+                                    {g}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <span className="text-gray-500 dark:text-slate-400">성별</span>
-                            <span className="font-bold text-gray-800 dark:text-white">{formData.gender || <span className="text-gray-300 dark:text-slate-600">-</span>}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-gray-500 dark:text-slate-400">연령대</span>
-                            <span className="font-bold text-gray-800 dark:text-white">{formData.age_group || <span className="text-gray-300 dark:text-slate-600">-</span>}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-gray-500 dark:text-slate-400">직업</span>
-                            <span className="font-bold text-gray-800 dark:text-white">{formData.occupation || <span className="text-gray-300 dark:text-slate-600">-</span>}</span>
+
+                    <div className="space-y-3">
+                        <Label className="text-base font-bold dark:text-slate-200">연령대</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {['10대', '20대', '30대', '40대', '50대 이상'].map((age) => (
+                                <button
+                                    key={age}
+                                    onClick={() => setFormData({ ...formData, age_group: age })}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${formData.age_group === age
+                                        ? 'bg-orange-600 border-orange-600 text-white shadow-md'
+                                        : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                        }`}
+                                >
+                                    {age}
+                                </button>
+                            ))}
                         </div>
                     </div>
                  </div>
 
-                 <div className="bg-blue-50/50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
-                         <span className="text-sm font-bold text-blue-400 dark:text-blue-500 uppercase tracking-wider">Expertise Badges</span>
+                 <div className="h-px bg-gray-100 dark:bg-slate-800" />
+
+                 {/* 직업군 */}
+                 <div className="space-y-3">
+                    <Label className="text-base font-bold dark:text-slate-200">직업 / 소속</Label>
+                    <div className="flex flex-wrap gap-2">
+                        {['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자', '기타'].map((job) => (
+                            <button
+                                key={job}
+                                onClick={() => setFormData({ ...formData, occupation: job === '기타' ? '' : job })}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+                                    (formData.occupation === job) || (job === '기타' && !['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && formData.occupation !== "")
+                                    ? 'bg-orange-600 border-orange-600 text-white shadow-md'
+                                    : 'bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                    }`}
+                            >
+                                {job}
+                            </button>
+                        ))}
                     </div>
-                    {expertise.fields.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {expertise.fields.map(f => {
-                                const label = [...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].find(c => c.value === f)?.label || f;
-                                return (
-                                    <span key={f} className="px-3 py-1 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-full text-xs font-bold shadow-sm">
-                                        {label}
-                                    </span>
-                                );
-                            })}
+                    {/* '기타' 직접 입력 */}
+                    {!['학생', '직장인', '공무원', '자영업/사업', '프리랜서', '주부', '구직자'].includes(formData.occupation) && (
+                        <div className="mt-3 max-w-md animate-in fade-in slide-in-from-top-1">
+                            <Input 
+                                value={formData.occupation} 
+                                onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                                placeholder="직업을 직접 입력하세요 (예: 작가)" 
+                                className="h-12 rounded-xl bg-white dark:bg-slate-950 border-orange-200 focus:border-orange-500 text-slate-900 dark:text-white font-bold"
+                            />
                         </div>
-                    ) : (
-                        <p className="text-sm text-gray-400 dark:text-slate-500 italic">선택된 전문 분야가 없습니다.</p>
                     )}
-                 </div>
+                </div>
+
+                <div className="h-px bg-gray-100 dark:bg-slate-800" />
+
+                {/* 전문 분야 */}
+                <div className="space-y-4">
+                    <Label className="text-base font-bold flex items-center gap-2 dark:text-slate-200">
+                        전문 분야 🎖️
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900">Badge Display</span>
+                    </Label>
+                    <div className="flex flex-wrap gap-2 p-6 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
+                        {[...GENRE_CATEGORIES_WITH_ICONS, ...FIELD_CATEGORIES_WITH_ICONS].map(item => (
+                            <button
+                                key={item.value}
+                                onClick={() => toggleExpertise(item.value)}
+                                className={`px-3 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                                    expertise.fields.includes(item.value)
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
+                                    : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500 dark:hover:text-blue-400'
+                                }`}
+                            >
+                                <span>{item.icon}</span>
+                                {item.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
         </section>
 
