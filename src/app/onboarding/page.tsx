@@ -26,8 +26,12 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!loading && !user) {
         router.push('/login');
+        return;
     }
-            nickname: (userProfile as any)?.nickname || user.user_metadata?.full_name || ""
+    if (user) {
+        setFormData(prev => ({
+            ...prev,
+            nickname: (userProfile as any)?.nickname || user.user_metadata?.full_name || prev.nickname
         }));
     }
   }, [user, loading, router, userProfile]);
