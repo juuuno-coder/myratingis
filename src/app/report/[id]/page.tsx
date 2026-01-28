@@ -63,7 +63,7 @@ export default function ReportPage() {
                 projectData.custom_data = JSON.parse(projectData.custom_data);
             } catch (e) {
                 console.error("Failed to parse custom_data", e);
-                projectData.custom_data = {};
+                (projectData as any).custom_data = {};
             }
         }
         setProject(projectData);
