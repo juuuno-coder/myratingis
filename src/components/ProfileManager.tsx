@@ -23,6 +23,7 @@ import {
   Eye, EyeOff, Terminal, Key, Plus, Trash2, RefreshCw, Lock, UserCircle
 } from "lucide-react";
 import { GENRE_CATEGORIES_WITH_ICONS, FIELD_CATEGORIES_WITH_ICONS } from "@/lib/ui-constants";
+import { FontAwesomeIcon } from "@/components/FaIcon";
 
 interface ProfileManagerProps {
   user: any; 
@@ -473,7 +474,7 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
                                     : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500 dark:hover:text-blue-400'
                                 }`}
                             >
-                                <span>{item.icon}</span>
+                                <span><FontAwesomeIcon icon={item.icon} /></span>
                                 {item.label}
                             </button>
                         ))}
