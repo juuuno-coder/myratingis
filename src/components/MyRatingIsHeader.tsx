@@ -162,24 +162,25 @@ export function MyRatingIsHeader() {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 25 }}
-            className="fixed inset-0 top-0 z-50 bg-black/95 backdrop-blur-3xl md:hidden overflow-y-auto no-scrollbar"
+            key="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[49] bg-[#030712] md:hidden overflow-y-auto w-full h-[100dvh]"
           >
-            <div className="min-h-screen flex flex-col pt-24 px-6 pb-10">
+            <div className="flex flex-col pt-24 px-6 pb-20 min-h-full">
               
               {/* User Section */}
               {isAuthenticated && user ? (
-                 <div className="mb-10 space-y-6 animate-in slide-in-from-bottom-4 duration-500 delay-100">
+                 <div className="mb-10 space-y-6">
                     <div className="flex items-center gap-4 p-4 rounded-[2rem] bg-white/5 border border-white/10 shadow-inner">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-2xl font-black text-white shadow-lg">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-2xl font-black text-white shadow-lg shrink-0">
                            {userProfile?.username?.charAt(0) || "U"}
                         </div>
-                        <div>
-                           <p className="text-xl font-black text-white">{userProfile?.username}</p>
-                           <p className="text-xs text-white/40 font-bold max-w-[200px] truncate">{user.email}</p>
+                        <div className="overflow-hidden">
+                           <p className="text-xl font-black text-white truncate">{userProfile?.username}</p>
+                           <p className="text-xs text-white/40 font-bold truncate">{user.email}</p>
                         </div>
                     </div>
                     
@@ -217,7 +218,7 @@ export function MyRatingIsHeader() {
                     </div>
                  </div>
               ) : (
-                 <div className="mb-10 space-y-3 animate-in slide-in-from-bottom-4 duration-500 delay-100">
+                 <div className="mb-10 space-y-3">
                     <div className="text-center mb-6">
                         <h3 className="text-2xl font-black text-white italic mb-2">Welcome Chef!</h3>
                         <p className="text-sm text-white/40">로그인하고 모든 기능을 이용해보세요.</p>
@@ -245,9 +246,9 @@ export function MyRatingIsHeader() {
                  ].map((link, i) => (
                     <Link key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)}>
                        <motion.div 
-                         initial={{ opacity: 0, x: -20 }}
+                         initial={{ opacity: 0, x: -10 }}
                          animate={{ opacity: 1, x: 0 }}
-                         transition={{ delay: 0.1 + (i * 0.05) }}
+                         transition={{ delay: 0.1 * i }}
                          className={cn(
                            "group flex items-center justify-between p-6 rounded-[2rem] border transition-all active:scale-95",
                            link.highlight 
@@ -266,7 +267,7 @@ export function MyRatingIsHeader() {
               </div>
 
                {/* Footer / Theme Toggle */}
-               <div className="mt-10 pt-6 border-t border-white/10 flex items-center justify-between pb-10">
+               <div className="mt-10 pt-6 border-t border-white/10 flex items-center justify-between">
                   <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Theme Settings</span>
                   <button 
                     onClick={toggleTheme}
