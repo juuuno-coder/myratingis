@@ -42,7 +42,7 @@ export function MyRatingIsHeader() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
              </Link>
              <Link href="/growth" className="text-[10px] font-black text-chef-text opacity-60 hover:opacity-100 uppercase tracking-[0.2em] transition-all italic group relative flex items-center gap-1.5">
-                평가 참여하기
+                명예의 전당
                 <span className="bg-orange-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black italic shadow-sm shadow-orange-500/20">NEW</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
              </Link>
@@ -212,7 +212,7 @@ export function MyRatingIsHeader() {
                  </Link>
                  <Link href="/growth" onClick={() => setIsMenuOpen(false)}>
                     <div className="h-12 flex flex-col items-center justify-center bg-white/5 rounded-xl border border-orange-500/20 text-[9px] font-black text-orange-400 uppercase tracking-widest italic relative">
-                       평가 참여하기
+                       명예의 전당
                        <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[7px] px-1 rounded-sm">NEW</span>
                     </div>
                  </Link>

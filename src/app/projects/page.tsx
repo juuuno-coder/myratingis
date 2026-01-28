@@ -49,11 +49,11 @@ export default function ProjectsPage() {
                  <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Ongoing Audit Requests</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-black text-chef-text tracking-tighter italic uppercase">
-                평가 참여하기
+                프로젝트 둘러보기
               </h1>
               <p className="text-chef-text opacity-40 font-bold max-w-xl text-lg">
-                도전하는 창작자들의 프로젝트를 미슐랭 스타급 시선으로 평가해 주세요.<br />
-                당신의 한 마디가 새로운 마침표가 됩니다.
+                도전하는 창작자들의 다양한 프로젝트를 만나보세요.<br />
+                당신의 소중한 의견이 창작자에게 큰 힘이 됩니다.
               </p>
            </div>
 
