@@ -35,7 +35,7 @@ export async function GET(
     // 2. Fetch Ratings with Profiles
     const { data: ratings, error: ratingError } = await supabaseAdmin
       .from("ProjectRating")
-      .select("*, profile:profiles(username, expertise, occupation)")
+      .select("*, profile:profiles(username, expertise, occupation, age_group, gender)")
       .eq("project_id", projectId);
 
     if (ratingError) throw ratingError;
@@ -106,6 +106,8 @@ export async function GET(
         username: (r.profile as any)?.username || (r.user_id ? "Expert" : "Guest"),
         expertise: (r.profile as any)?.expertise?.fields || [],
         occupation: (r.profile as any)?.occupation,
+        age_group: (r.profile as any)?.age_group,
+        gender: (r.profile as any)?.gender,
         score: r.score,
         proposal: r.proposal,
         custom_answers: r.custom_answers,

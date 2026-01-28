@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
+// Remove unused constants if not used elsewhere, or keep them.
 import { GENRE_CATEGORIES, FIELD_CATEGORIES } from '@/lib/constants';
 
 // Pre-map labels for fast lookup
@@ -259,7 +260,7 @@ export default function ReportPage() {
             {/* Michelin Radar */}
             <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8">
                <h3 className="text-2xl font-black flex items-center gap-3">
-                  <div className="w-1.5 h-6 bg-orange-600 rounded-full" /> Michelin Radar Analysis
+                  <div className="w-1.5 h-6 bg-orange-600 rounded-full" /> 평점 평가 분석
                </h3>
                <div className="h-[400px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -376,7 +377,7 @@ export default function ReportPage() {
          <section className="space-y-10">
             <div className="flex items-center justify-between">
                 <h3 className="text-3xl font-black flex items-center gap-3">
-                   <div className="w-1.5 h-6 bg-emerald-600 rounded-full" /> 평가 접수 명부
+                   <div className="w-1.5 h-6 bg-emerald-600 rounded-full" /> 평가 기록
                 </h3>
                 <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Sorted by Date (Asc)</span>
             </div>
@@ -384,11 +385,11 @@ export default function ReportPage() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-white/10">
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">번호</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">평가자</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">접수 일시</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-center">미슐랭 점수</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">상태</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest w-20">No.</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">참여자 정보</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">일시</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-center">평점 평가</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">전문분야</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -397,28 +398,58 @@ export default function ReportPage() {
                             <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                                 <td className="px-8 py-6 text-sm font-black text-white/20">{(i+1).toString().padStart(2, '0')}</td>
                                 <td className="px-8 py-6">
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black border border-white/10">E</div>
-                                            <span className="text-sm font-bold">{r.username || 'Anonymous'}</span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1 mt-1">
-                                            {r.expertise && r.expertise.map((exp: string, idx: number) => (
-                                                <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
-                                                    {ALL_LABELS[exp] || exp}
+                                            <div className={cn(
+                                                "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border uppercase tracking-tighter",
+                                                r.user_id 
+                                                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" 
+                                                  : "bg-white/5 text-white/40 border-white/10"
+                                            )}>
+                                                {r.user_id ? "Pro" : "G"}
+                                            </div>
+                                            <span className="text-sm font-bold text-white/90">
+                                                {r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트')}
+                                            </span>
+                                            {r.age_group && (
+                                                <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
+                                                    {r.age_group}
                                                 </span>
-                                            ))}
+                                            )}
+                                            {r.gender && (
+                                                <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
+                                                    {r.gender}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 pl-11">
+                                             {r.occupation ? (
+                                                <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
+                                                    {r.occupation}
+                                                </span>
+                                             ) : (
+                                                <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
+                                                    직업 미입력
+                                                </span>
+                                             )}
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleString('ko-KR')}</td>
+                                <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleDateString()}</td>
                                 <td className="px-8 py-6 text-center">
-                                    <span className="text-orange-500 font-black text-lg">{r.score?.toFixed(1) || '0.0'}</span>
+                                    <span className="text-orange-500 font-black text-lg">{r.score ? r.score.toFixed(1) : '-'}</span>
                                 </td>
                                 <td className="px-8 py-6">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black border border-green-500/20">
-                                        <div className="w-1 h-1 bg-green-500 rounded-full" />
-                                        {r.occupation || "VERIFIED"}
+                                    <div className="flex flex-wrap gap-1">
+                                        {r.expertise && r.expertise.length > 0 ? (
+                                            r.expertise.map((exp: string, idx: number) => (
+                                                <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                                    {ALL_LABELS[exp] || exp}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-white/20 text-[10px]">-</span>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -438,69 +469,98 @@ export default function ReportPage() {
             <h3 className="text-3xl font-black flex items-center gap-3">
                <MessageSquare className="text-orange-600" /> 상세 평가 의견 리포트
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {ratings.length > 0 ? (
-                 ratings.map((r, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ y: 20, opacity: 0 }} 
-                    whileInView={{ y: 0, opacity: 1 }} 
-                    viewport={{ once: true }}
-                    className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all space-y-6"
-                  >
-                     <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter">
-                                 {r.username ? r.username.substring(0, 1) : `E${i+1}`}
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-sm font-black">{r.username || 'Anonymous Expert'}</h4>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                    {(r.expertise || []).map((exp: string, idx: number) => (
-                                        <span key={idx} className="px-2 py-0.5 bg-white/5 text-[9px] font-bold text-white/40 rounded border border-white/10">
-                                            #{ALL_LABELS[exp] || exp}
-                                        </span>
-                                    ))}
-                                    {r.occupation && (
-                                        <span className="px-2 py-0.5 bg-blue-500/10 text-[9px] font-bold text-blue-400 rounded border border-blue-500/10 uppercase tracking-tighter">
-                                            {r.occupation}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                         </div>
-                         <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black text-orange-400 border border-orange-500/20 shadow-lg">
-                            AVG {r.score?.toFixed(1) || '0.0'}
-                         </div>
-                      </div>
-                     
-                     {/* Custom Answers */}
-                     {Object.entries(r.custom_answers || {}).map(([q, a], qIdx) => (
-                        <div key={qIdx} className="space-y-2">
-                           <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Question {qIdx + 1}</p>
-                           <p className="text-xs font-bold text-white/60 leading-relaxed italic">"{q}"</p>
-                           <p className="text-sm font-medium text-white/90 pl-4 border-l border-orange-500/30">{a as string}</p>
-                        </div>
-                     ))}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {ratings.length > 0 ? (
+                  ratings.map((r, i) => {
+                    const hasCustomAnswers = r.custom_answers && Object.keys(r.custom_answers).length > 0;
+                    const hasProposal = !!r.proposal;
+                    const hasAnyFeedback = hasCustomAnswers || hasProposal;
 
-                     {/* Final Proposal */}
-                     {r.proposal && (
-                        <div className="space-y-2 pt-4 border-t border-white/5">
-                           <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Comprehensive Opinion</p>
-                           <div className="bg-white/5 p-6 rounded-2xl text-sm font-medium leading-relaxed italic text-orange-200">
-                             "{r.proposal}"
-                           </div>
-                        </div>
-                     )}
-                  </motion.div>
-                 ))
-               ) : (
-                 <div className="col-span-full py-20 text-center text-white/20">
-                    <MessageSquare size={48} className="mx-auto mb-4" />
-                    <p className="font-bold">아직 수집된 의견이 없습니다.</p>
-                 </div>
-               )}
-            </div>
+                    return (
+                      <motion.div 
+                        key={i} 
+                        initial={{ y: 20, opacity: 0 }} 
+                        whileInView={{ y: 0, opacity: 1 }} 
+                        viewport={{ once: true }}
+                        className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all flex flex-col gap-8 h-full"
+                      >
+                         <div className="flex items-center justify-between shrink-0">
+                             <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter shadow-sm">
+                                     {r.username ? r.username.substring(0, 1) : `E${i+1}`}
+                                </div>
+                                <div className="flex flex-col">
+                                    <h4 className="text-sm font-black text-white/90">{r.username || 'Anonymous Expert'}</h4>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {(r.expertise || []).map((exp: string, idx: number) => (
+                                            <span key={idx} className="px-2 py-0.5 bg-white/5 text-[9px] font-bold text-white/40 rounded border border-white/10">
+                                                #{ALL_LABELS[exp] || exp}
+                                            </span>
+                                        ))}
+                                        {r.occupation && (
+                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-[9px] font-bold text-emerald-400 rounded border border-emerald-500/10 uppercase tracking-tighter">
+                                                {r.occupation}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                             </div>
+                             <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black text-orange-400 border border-orange-500/20 shadow-lg shrink-0">
+                                AVG {r.score?.toFixed(1) || '0.0'}
+                             </div>
+                          </div>
+                         
+                         <div className="space-y-6 flex-1">
+                            {/* Custom Answers */}
+                            {hasCustomAnswers ? (
+                                Object.entries(r.custom_answers || {}).map(([q, a], qIdx) => (
+                                    <div key={qIdx} className="space-y-2 group/q">
+                                       <div className="flex items-center gap-2">
+                                          <span className="text-[10px] font-black text-orange-500/60 uppercase tracking-widest px-2 py-0.5 bg-orange-500/5 rounded border border-orange-500/10">Question {qIdx + 1}</span>
+                                          <div className="h-px flex-1 bg-white/5" />
+                                       </div>
+                                       <p className="text-xs font-bold text-white/60 leading-relaxed italic group-hover/q:text-white/80 transition-colors">"{q}"</p>
+                                       <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                                          <p className="text-sm font-medium text-white/90 leading-relaxed">{a as string}</p>
+                                       </div>
+                                    </div>
+                                ))
+                            ) : !hasProposal ? (
+                                <div className="h-full flex flex-col items-center justify-center py-12 space-y-3 opacity-20">
+                                   <MessageSquare size={32} />
+                                   <p className="text-xs font-bold uppercase tracking-widest">No detailed comments provided</p>
+                                </div>
+                            ) : null}
+
+                            {/* Final Proposal */}
+                            {hasProposal && (
+                                <div className="space-y-4 pt-4">
+                                   <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-black text-blue-400/60 uppercase tracking-widest px-2 py-0.5 bg-blue-400/5 rounded border border-blue-400/10">Comprehensive Opinion</span>
+                                      <div className="h-px flex-1 bg-white/5" />
+                                   </div>
+                                   <div className="bg-gradient-to-br from-white/5 to-white/[0.02] p-6 rounded-[2rem] text-sm font-medium leading-relaxed italic text-orange-100 border border-white/10 shadow-inner">
+                                     "{r.proposal}"
+                                   </div>
+                                </div>
+                            )}
+                         </div>
+
+                         {/* Result Badge or Stats if any */}
+                         <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[10px] uppercase font-black tracking-widest text-white/20">
+                            <span>Expert Verification Level A+</span>
+                            <span>{new Date(r.created_at).toLocaleDateString()}</span>
+                         </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full py-20 text-center text-white/20">
+                     <MessageSquare size={48} className="mx-auto mb-4" />
+                     <p className="font-bold">아직 수집된 의견이 없습니다.</p>
+                  </div>
+                )}
+             </div>
          </section>
       </main>
 
