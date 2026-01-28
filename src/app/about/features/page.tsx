@@ -44,7 +44,7 @@ function InteractivePreview() {
                {[
                   { id: 'rating', label: '미슐랭 평점 ⭐️', desc: '전문적인 다면 평가' },
                   { id: 'poll', label: '스티커 투표 🗳️', desc: '직관적인 반응 수집' },
-                  { id: 'proposal', label: '협업 제안 🔒', desc: '프라이빗한 협업 요청' },
+                  { id: 'proposal', label: '종합 평가 📝', desc: '상세한 피드백 작성' },
                ].map((tab) => (
                   <button
                      key={tab.id}
@@ -77,7 +77,7 @@ function InteractivePreview() {
                   </div>
                )}
                {activeTab === 'poll' && (
-                  <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                  <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 transform scale-110 origin-center my-10">
                      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-slate-800">
                         <FeedbackPoll 
                            projectId="demo" 
@@ -101,17 +101,17 @@ function InteractivePreview() {
                         <div className="mb-8 w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
                            💌
                         </div>
-                        <h3 className="text-2xl font-black text-chef-text mb-3 italic uppercase tracking-tight">Private Invitation</h3>
+                        <h3 className="text-2xl font-black text-chef-text mb-3 italic uppercase tracking-tight">Comprehensive Evaluation</h3>
                         <p className="text-chef-text opacity-50 mb-8 text-sm leading-relaxed">
-                           공개 댓글로는 말하기 힘든 제휴 제안이나<br/>
-                           디테일한 피드백을 <span className="font-bold text-orange-600 dark:text-orange-400">프라이빗 메시지</span>로 전달하세요.
+                           단순한 별점을 넘어선,<br/>
+                           전문가의 시선이 담긴 <span className="font-bold text-orange-600 dark:text-orange-400">심도 있는 종합 평가</span>를 작성합니다.
                         </p>
                         
                         <div className="space-y-3">
-                           <input disabled placeholder="제안 제목 (Demo)" className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 font-medium" />
-                           <textarea disabled placeholder="제안 내용 입력..." rows={3} className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 resize-none font-medium" />
-                           <Button onClick={() => toast.success("[데모] 제안이 전송되었습니다!")} className="w-full h-14 rounded-xl bg-chef-text text-chef-bg font-black uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
-                              Send Private Proposal
+                           <input disabled placeholder="한 줄 총평 (Demo)" className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 font-medium" />
+                           <textarea disabled placeholder="상세 평가 의견을 작성해주세요..." rows={3} className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 resize-none font-medium" />
+                           <Button onClick={() => toast.success("[데모] 평가가 제출되었습니다!")} className="w-full h-14 rounded-xl bg-chef-text text-chef-bg font-black uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                               Submit Evaluation
                            </Button>
                         </div>
                      </div>

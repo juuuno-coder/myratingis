@@ -231,9 +231,10 @@ export default function ProjectsPage() {
                           내 평가 결과 보기
                         </Button>
                       ) : (
-                        <Button 
+                          <Button 
                           onClick={() => {
-                             if (!isAuthenticated) { router.push(`/login?returnPath=${encodeURIComponent(window.location.pathname)}`); return; }
+                             // Guest Flow: Simply navigate to viewer. Auth check handled inside Viewer if needed for specific actions,
+                             // but evaluation itself allows guests.
                              router.push(`/review/viewer?projectId=${p.project_id}`);
                           }}
                           className="h-14 rounded-none bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"

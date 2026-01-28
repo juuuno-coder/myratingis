@@ -56,6 +56,16 @@ export default function ReportPage() {
           .single();
         
         if (pError) throw pError;
+        
+        // Safe Parse custom_data
+        if (projectData && typeof projectData.custom_data === 'string') {
+            try {
+                projectData.custom_data = JSON.parse(projectData.custom_data);
+            } catch (e) {
+                console.error("Failed to parse custom_data", e);
+                projectData.custom_data = {};
+            }
+        }
         setProject(projectData);
 
         // 2. Fetch Secure Report Data (API)
