@@ -92,93 +92,6 @@ function GrowthOnboardingModal({ onAgree }: { onAgree: () => void }) {
   );
 }
 
-function InteractiveHero() {
-   const [activeTab, setActiveTab] = useState<'rating'|'poll'|'proposal'>('rating');
-
-   return (
-      <div className="max-w-4xl mx-auto mt-12 mb-20">
-         <div className="text-center mb-10">
-            <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider mb-3 inline-block">Interactive Preview</span>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">피드백 도구 미리보기</h2>
-            <p className="text-gray-500">실제 프로젝트에 적용될 피드백 기능들을 직접 체험해보세요.</p>
-         </div>
-
-         <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
-            {/* Tabs */}
-            <div className="flex border-b border-gray-100 overflow-x-auto scrollbar-hide">
-               {[
-                  { id: 'rating', label: '미슐랭 평점 ⭐️', desc: '전문적인 다면 평가' },
-                  { id: 'poll', label: '스티커 투표 🗳️', desc: '직관적인 반응 수집' },
-                  { id: 'proposal', label: '협업 제안 🔒', desc: '프라이빗한 협업 요청' },
-               ].map((tab) => (
-                  <button
-                     key={tab.id}
-                     onClick={() => setActiveTab(tab.id as any)}
-                     className={`flex-1 min-w-[140px] py-6 px-4 text-center transition-all relative ${
-                        activeTab === tab.id ? 'bg-white text-gray-900' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                     }`}
-                  >
-                     <div className={`text-lg font-bold mb-1 ${activeTab === tab.id ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {tab.label}
-                     </div>
-                     <div className="text-[10px] font-medium opacity-60">{tab.desc}</div>
-                     {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-1 bg-black"></div>}
-                  </button>
-               ))}
-            </div>
-
-            {/* Content Area */}
-            <div className="p-8 md:p-12 bg-pattern bg-gray-50/30 min-h-[400px] flex items-center justify-center">
-               {activeTab === 'rating' && (
-                  <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <MichelinRating projectId="demo" isDemo={true} />
-                     <p className="text-center text-xs text-gray-400 mt-4">* 미리보기용 데모입니다. 실제 데이터는 저장되지 않습니다.</p>
-                  </div>
-               )}
-               {activeTab === 'poll' && (
-                  <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <FeedbackPoll 
-                        projectId="demo" 
-                        initialCounts={{ launch: 120, research: 45, more: 12 }} 
-                        isDemo={true} 
-                     />
-                     <div className="mt-8 text-center bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <p className="font-bold text-gray-900 mb-2">💬 투표 결과 활용</p>
-                        <p className="text-sm text-gray-500">
-                           "당장 쓸게요!"가 압도적으로 많네요.<br/>
-                           이 프로젝트는 <span className="text-blue-600 font-bold">출시(Launch)</span>를 최우선으로 고려해야 합니다.
-                        </p>
-                     </div>
-                  </div>
-               )}
-               {activeTab === 'proposal' && (
-                  <div className="w-full max-w-lg text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <div className="bg-white p-10 rounded-3xl shadow-lg border border-gray-100 relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                        <div className="mb-6 w-20 h-20 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform duration-300">
-                           💌
-                        </div>
-                        <h3 className="text-2xl font-black text-gray-900 mb-2">당신의 아이디어를 제안하세요</h3>
-                        <p className="text-gray-500 mb-8 text-sm">
-                           공개 댓글로는 말하기 힘든 제휴 제안이나<br/>
-                           디테일한 피드백을 <span className="font-bold text-gray-800">프라이빗한 제안</span>으로 전달할 수 있습니다.
-                        </p>
-                        
-                        <div className="space-y-3">
-                           <input disabled placeholder="제안 제목을 입력하세요" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm cursor-not-allowed opacity-70" />
-                           <textarea disabled placeholder="내용을 입력하세요..." rows={3} className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm cursor-not-allowed opacity-70 resize-none" />
-                           <Button onClick={() => toast.success("[데모] 제안이 전송되었습니다! (실제로는 작가에게 이메일/알림이 갑니다)")} className="w-full h-12 rounded-xl bg-gray-900 text-white font-bold hover:bg-black transition-all shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-1">
-                              비공개 제안 보내기 (Demo)
-                           </Button>
-                        </div>
-                     </div>
-                  </div>
-               )}
-            </div>
-         </div>
-      </div>
-   );
-}
 
 function GrowthContent() {
   const router = useRouter();
@@ -299,21 +212,21 @@ function GrowthContent() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
       {/* Onboarding Modal Overlay */}
       {showOnboarding && isAuthenticated && <GrowthOnboardingModal onAgree={handleAgree} />}
 
       <main className="w-full max-w-[1800px] mx-auto px-4 md:px-8 pb-20 pt-24">
          {/* Header */}
-         <div className="mb-12 text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-bold border border-green-100 mb-2">
+         <div className="mb-20 text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-bold border border-green-100 dark:border-green-900 mb-2">
                <FontAwesomeIcon icon={faRocket} />
                GROWTH CENTER
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                서로의 성장을 위한 <br className="md:hidden" /> 피드백 공간
             </h1>
-             <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">
+             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-8 font-medium">
                 더 나은 작품을 위해 용기 내어 피드백을 요청한 크리에이터들입니다. <br/>
                 따뜻한 조언과 냉철한 평가로 성장을 도와주세요.
              </p>
@@ -327,7 +240,7 @@ function GrowthContent() {
                     router.push('/project/upload?mode=audit');
                   }}
                   size="lg"
-                  className="rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 px-10 shadow-xl shadow-orange-200 transition-all hover:-translate-y-1"
+                  className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-bold h-14 px-10 shadow-xl shadow-orange-600/30 transition-all hover:-translate-y-1 hover:scale-105"
                 >
                    <Zap size={20} className="mr-2 fill-white" />
                    지금 바로 평가 의뢰하기
@@ -335,21 +248,18 @@ function GrowthContent() {
              </div>
          </div>
 
-         {/* Interactive Demo Section - Only show when onboarded */}
-         <InteractiveHero />
-
          {/* [New] Growth Mode Highlighting */}
          {projects.length > 0 && (
               <div className="mb-16">
                  <div className="flex items-center justify-between mb-8">
                      <div className="flex flex-col gap-1 text-left">
-                         <h2 className="text-2xl font-bold text-slate-950 flex items-center gap-3 tracking-tight">
-                             <span className="bg-orange-500 text-white p-2.5 rounded-[1.2rem] shadow-lg shadow-orange-200">
+                         <h2 className="text-2xl font-bold text-slate-950 dark:text-white flex items-center gap-3 tracking-tight">
+                             <span className="bg-orange-500 text-white p-2.5 rounded-[1.2rem] shadow-lg shadow-orange-200 dark:shadow-none">
                                 🌱
                              </span>
                              심사 평가를 기다리고 있어요
                          </h2>
-                         <p className="text-slate-500 text-sm font-medium">여러분의 냉철한 시선이 작품을 더욱 미슐랭스럽게 만듭니다.</p>
+                         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">여러분의 냉철한 시선이 작품을 더욱 미슐랭스럽게 만듭니다.</p>
                      </div>
                  </div>
                  <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar -mx-4 px-4">
