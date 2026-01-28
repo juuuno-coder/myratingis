@@ -30,6 +30,10 @@ export function OnboardingModal() {
   useEffect(() => {
     if (loading || !user) return;
     
+    // 1. Check if user already skipped/completed in this browser
+    const skipKey = `onboarding_skipped_${user.id}`;
+    if (localStorage.getItem(skipKey) === 'true') return;
+
     // Don't show on specific paths if needed, generally show everywhere if logged in & missing info
     const excludedPaths = ["/auth", "/api", "/faq", "/about", "/support", "/policy"];
     if (excludedPaths.some(path => pathname?.startsWith(path))) return;
@@ -41,14 +45,18 @@ export function OnboardingModal() {
            setOpen(true);
        } else {
            setOpen(false);
+           // If profile is complete, ensure we don't check again (optional, but good for sync)
+           localStorage.setItem(skipKey, 'true');
        }
     }
   }, [user, userProfile, loading, pathname]);
 
   const handleNext = () => {
-    if (step === 2 && (!formData.gender || !formData.age_group)) {
-      toast.error("성별과 연령대를 선택해주세요.");
-      return;
+    if (step === 2 && (!formData.gender || !formData.age_range)) { // userProfile uses age_range, form uses age_group. Unified to age_group in form but check logic.
+      if (!formData.gender || !formData.age_group) {
+          toast.error("성별과 연령대를 선택해주세요.");
+          return;
+      }
     }
     if (step === 3 && !formData.occupation) {
       toast.error("직업을 선택하거나 입력해주세요.");
@@ -57,6 +65,14 @@ export function OnboardingModal() {
     if (step < 4) {
       setStep(step + 1);
     }
+  };
+
+  const handleClose = (isOpen: boolean) => {
+      if (!isOpen && user) {
+          // User dismissed the modal (ESC, backdrop click, etc.)
+          localStorage.setItem(`onboarding_skipped_${user.id}`, 'true');
+      }
+      setOpen(isOpen);
   };
 
   const handleSubmit = async () => {
@@ -92,6 +108,9 @@ export function OnboardingModal() {
       }
       
       console.log("Onboarding Success (API)");
+
+      // Mark as completed in local storage immediately
+      localStorage.setItem(`onboarding_skipped_${user.id}`, 'true');
 
       if (refreshUserProfile) {
         await refreshUserProfile();
@@ -130,15 +149,11 @@ export function OnboardingModal() {
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { 
-      if(!val && isSubmitting) return; 
-      setOpen(val);
-    }}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className="max-w-4xl h-[90vh] md:h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-white text-black border-none shadow-2xl"
-        onInteractOutside={(e) => e.preventDefault()} 
-        // onEscapeKeyDown removed to allow ESC
-        showCloseButton={false}
+        // Allow default interaction outside and ESC to close
+        showCloseButton={true}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>온보딩</DialogTitle>
