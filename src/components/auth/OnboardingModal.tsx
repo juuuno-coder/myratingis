@@ -75,27 +75,22 @@ export function OnboardingModal() {
 
       console.log("Onboarding Payload:", updatePayload);
 
-      // Force Update: First try update, if fails (0 rows), then upsert
-      // This is generally safer with restrictive RLS
-      const { data, error, count } = await supabase
-        .from('profiles')
-        .update(updatePayload)
-        .eq('id', user.id)
-        .select('id'); // Removed count option to verify simple select first
+      // [Stability Fix] Use Server-side API instead of client-side socket
+      // Client-side 'AbortError' often happens due to race conditions or unstable network on mobile/Vercel
+      const response = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatePayload)
+      });
 
-      if (error) throw error;
-      
-      // If no rows updated, user might not exist in profiles yet? Try upsert
-      if (!data || data.length === 0) {
-           const { error: upsertError } = await supabase
-            .from('profiles')
-            .upsert({ id: user.id, ...updatePayload })
-            .select('id');
-           
-           if (upsertError) throw upsertError;
+      if (!response.ok) {
+          const resData = await response.json();
+          throw new Error(resData.error || resData.details || 'Server update failed');
       }
       
-      console.log("Onboarding Success");
+      console.log("Onboarding Success (API)");
 
       if (refreshUserProfile) {
         await refreshUserProfile();
