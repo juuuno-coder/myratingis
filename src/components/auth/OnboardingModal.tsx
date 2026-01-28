@@ -66,28 +66,36 @@ export function OnboardingModal() {
     setIsSubmitting(true);
     try {
       const updatePayload: any = {
-        id: user.id, // Explicitly include ID for RLS
+        updated_at: new Date().toISOString(),
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
         expertise: { fields: formData.expertise }, // Ensure column is JSONB in DB
-        updated_at: new Date().toISOString(),
       };
 
       console.log("Onboarding Payload:", updatePayload);
 
-      // Select ID only to verify success, avoid selecting columns that might be missing (role/points)
-      const { data, error } = await supabase
+      // Force Update: First try update, if fails (0 rows), then upsert
+      // This is generally safer with restrictive RLS
+      const { data, error, count } = await supabase
         .from('profiles')
-        .upsert(updatePayload)
-        .select('id');
+        .update(updatePayload)
+        .eq('id', user.id)
+        .select('id'); // Removed count option to verify simple select first
 
-      if (error) {
-        console.error("Onboarding Save Error:", error);
-        throw error;
+      if (error) throw error;
+      
+      // If no rows updated, user might not exist in profiles yet? Try upsert
+      if (!data || data.length === 0) {
+           const { error: upsertError } = await supabase
+            .from('profiles')
+            .upsert({ id: user.id, ...updatePayload })
+            .select('id');
+           
+           if (upsertError) throw upsertError;
       }
       
-      console.log("Onboarding Success:", data);
+      console.log("Onboarding Success");
 
       if (refreshUserProfile) {
         await refreshUserProfile();
@@ -95,18 +103,20 @@ export function OnboardingModal() {
 
       toast.success("프로필 설정이 완료되었습니다!");
       
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Close immediately
+      setOpen(false);
+      window.location.reload(); 
     } catch (error: any) {
-      console.error("Onboarding Catch Error Object:", error);
-      const errorMsg = error.message || error.details || JSON.stringify(error) || "알 수 없는 오류";
+      console.error("Onboarding Save Error:", error);
+      const errorMsg = error.message || "알 수 없는 오류가 발생했습니다.";
       
-      // 사용자 요청: "저장이 안되도 일단 꺼지던가" 반영
-      // 만약 RLS 정책 문제나 컬럼 누락 문제라면 여기서 알 수 있음
-      alert(`저장 중 오류가 발생했습니다.\n\n[원인]: ${errorMsg}\n\n화면을 새로고침하여 모달을 닫습니다. 데이터가 저장되지 않았다면 마이페이지에서 다시 시도해주세요.`);
-      window.location.reload();
+      toast.error(`저장 실패: ${errorMsg}`);
       
+      // If it's infinite loading loop in user's browser, let's break it
+      // alert for visibility
+      if (confirm("저장 중 오류가 발생했습니다. 페이지를 새로고침 하시겠습니까?")) {
+         window.location.reload();
+      }
     } finally {
       setIsSubmitting(false);
     }
