@@ -21,7 +21,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { uploadImage } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Sparkles, Info } from "lucide-react";
+import { ChefHat, Sparkles, Info, Globe, Link } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 
@@ -59,6 +59,7 @@ export default function ProjectUploadPage() {
 
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [visibility, setVisibility] = useState<'public' | 'unlisted'>('public');
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -132,7 +133,7 @@ export default function ProjectUploadPage() {
         description: summary || title,
         category_id: 1,
         thumbnail_url: linkPreview?.image || undefined, // [Feature] Use captured link image as thumbnail
-        visibility: 'public',
+        visibility: visibility,
         audit_deadline: auditDeadline,
         is_growth_requested: true,
         custom_data: {
@@ -205,6 +206,39 @@ export default function ProjectUploadPage() {
               className="w-full h-12 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
             />
           </div>
+        </div>
+        
+        <div className="flex gap-4">
+             <button 
+               onClick={() => setVisibility('public')}
+               className={cn(
+                  "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                  visibility === 'public' 
+                     ? "bg-orange-500/10 border-orange-500 text-orange-500" 
+                     : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+               )}
+             >
+                <Globe size={20} />
+                <div className="flex flex-col items-center">
+                   <span className="text-xs font-black uppercase tracking-widest">전체 공개</span>
+                   <span className="text-[9px] font-bold opacity-70">누구나 검색하고 평가 가능</span>
+                </div>
+             </button>
+             <button 
+               onClick={() => setVisibility('unlisted')}
+               className={cn(
+                  "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                  visibility === 'unlisted' 
+                     ? "bg-indigo-500/10 border-indigo-500 text-indigo-500" 
+                     : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+               )}
+             >
+                <Link size={20} />
+                <div className="flex flex-col items-center">
+                   <span className="text-xs font-black uppercase tracking-widest">링크 일부 공개</span>
+                   <span className="text-[9px] font-bold opacity-70">링크를 가진 사람만 평가 가능</span>
+                </div>
+             </button>
         </div>
       </section>
 

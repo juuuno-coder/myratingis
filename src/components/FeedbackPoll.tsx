@@ -128,12 +128,7 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
       </div>
       
       <div className="relative z-10">
-        <div className={cn(
-          "grid gap-6 w-full max-w-5xl mx-auto",
-          options.length === 2 ? "grid-cols-1 md:grid-cols-2" : 
-          options.length === 4 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" :
-          options.length >= 5 ? "grid-cols-1 md:grid-cols-3 lg:grid-cols-5" : "grid-cols-1 md:grid-cols-3"
-        )}>
+        <div className="flex flex-col gap-6 w-full max-w-xl mx-auto">
           {options.map((opt) => {
             const Icon = opt.icon;
             const isSelected = selected === opt.id;
@@ -143,7 +138,8 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
                 key={opt.id}
                 onClick={() => handleVoteLocal(opt.id)}
                 className={cn(
-                  "relative group flex flex-col items-center p-0 rounded-[2.5rem] border-4 transition-all duration-300 overflow-hidden w-full aspect-[3/5] shadow-sm hover:shadow-xl",
+                  "relative group flex flex-col items-center p-0 rounded-[2rem] border-4 transition-all duration-300 overflow-hidden w-full shadow-sm hover:shadow-xl",
+                  "aspect-[16/10]", // Landscape ratio for vertical stack
                   isSelected 
                     ? cn(opt.activeBorder, "bg-white ring-4 ring-offset-4 ring-offset-background", opt.color.replace('text-', 'ring-')) 
                     : cn("bg-white border-transparent hover:border-slate-200")
