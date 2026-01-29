@@ -8,6 +8,7 @@ import { GENRE_TO_CATEGORY_ID } from '@/lib/constants';
 export const revalidate = 0; 
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category');
@@ -15,69 +16,47 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const page = parseInt(searchParams.get('page') || '1');
     const search = searchParams.get('search');
+    const mode = searchParams.get('mode');
+    const field = searchParams.get('field');
     
     const offset = (page - 1) * limit;
 
-    // 필요한 필드만 선택 (최적화) - 안전하게 모든 컬럼 조회 (관계 제거)
-    let query = (supabaseAnon as any)
+    // Use Server Client for Auth (Cookies) - Faster than manual token check usually
+    const supabase = createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const currentAuthenticatedUserId = currentUser?.id || null;
+
+    // 1. Base Query with Profile Join (Reduction of 1 RTT)
+    let query = (supabaseAdmin as any)
       .from('Project')
-      .select('project_id, title, thumbnail_url, views_count, likes_count, rating_count, created_at, user_id, category_id, summary, description, custom_data, audit_deadline, site_url, visibility, scheduled_at, is_growth_requested') 
+      .select(`
+        project_id, title, thumbnail_url, views_count, likes_count, rating_count, 
+        created_at, user_id, category_id, summary, description, custom_data, 
+        audit_deadline, site_url, visibility, scheduled_at, is_growth_requested,
+        User:profiles(username, avatar_url, nickname)
+      `) 
       .is('deleted_at', null) 
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    // [Scheduled Publishing] Filter out future posts unless it's the owner requesting
-    // Note: Since we don't have session verification here easily (without header parsing), 
-    // we default to filtering. The client usually requests 'mypage' data via client-side query 
-    // or specific API. If authentication is presented, we could bypass.
-    // However, for simplicity and safety: always filter details for public list.
-    // If 'userId' is present, we might want to check ownership, but let's stick to Safe Default.
-    // (MyPage uses client-side fetch usually with direct RLS, but here we enforce API logic)
-    
-    // Check Authorization header to see if the requester is the owner of the requested userId profile
-    const authHeader = request.headers.get('Authorization');
-    let isOwner = false;
-    let currentAuthenticatedUserId: string | null = null;
-    
-    if (authHeader) {
-        try {
-            const token = authHeader.replace(/^Bearer\s+/i, '');
-            const { data: { user } } = await supabaseAnon.auth.getUser(token);
-            if (user) {
-                currentAuthenticatedUserId = user.id;
-                if (userId && user.id === userId) {
-                    isOwner = true;
-                }
-            }
-        } catch (e) {}
-    }
+    let isOwner = userId && currentAuthenticatedUserId === userId;
 
     if (!isOwner) {
-       // [Security Filter]
-       // 1. Scheduled Posts: Hide future posts
        const nowISO = new Date().toISOString();
-       // 2. Visibility: Only show 'public' posts (hide 'private' and 'unlisted')
        query = query
          .eq('visibility', 'public')
          .or(`scheduled_at.is.null,scheduled_at.lte.${nowISO}`);
     }
 
-    // 검색어 필터
     if (search) {
       query = query.or(`title.ilike.%${search}%,content_text.ilike.%${search}%`);
     }
 
-    // 카테고리 필터
     if (category && category !== 'korea' && category !== 'all') {
       const categoryId = GENRE_TO_CATEGORY_ID[category];
       if (categoryId) query = query.eq('category_id', categoryId);
     }
 
-    // [New] 분야 필터 (project_fields 테이블 조인 대체)
-    const field = searchParams.get('field');
-    const mode = searchParams.get('mode');
-
-    // [Growth & Evaluation Mode] Filter
     if (mode === 'growth') {
        query = query.or(`is_growth_requested.eq.true,custom_data->>is_feedback_requested.eq.true`);
     } else if (mode === 'audit') {
@@ -85,107 +64,74 @@ export async function GET(request: NextRequest) {
     }
 
     if (field && field !== 'all') {
-       // 1. 해당 슬러그의 Field ID 조회
-       const { data: fieldData } = await (supabaseAnon as any)
-         .from('fields').select('id').eq('slug', field).single();
-       
+       const { data: fieldData } = await supabaseAdmin.from('fields').select('id').eq('slug', field).single();
        if (fieldData) {
-          // 2. 해당 Field를 가진 프로젝트 ID들 조회
-          const { data: pFields } = await (supabaseAnon as any)
-             .from('project_fields').select('project_id').eq('field_id', fieldData.id);
-          
+          const { data: pFields } = await supabaseAdmin.from('project_fields').select('project_id').eq('field_id', fieldData.id);
           if (pFields && pFields.length > 0) {
-             const pIds = pFields.map((row:any) => row.project_id);
-             query = query.in('project_id', pIds);
+             query = query.in('project_id', pFields.map((row:any) => row.project_id));
           } else {
-             // 해당 분야의 프로젝트가 없음 -> 빈 결과 반환
              query = query.eq('project_id', -1); 
           }
        }
     }
 
-    // 사용자 필터
     if (userId) query = query.eq('user_id', userId);
 
     const { data, error, count } = await query;
 
     if (error) {
-      console.error('프로젝트 조회 실패:', error);
-      return NextResponse.json(
-        { error: '프로젝트 조회에 실패했습니다.', details: error.message },
-        { status: 500 }
-      );
+      console.error('[API/GET] Projects fetch error:', error);
+      return NextResponse.json({ error: '조회 실패', details: error.message }, { status: 500 });
     }
 
-    // 4. Populate User Info & Audit Stats (Counts, My Rating status)
+    // 2. Multi-fetch for Social State (only if logged in)
     if (data && data.length > 0) {
-      const userIds = [...new Set(data.map((p: any) => p.user_id).filter(Boolean))] as string[];
       const projectIds = data.map((p: any) => p.project_id);
 
-      const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
-      
       let myRatingsSet = new Set();
       let myLikesSet = new Set();
       let myBookmarksSet = new Set();
 
-      // Parallel Fetching
-      const statsPromise = currentAuthenticatedUserId ? Promise.all([
-          (targetClient.from('ProjectRating' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
-          (targetClient.from('ProjectLike' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
-          (targetClient.from('CollectionItem' as any) as any).select('project_id, Collection!inner(user_id)').eq('Collection.user_id', currentAuthenticatedUserId).in('project_id', projectIds)
-      ]) : Promise.resolve([ {data:[]}, {data:[]}, {data:[]} ]);
+      if (currentAuthenticatedUserId) {
+        const [ratingsRes, likesRes, bookmarksRes] = await Promise.all([
+            supabaseAdmin.from('ProjectRating' as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
+            supabaseAdmin.from('ProjectLike' as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
+            supabaseAdmin.from('CollectionItem' as any).select('project_id, Collection!inner(user_id)').eq('Collection.user_id', currentAuthenticatedUserId).in('project_id', projectIds)
+        ]);
 
-      const profilesPromise = userIds.length > 0 ? (targetClient.from('profiles').select('*').in('id', userIds)) : Promise.resolve({data:[]});
-
-      const [ [ratingsRes, likesRes, bookmarksRes], profilesRes ] = await Promise.all([
-          statsPromise,
-          profilesPromise
-      ]);
-
-      // Process Stats
-      if (ratingsRes.data) ratingsRes.data.forEach((r: any) => myRatingsSet.add(r.project_id));
-      if (likesRes.data) likesRes.data.forEach((l: any) => myLikesSet.add(l.project_id));
-      if (bookmarksRes.data) bookmarksRes.data.forEach((b: any) => myBookmarksSet.add(b.project_id));
-
-      // Process Users
-      const userMap = new Map();
-      if (profilesRes.data) {
-           profilesRes.data.forEach((u: any) => {
-            userMap.set(u.id, {
-              username: u.username || u.nickname || u.name || u.display_name || u.email?.split('@')[0] || 'Unknown',
-              avatar_url: u.avatar_url || u.profile_image_url || u.profileImage || u.image || '/globe.svg',
-              expertise: u.expertise || null,
-            });
-          });
+        if (ratingsRes.data) ratingsRes.data.forEach((r: any) => myRatingsSet.add(r.project_id));
+        if (likesRes.data) likesRes.data.forEach((l: any) => myLikesSet.add(l.project_id));
+        if (bookmarksRes.data) bookmarksRes.data.forEach((b: any) => myBookmarksSet.add(b.project_id));
       }
 
       data.forEach((project: any) => {
-        project.User = userMap.get(project.user_id) || { username: 'Unknown', avatar_url: '/globe.svg' };
-        project.rating_count = project.rating_count || 0; 
+        // Fallback for user info
+        if (!project.User) {
+            project.User = { username: 'Unknown', avatar_url: '/globe.svg' };
+        } else if (Array.isArray(project.User)) {
+            project.User = project.User[0] || { username: 'Unknown', avatar_url: '/globe.svg' };
+        }
+        
         project.has_rated = myRatingsSet.has(project.project_id);
         project.is_liked = myLikesSet.has(project.project_id);
         project.is_bookmarked = myBookmarksSet.has(project.project_id);
+        project.rating_count = project.rating_count || 0;
       });
     }
 
+    const duration = Date.now() - startTime;
+    console.log(`[API/GET] Mode: ${mode}, Count: ${data?.length}, Total: ${count}, Time: ${duration}ms`);
+
     return NextResponse.json({
       projects: data, 
-      data: data, 
-      metadata: {
-        total: count || 0,
-        page: page,
-        limit: limit,
-        hasMore: data?.length === limit
-      }
+      metadata: { total: count || 0, page, limit, hasMore: data?.length === limit, duration_ms: duration }
     });
   } catch (error: any) {
-    console.error('서버 오류:', error);
-    return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.', details: error.message },
-      { status: 500 }
-    );
+    console.error('[API/GET] Critical error:', error);
+    return NextResponse.json({ error: '서버 오류' }, { status: 500 });
   }
 }
+
 
 export async function POST(request: NextRequest) {
   try {

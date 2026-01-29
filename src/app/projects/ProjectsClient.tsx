@@ -1,0 +1,431 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
+import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight, Sparkles, Heart, Bookmark, Send } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import Image from 'next/image';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { InquiryModal } from '@/components/InquiryModal';
+import { CollectionModal } from '@/components/CollectionModal';
+
+interface ProjectClientProps {
+  initialProjects?: any[];
+  initialTotal?: number;
+}
+
+export default function ProjectsClient({ initialProjects = [], initialTotal = 0 }: ProjectClientProps) {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const [projects, setProjects] = useState<any[]>(initialProjects);
+  const [loading, setLoading] = useState(initialProjects.length === 0);
+  const [activeFilter, setActiveFilter] = useState('all');
+  
+  // Modals state
+  const [inquiryModal, setInquiryModal] = useState<{open: boolean, project: any}>({ open: false, project: { title: "", user_id: "" } });
+  const [collectionModal, setCollectionModal] = useState<{open: boolean, project: any}>({ open: false, project: { title: "" } });
+
+  const fetchProjects = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const resp = await fetch('/api/projects?mode=audit');
+      const json = await resp.json();
+      
+      if (json.projects) {
+        setProjects(json.projects);
+      }
+    } catch (e) {
+      console.error("Failed to fetch audit projects", e);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch if we don't have initial data or on specific filter changes
+    if (initialProjects.length === 0) {
+      fetchProjects();
+    }
+  }, [initialProjects.length]);
+
+  // Social Actions
+  const handleLike = async (e: React.MouseEvent, project: any) => {
+    e.stopPropagation();
+    if (!isAuthenticated || !user) {
+        toast.error("로그인이 필요합니다.");
+        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+        return;
+    }
+
+    const originalLiked = project.is_liked;
+    const originalCount = project.likes_count || 0;
+
+    // Optimistic Update
+    setProjects(prev => prev.map(p => 
+        p.project_id === project.project_id 
+            ? { ...p, is_liked: !originalLiked, likes_count: originalLiked ? originalCount - 1 : originalCount + 1 } 
+            : p
+    ));
+
+    try {
+        if (originalLiked) {
+            // Unlike
+            await (supabase.from('ProjectLike' as any) as any).delete().match({ project_id: project.project_id, user_id: user.id });
+        } else {
+            // Like
+            await (supabase.from('ProjectLike' as any) as any).insert({ project_id: project.project_id, user_id: user.id });
+        }
+    } catch (err) {
+        console.error("Like error", err);
+        // Revert
+        setProjects(prev => prev.map(p => 
+            p.project_id === project.project_id 
+                ? { ...p, is_liked: originalLiked, likes_count: originalCount } 
+                : p
+        ));
+        toast.error("요청 처리에 실패했습니다.");
+    }
+  };
+
+  const handleBookmark = async (e: React.MouseEvent, project: any) => {
+    e.stopPropagation();
+    if (!isAuthenticated || !user) {
+         toast.error("로그인이 필요합니다.");
+         return;
+    }
+
+    const originalBookmarked = project.is_bookmarked;
+
+    if (originalBookmarked) {
+        // Remove from Collection (Optimistic)
+        setProjects(prev => prev.map(p => 
+             p.project_id === project.project_id ? { ...p, is_bookmarked: false } : p
+        ));
+
+        try {
+            // Remove from all collections for this user for this project
+             const { data: collections } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id);
+             if (collections && collections.length > 0) {
+                 const colIds = collections.map((c: any) => c.collection_id);
+                 await (supabase.from('CollectionItem' as any) as any).delete().in('collection_id', colIds).eq('project_id', project.project_id);
+             }
+        } catch (err) {
+            console.error("Bookmark remove error", err);
+            // Revert
+            setProjects(prev => prev.map(p => 
+                 p.project_id === project.project_id ? { ...p, is_bookmarked: true } : p
+            ));
+            toast.error("삭제 실패");
+        }
+    } else {
+        // Open Modal to Add
+        setCollectionModal({ open: true, project: project });
+    }
+  };
+
+  const handleInquiry = async (e: React.MouseEvent, project: any) => {
+     e.stopPropagation();
+     if (!isAuthenticated || !user) {
+          toast.error("로그인이 필요합니다.");
+          return;
+     }
+
+     setInquiryModal({ open: true, project: project });
+  };
+
+  const onCollectionSuccess = () => {
+      // Update local state to bookedmarked = true
+      setProjects(prev => prev.map(p => 
+          p.project_id === collectionModal.project.project_id ? { ...p, is_bookmarked: true } : p
+      ));
+  };
+
+  return (
+    <div className="min-h-screen bg-background transition-colors duration-500">
+      <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+           <div className="space-y-4">
+              <div className="flex items-center gap-3 px-4 py-2 bg-orange-600/10 border border-orange-600/20 rounded-full w-fit">
+                 <ChefHat className="w-4 h-4 text-orange-600" />
+                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Ongoing Audit Requests</span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-chef-text tracking-tighter italic uppercase">
+                평가 참여하기
+              </h1>
+              <p className="text-chef-text opacity-40 font-bold max-w-xl text-lg">
+                도전하는 창작자들의 다양한 프로젝트를 만나보세요.<br />
+                당신의 소중한 의견이 창작자에게 큰 힘이 됩니다.
+              </p>
+           </div>
+
+           <div className="flex bg-chef-panel p-1 rounded-sm border border-chef-border">
+              {['all', 'popular', 'latest'].map(f => (
+                <button 
+                  key={f} 
+                  onClick={() => setActiveFilter(f)}
+                  className={cn(
+                    "px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeFilter === f ? "bg-chef-text text-chef-bg shadow-lg" : "text-chef-text opacity-30 hover:opacity-100"
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+           </div>
+        </div>
+
+        {/* Auth Inducement Banner */}
+        {!isAuthenticated && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-12 p-8 rounded-[2rem] bg-gradient-to-r from-orange-600 to-orange-500 text-white relative overflow-hidden shadow-2xl"
+          >
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+               <ChefHat size={120} />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+               <div className="text-center md:text-left space-y-2">
+                  <h3 className="text-2xl font-black italic uppercase tracking-tight flex items-center gap-2 justify-center md:justify-start">
+                     <Sparkles className="w-6 h-6" /> Join the Kitchen
+                  </h3>
+                  <p className="text-white/80 font-bold">로그인하고 셰프가 되어 프로젝트를 평가해보세요. <br className="hidden md:block" />참여 시 다양한 리워드와 전문성 배지가 제공됩니다.</p>
+               </div>
+               <div className="flex gap-3">
+                  <Button onClick={() => router.push('/login')} variant="secondary" className="h-14 px-8 rounded-2xl font-black bg-white text-orange-600 hover:bg-white/90">로그인하기</Button>
+                  <Button onClick={() => router.push('/signup')} variant="outline" className="h-14 px-8 rounded-2xl font-black border-2 border-white text-white bg-transparent hover:bg-white/10">회원가입</Button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Project Grid */}
+        {loading ? (
+          <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex flex-col md:flex-row gap-8 bg-chef-panel/30 border border-chef-border p-8 rounded-[2.5rem] animate-pulse">
+                 <div className="w-full md:w-60 aspect-[4/3] rounded-3xl bg-chef-panel shrink-0" />
+                 <div className="flex-1 space-y-4 py-4">
+                    <div className="h-4 w-20 bg-chef-panel rounded-full" />
+                    <div className="h-8 w-3/4 bg-chef-panel rounded-lg" />
+                    <div className="h-12 w-full bg-chef-panel rounded-xl" />
+                    <div className="flex gap-4">
+                       <div className="h-3 w-16 bg-chef-panel rounded-full" />
+                       <div className="h-3 w-16 bg-chef-panel rounded-full" />
+                    </div>
+                 </div>
+              </div>
+            ))}
+          </div>
+        ) : projects.length > 0 ? (
+          <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+            {projects.map((p) => {
+              const auditConfig = p.custom_data?.audit_config;
+              const showCumulative = auditConfig?.is_public_results === true;
+
+              return (
+                <motion.div 
+                  key={p.project_id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ x: 4 }}
+                  className="group relative flex flex-col md:flex-row gap-8 bg-chef-card border border-chef-border p-6 md:p-8 rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all duration-300"
+                >
+                   {/* Left: Thumbnail Section */}
+                   <div 
+                     className="w-full md:w-80 aspect-video md:aspect-[16/10] rounded-3xl overflow-hidden bg-chef-panel shrink-0 border border-chef-border relative cursor-pointer group"
+                     onClick={() => {
+                        if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
+                        router.push(`/review/viewer?projectId=${p.project_id}`);
+                     }}
+                   >
+                      {(() => {
+                        const getSmartThumbnail = () => {
+                            // 1. If explicit thumbnail exists and is not a placeholder
+                            if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) {
+                                return p.thumbnail_url;
+                            }
+                            
+                            // 2. If site_url or legacy mediaA exists, try to get OG image via microlink
+                            const targetUrl = p.site_url || p.custom_data?.audit_config?.mediaA;
+                            if (targetUrl && typeof targetUrl === 'string' && (targetUrl.startsWith('http') || targetUrl.includes('.'))) {
+                                const finalUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
+                                return `https://api.microlink.io/?url=${encodeURIComponent(finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                            }
+                            
+                            // 3. Fallback
+                            return null;
+                        };
+                        const SmartThumb = getSmartThumbnail();
+                        
+                        return SmartThumb ? (
+                        <Image 
+                          src={SmartThumb} 
+                          alt={p.title} 
+                          fill 
+                          className="object-cover" 
+                          unoptimized={SmartThumb.includes('microlink.io')}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-chef-panel to-chef-card opacity-30">
+                          <ChefHat className="w-12 h-12" />
+                        </div>
+                      );
+                      })()}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                         <ArrowRight className="text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={32} />
+                      </div>
+                      
+                      {p.has_rated && (
+                        <div className="absolute top-3 left-3 px-3 py-1 bg-green-600/90 backdrop-blur-md rounded-full text-[8px] font-black text-white uppercase tracking-widest z-10">
+                          Completed
+                        </div>
+                      )}
+                   </div>
+
+                   {/* Middle: Content Section */}
+                   <div className="flex-1 flex flex-col justify-center min-w-0 py-2">
+                      <div className="flex items-center gap-2 mb-2">
+                         <span className="px-3 py-1 bg-orange-600/10 text-orange-600 text-[8px] font-black uppercase tracking-widest rounded-full">{p.category_name || "New Project"}</span>
+                         <span className="text-[10px] text-chef-text opacity-20 font-black italic">by {p.User?.username || "Unknown"}</span>
+                      </div>
+                      
+                       <h3 
+                        className="text-2xl md:text-3xl font-black text-chef-text tracking-tighter truncate mb-2 hover:text-orange-500 cursor-pointer transition-colors"
+                        onClick={() => {
+                           if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
+                           router.push(`/review/viewer?projectId=${p.project_id}`);
+                        }}
+                      >
+                         {p.title}
+                      </h3>
+                      
+                      <p className="text-sm md:text-md text-chef-text opacity-40 font-medium line-clamp-2 mb-6 leading-relaxed">
+                         {p.summary || p.description || p.content_text?.substring(0, 100) + '...'}
+                      </p>
+
+                      <div className="flex items-center gap-6 mt-auto">
+                        <div className="flex items-center gap-1.5 ">
+                           <Eye className="w-3.5 h-3.5 text-chef-text opacity-20" />
+                           <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Views {p.views_count || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                           <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                           <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Audits {p.rating_count || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-auto md:ml-0">
+                           <Clock className="w-3.5 h-3.5 text-chef-text opacity-20" />
+                           <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest leading-none">
+                            {p.audit_deadline ? `${new Date(p.audit_deadline).toLocaleDateString()}` : "Ongoing"}
+                           </span>
+                        </div>
+                      </div>
+                   </div>
+
+                   {/* Right: Actions Section */}
+                   <div className="flex flex-col justify-center gap-3 shrink-0 pt-4 md:pt-0 md:border-l md:border-chef-border md:pl-8 md:w-56">
+                      
+                      {/* Social Actions (New) */}
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                          <button 
+                            onClick={(e) => handleLike(e, p)}
+                            className={cn(
+                                "w-10 h-10 rounded-full border flex items-center justify-center transition-all",
+                                p.is_liked 
+                                    ? "bg-red-500/10 border-red-500 text-red-500 shadow-md" 
+                                    : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100 hover:text-red-500 hover:border-red-500/30"
+                            )}
+                            title="좋아요"
+                          >
+                             <Heart size={18} fill={p.is_liked ? "currentColor" : "none"} />
+                          </button>
+                          <button 
+                            onClick={(e) => handleBookmark(e, p)}
+                            className={cn(
+                                "w-10 h-10 rounded-full border flex items-center justify-center transition-all",
+                                p.is_bookmarked
+                                    ? "bg-blue-500/10 border-blue-500 text-blue-500 shadow-md"
+                                    : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100 hover:text-blue-500 hover:border-blue-500/30"
+                            )}
+                            title="컬렉션 저장"
+                          >
+                             <Bookmark size={18} fill={p.is_bookmarked ? "currentColor" : "none"} />
+                          </button>
+                          <button 
+                            onClick={(e) => handleInquiry(e, p)}
+                            className="w-10 h-10 rounded-full bg-chef-panel border border-chef-border flex items-center justify-center text-chef-text opacity-40 hover:opacity-100 hover:text-green-500 hover:border-green-500/30 transition-all"
+                            title="1:1 문의"
+                          >
+                             <Send size={18} />
+                          </button>
+                      </div>
+
+                      {p.has_rated ? (
+                        <Button 
+                          onClick={() => router.push(`/report/${p.project_id}`)}
+                          className="h-14 rounded-2xl bevel-cta bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-green-600/10"
+                        >
+                          내 평가 결과 보기
+                        </Button>
+                      ) : (
+                          <Button 
+                          onClick={() => {
+                             // Guest Flow: Simply navigate to viewer. Auth check handled inside Viewer if needed for specific actions,
+                             // but evaluation itself allows guests.
+                             router.push(`/review/viewer?projectId=${p.project_id}`);
+                          }}
+                          className="h-14 rounded-none bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
+                        >
+                          평가 시작하기
+                        </Button>
+                      )}
+                      
+                      {(showCumulative || p.user_id === user?.id) && (
+                         <Button 
+                           variant="outline" 
+                           onClick={() => router.push(`/report/${p.project_id}`)}
+                           className="h-12 rounded-2xl border-chef-border bg-chef-panel text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
+                         >
+                           전체 평가 통계
+                         </Button>
+                      )}
+
+                      {!p.has_rated && (
+                        <p className="text-[9px] text-center font-bold text-orange-600 opacity-40 uppercase tracking-tighter mt-1 animate-pulse">
+                          의견이 필요합니다!
+                        </p>
+                      )}
+                   </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-40 space-y-6 text-center">
+             <div className="w-24 h-24 bg-chef-panel rounded-full flex items-center justify-center border border-chef-border animate-bounce">
+                <ChefHat className="w-10 h-10 text-chef-text opacity-20" />
+             </div>
+             <div className="space-y-2">
+                <h3 className="text-3xl font-black text-chef-text italic uppercase">No Audits Found</h3>
+                <p className="text-chef-text opacity-40 font-bold">평가를 기다리는 프로젝트가 아직 없습니다. 직접 의뢰를 시작해 보세요.</p>
+             </div>
+             <Button 
+               onClick={() => router.push('/project/upload')}
+               className="bg-orange-600 hover:bg-orange-500 text-white font-black px-10 h-14 rounded-full shadow-2xl transition-all hover:scale-105"
+             >
+               평가 의뢰하기 <ArrowRight className="ml-2 w-5 h-5" />
+             </Button>
+          </div>
+        )}
+      </main>
+
+
+    </div>
+  );
+}
