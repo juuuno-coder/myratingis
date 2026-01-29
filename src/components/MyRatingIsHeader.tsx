@@ -22,7 +22,7 @@ export function MyRatingIsHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 chef-header-dark shadow-2xl backdrop-blur-md bg-black/20 border-b border-white/5">
+    <header className="fixed top-0 left-0 right-0 z-[100] chef-header-dark shadow-2xl backdrop-blur-md bg-black/20 border-b border-white/5">
       <div className="w-full px-6 md:px-10 h-16 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex-shrink-0 flex justify-start">
@@ -138,7 +138,7 @@ export function MyRatingIsHeader() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 text-chef-text relative z-[60]"
+          className="md:hidden p-2 text-chef-text relative z-[120]"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           <div className="w-6 h-5 flex flex-col justify-between items-center relative">
@@ -167,7 +167,7 @@ export function MyRatingIsHeader() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[49] bg-[#030712] md:hidden overflow-y-auto w-full h-[100dvh]"
+            className="fixed inset-0 z-[110] bg-[#030712] md:hidden overflow-y-auto w-full h-[100dvh]"
           >
             <div className="flex flex-col pt-24 px-6 pb-20 min-h-full">
               
