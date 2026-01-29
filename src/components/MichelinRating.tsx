@@ -170,8 +170,8 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   
   const valueToPoint = (val: number, index: number, total: number) => {
       const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
-      // Linear scaling: 0 -> 0, 5 -> RADIUS
-      const r = (val / 5) * RADIUS;
+      const INNER_RADIUS = 12; // Offset center for easier grabbing
+      const r = INNER_RADIUS + (val / 5) * (RADIUS - INNER_RADIUS);
       return {
           x: CENTER + r * Math.cos(angle),
           y: CENTER + r * Math.sin(angle)
@@ -212,7 +212,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       if (!targetId || !svgRef.current) return;
 
       const rect = svgRef.current.getBoundingClientRect();
-      // ... same logic ...
       const scaleX = CHART_SIZE / rect.width;
       const scaleY = CHART_SIZE / rect.height;
       
@@ -233,10 +232,11 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       
       let projLen = vX * axisX + vY * axisY;
       
-      if (projLen < 0) projLen = 0; 
+      const INNER_RADIUS = 12;
+      let rawScore = ((projLen - INNER_RADIUS) / (RADIUS - INNER_RADIUS)) * 5;
       
-      let rawScore = (projLen / RADIUS) * 5;
       if (rawScore > 5) rawScore = 5;
+      if (rawScore < 0) rawScore = 0;
       
       setScores(prev => ({ ...prev, [targetId]: Number(rawScore.toFixed(1)) }));
       setIsEditing(true);
@@ -268,12 +268,17 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   
   // Generate Axes Lines
   const axes = categories.map((c, i) => {
+      const INNER_RADIUS = 12;
+      const start = {
+          x: CENTER + INNER_RADIUS * Math.cos((Math.PI * 2 * i) / categories.length - Math.PI / 2),
+          y: CENTER + INNER_RADIUS * Math.sin((Math.PI * 2 * i) / categories.length - Math.PI / 2)
+      };
       const end = valueToPoint(5, i, categories.length);
       return (
           <line 
             key={c.id} 
-            x1={CENTER} 
-            y1={CENTER} 
+            x1={start.x} 
+            y1={start.y} 
             x2={end.x} 
             y2={end.y} 
             stroke="#e5e5e5" 
@@ -294,7 +299,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
              <circle
                cx={p.x}
                cy={p.y}
-               r={isActive ? 25 : 15}
+               r={30} // Even larger for mobile ease
                fill="transparent"
                className="cursor-pointer touch-none"
                onPointerDown={(e) => handlePointerDown(e, c.id)}
@@ -303,7 +308,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
              <circle
                cx={p.x}
                cy={p.y}
-               r={isActive ? 8 : 4}
+               r={isActive ? 8 : 5}
                fill={c.color || '#f59e0b'}
                stroke="white"
                strokeWidth={2}
@@ -312,14 +317,14 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
              
              {/* Label */}
              {(() => {
-                const labelPos = valueToPoint(5.8, i, categories.length);
+                const labelPos = valueToPoint(6.2, i, categories.length);
                 return (
                     <text 
                         x={labelPos.x} 
                         y={labelPos.y} 
                         textAnchor="middle" 
                         dominantBaseline="middle" 
-                        className="text-[10px] sm:text-xs font-black fill-chef-text uppercase tracking-tighter opacity-70 pointer-events-none"
+                        className="text-[10px] sm:text-[11px] font-black fill-chef-text uppercase tracking-tighter opacity-70 pointer-events-none"
                     >
                         {c.label}
                     </text>
@@ -441,9 +446,9 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                     {/* My Score Polygon */}
                     <polygon 
                         points={myPoints} 
-                        fill={activeCategoryIndex !== undefined ? categories[activeCategoryIndex]?.color || "#f59e0b" : "#f59e0b"} 
+                        fill="#f59e0b" 
                         fillOpacity={0.2} 
-                        stroke={activeCategoryIndex !== undefined ? categories[activeCategoryIndex]?.color || "#f59e0b" : "#f59e0b"} 
+                        stroke="#f59e0b" 
                         strokeWidth={4}
                         className="transition-all duration-75"
                     />
@@ -455,9 +460,9 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                 <div className="w-full h-full bg-chef-panel/20 animate-pulse rounded-full" />
             )}
            
-           {/* Center Score Badge */}
-           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div className="bg-chef-card/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-chef-border flex flex-col items-center transition-transform hover:scale-105">
+           {/* Center Score Badge -> Now Top Right */}
+           <div className="absolute top-0 right-0 p-2 pointer-events-none">
+              <div className="bg-chef-card/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-chef-border flex flex-col items-end transition-transform hover:scale-105">
                 <span className="text-4xl font-black text-chef-text tabular-nums leading-none mb-1">{currentTotalAvg.toFixed(1)}</span>
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((i) => (

@@ -463,14 +463,12 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse" />
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Stage 01. Star Rating</span>
              </div>
-             <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">정량적 항목 평가</h3>
+             <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">평점 평가</h3>
              <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-[10px]">각 지표별 슬라이더를 조절하여 점수를 매겨주세요</p>
            </div>
            
            <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-              <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-               <MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} onChange={setMichelinScores} />
-            </div>
+              <MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} onChange={setMichelinScores} />
            </div>
         </div>
       );
@@ -490,9 +488,7 @@ function ViewerContent() {
           </div>
           
           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-            <div className="bg-chef-panel/30 border border-chef-border rounded-[3rem] p-8 md:p-10 shadow-inner">
-               <FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} onChange={setPollSelection} />
-            </div>
+             <FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} onChange={setPollSelection} />
           </div>
         </div>
       );

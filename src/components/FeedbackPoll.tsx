@@ -138,28 +138,19 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
                 key={opt.id}
                 onClick={() => handleVoteLocal(opt.id)}
                 className={cn(
-                  "relative group flex flex-row items-center p-2 rounded-[2rem] border-4 transition-all duration-300 w-full shadow-sm hover:shadow-xl bg-white",
+                  "relative group flex flex-row items-center p-2 rounded-[2rem] border-2 transition-all duration-200 w-full shadow-sm bg-white",
                   isSelected 
-                    ? cn(opt.activeBorder, "ring-4 ring-offset-2 ring-offset-background z-10 scale-[1.02]", opt.color.replace('text-', 'ring-')) 
-                    : cn("border-transparent hover:border-slate-100")
+                    ? cn(opt.activeBorder, "bg-slate-50/50") 
+                    : cn("border-slate-100 hover:border-slate-200")
                 )}
               >
                 {/* Left: Image (Small) */}
-                <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-100 group-hover:brightness-105 transition-all outline outline-1 outline-black/5">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-100 transition-all outline outline-1 outline-black/5">
                    {opt.image_url ? (
                      <Image src={opt.image_url} alt={opt.label} fill className="object-cover" />
                    ) : (
                      <div className="w-full h-full flex items-center justify-center">
                         <Icon className={cn("w-10 h-10 opacity-50", opt.color)} />
-                     </div>
-                   )}
-                   
-                   {/* Stamp Effect */}
-                   {isSelected && (
-                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300 bg-black/20 backdrop-blur-[1px]">
-                        <div className={cn("w-16 h-16 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white shadow-lg", opt.color.replace('text-', 'border-'))}>
-                           <CheckCircle2 className={cn("w-8 h-8", opt.color)} />
-                        </div>
                      </div>
                    )}
                 </div>
@@ -170,9 +161,14 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
                    <p className="text-xs sm:text-sm font-bold text-slate-400 leading-tight whitespace-pre-wrap break-keep">{opt.desc}</p>
                 </div>
                 
-                {/* Optional: Simple Arrow or Indicator on the far right */}
-                <div className={cn("pr-4 opacity-0 transition-opacity", isSelected && "opacity-100")}>
-                   <div className={cn("w-3 h-3 rounded-full", opt.color.replace('text-', 'bg-'))} />
+                {/* Selection Indicator on the far right */}
+                <div className="pr-6">
+                   <div className={cn(
+                     "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all",
+                     isSelected ? cn(opt.activeBorder, opt.color, "bg-white shadow-md") : "border-slate-100 bg-slate-50 opacity-30"
+                   )}>
+                      {isSelected && <CheckCircle2 className="w-5 h-5" />}
+                   </div>
                 </div>
               </button>
             );
