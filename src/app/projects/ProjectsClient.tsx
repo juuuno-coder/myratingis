@@ -145,6 +145,14 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
       ));
   };
 
+  const handleProjectRoute = (p: any) => {
+    if (p.has_rated) {
+      router.push(`/report/${p.project_id}`);
+    } else {
+      router.push(`/review/viewer?projectId=${p.project_id}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-500">
       <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
@@ -240,10 +248,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                    {/* Left: Thumbnail Section */}
                    <div 
                      className="w-full md:w-80 aspect-video md:aspect-[16/10] rounded-3xl overflow-hidden bg-chef-panel shrink-0 border border-chef-border relative cursor-pointer group"
-                     onClick={() => {
-                        if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
-                        router.push(`/review/viewer?projectId=${p.project_id}`);
-                     }}
+                     onClick={() => handleProjectRoute(p)}
                    >
                       {(() => {
                         const getSmartThumbnail = () => {
@@ -298,10 +303,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                       
                        <h3 
                         className="text-2xl md:text-3xl font-black text-chef-text tracking-tighter truncate mb-2 hover:text-orange-500 cursor-pointer transition-colors"
-                        onClick={() => {
-                           if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
-                           router.push(`/review/viewer?projectId=${p.project_id}`);
-                        }}
+                        onClick={() => handleProjectRoute(p)}
                       >
                          {p.title}
                       </h3>
