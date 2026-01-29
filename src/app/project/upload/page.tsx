@@ -25,11 +25,11 @@ import { ChefHat, Sparkles, Info, Globe, Link } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
 const STICKER_PRESETS: Record<string, any[]> = {
-  professional: [
-    { id: 'pr1', label: '당장 계약하시죠!\n탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
-    { id: 'pr2', label: '좋긴 한데...\n한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나\n디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
-    { id: 'pr3', label: '기획부터 다시!\n싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한\n전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
-  ],
+    professional: [
+      { id: 'pr1', label: '당장 런칭하시죠!\n기대되는 결과물!', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
+      { id: 'pr2', label: '좋긴 한데...\n한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나\n디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
+      { id: 'pr3', label: '기획부터 다시!\n싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한\n전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
+    ],
   michelin: [
     { id: 'mi1', label: '3스타급 완성도!\n완벽한 미식 경험', desc: '예술성과 상업성을 모두 잡은,\n누구나 소유하고 싶어 할 만큼 가치가 뛰어난 프로젝트', image_url: '/review/a1.jpeg' },
     { id: 'mi2', label: '훌륭한 요리,\n하지만 향신료가 부족함', desc: '기본기는 탄탄하지만 이 프로젝트만의\n확실한 개성(Kick)을 더 보여줄 필요가 있는 상태', image_url: '/review/a2.jpeg' },
@@ -65,7 +65,7 @@ export default function ProjectUploadPage() {
     return d.toISOString().split('T')[0];
   });
   const [auditType, setAuditType] = useState<'link' | 'image' | 'video' | 'document'>('link');
-  const [mediaData, setMediaData] = useState<string | string[]>([]);
+  const [mediaData, setMediaData] = useState<string | string[]>("");
   const [customCategories, setCustomCategories] = useState<any[]>([
     { id: 'm1', label: '기획력', desc: '탄탄한 논리와 명확한 문제 해결 전략' },
     { id: 'm2', label: '독창성', desc: '기존의 틀을 깨는 신선하고 개성 있는 시도' },
@@ -76,7 +76,11 @@ export default function ProjectUploadPage() {
   const [selectedPreset, setSelectedPreset] = useState<'professional' | 'michelin' | 'mz'>('professional');
   const [pollOptions, setPollOptions] = useState<any[]>([]);
   const [pollDesc, setPollDesc] = useState("현업 마스터의 냉정한 피드백");
-  const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
+  const [auditQuestions, setAuditQuestions] = useState<string[]>([
+    "이 프로젝트의 가장 큰 장점은 무엇인가요?",
+    "이 프로젝트에서 가장 시급하게 보완해야할 점은 무엇인가요?",
+    "발전을 위해 조언해 주실 부분이 있다면 자유롭게 말씀해 주세요."
+  ]);
 
   const mode = searchParams.get('mode') || 'audit'; 
 
@@ -202,7 +206,13 @@ export default function ProjectUploadPage() {
              mediaA: mediaData,
              categories: customCategories,
              poll: { desc: pollDesc, options: pollOptions },
-             questions: auditQuestions
+             questions: auditQuestions,
+             reward: {
+               type: rewardType,
+               amount: rewardAmount,
+               count: recipientCount,
+               method: distributeMethod
+             }
           }
         }
       };
