@@ -290,7 +290,10 @@ function ViewerContent() {
                 비회원으로 진행하기
             </Button>
             <Button 
-                onClick={() => router.push(`/login?returnTo=${encodeURIComponent(window.location.href)}`)}
+                onClick={() => {
+                    const returnTo = window.location.pathname + window.location.search;
+                    router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                }}
                 className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-xl"
             >
                 로그인하기
