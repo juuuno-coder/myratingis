@@ -455,6 +455,35 @@ export default function ProjectUploadPage() {
           </div>
         </div>
 
+        {/* [New] Polygonal UI Gallery (Demo Section) */}
+        <div className="bg-chef-card/50 border border-chef-border rounded-xl p-8 space-y-6">
+           <div className="flex items-center gap-3">
+              <Info className="w-5 h-5 text-orange-500" />
+              <h4 className="text-sm font-black text-chef-text uppercase tracking-widest">다각형 UI 가이드 : 질문 개수에 따라 모양이 변합니다</h4>
+           </div>
+           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { n: 3, shape: '삼각형', id: 6, icon: '🔺' },
+                { n: 4, shape: '사각형', id: 7, icon: '⬜' },
+                { n: 5, shape: '오각형', id: 8, icon: '⬟' },
+                { n: 6, shape: '육각형', id: 9, icon: '⬢' }
+              ].map((demo) => (
+                <button 
+                  key={demo.n}
+                  onClick={() => window.open(`/review/viewer?projectId=${demo.id}`, '_blank')}
+                  className="flex flex-col items-center gap-2 p-4 bg-chef-panel border border-chef-border hover:border-orange-500/50 rounded-xl transition-all group"
+                >
+                   <span className="text-2xl group-hover:scale-125 transition-transform">{demo.icon}</span>
+                   <div className="text-center">
+                      <p className="text-[10px] font-black text-chef-text opacity-40 uppercase">{demo.n}개 지표</p>
+                      <p className="text-xs font-black text-chef-text">{demo.shape} UI 보기</p>
+                   </div>
+                </button>
+              ))}
+           </div>
+           <p className="text-[10px] text-chef-text opacity-30 font-bold text-center uppercase tracking-widest">항목 개수를 조절하여 프로젝트에 가장 적합한 진단 모델을 설계해보세요.</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {customCategories.map((cat, idx) => (
             <div key={idx} className="chef-black-panel bevel-section p-10 border border-chef-border/50 relative group hover:border-orange-500 transition-all bg-chef-card shadow-lg">
