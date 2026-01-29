@@ -8,6 +8,7 @@ import { ADMIN_EMAILS } from "@/lib/constants";
 
 interface UserProfile {
   username: string;
+  nickname?: string;
   profile_image_url: string;
   role: string;
   points?: number;
@@ -86,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserProfile(prev => ({
             ...prev!, // Safe assertion as we set base above
             username: (db as any).username || base.username,
+            nickname: (db as any).nickname || (db as any).username || base.username,
             profile_image_url: customImage || base.profile_image_url,
             role: (db as any).role || base.role,
             points: (db as any).points || 0,
@@ -138,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                    expertise: newProfile.expertise ?? prev.expertise,
                    role: newProfile.role ?? prev.role,
                    username: newProfile.username ?? prev.username,
+                   nickname: newProfile.nickname ?? newProfile.username ?? prev.nickname,
                    profile_image_url: newProfile.profile_image_url ?? newProfile.avatar_url ?? prev.profile_image_url
                };
             });

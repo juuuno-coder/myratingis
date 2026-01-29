@@ -82,39 +82,44 @@ export function MyRatingIsHeader() {
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-inner">
                     <span className="text-white font-black text-xs">
-                      {userProfile?.username?.charAt(0) || "U"}
+                      {((userProfile as any)?.nickname || userProfile?.username || "U").charAt(0)}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-chef-text opacity-90">
-                    {userProfile?.username || "CHEF"}
+                    {(userProfile as any)?.nickname || userProfile?.username || "CHEF"}
                   </span>
                 </button>
 
                 {isMenuOpen && (
-                  <div className="absolute top-full right-0 mt-4 w-52 bg-chef-card/90 backdrop-blur-xl rounded-2xl border border-chef-border py-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-white/5 mb-2">
-                        <p className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">My Account</p>
-                        <p className="text-sm font-bold text-chef-text truncate">{user.email}</p>
+                  <div className="absolute top-full right-0 mt-4 w-60 bg-chef-card border border-chef-border py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-3xl animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-chef-border/50 mb-2 bg-chef-panel/30">
+                        <p className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-widest mb-1">My Account</p>
+                        <p className="text-sm font-black text-chef-text truncate">{(userProfile as any)?.nickname || userProfile?.username || "Chef"}</p>
+                        <p className="text-[10px] font-bold text-chef-text opacity-40 truncate">{user.email}</p>
                     </div>
                     <button
                       onClick={() => {
                         router.push("/mypage");
                         setIsMenuOpen(false);
                       }}
-                      className="w-full text-left px-5 py-3 hover:bg-white/5 flex items-center gap-3 text-xs font-bold text-chef-text opacity-80 hover:opacity-100 transition-all"
+                      className="w-full text-left px-5 py-4 hover:bg-orange-600/10 flex items-center gap-4 text-[13px] font-black text-chef-text group transition-all"
                     >
-                      <User className="w-4 h-4" />
-                      마이페이지
+                      <div className="w-8 h-8 rounded-xl bg-chef-panel flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <span>마이페이지</span>
                     </button>
                     <button
                       onClick={() => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
-                      className="w-full text-left px-5 py-3 hover:bg-red-500/10 flex items-center gap-3 text-xs font-bold text-red-500 hover:text-red-400 transition-all"
+                      className="w-full text-left px-5 py-4 hover:bg-red-500/10 flex items-center gap-4 text-[13px] font-black text-red-500 group transition-all"
                     >
-                      <LogOut className="w-4 h-4" />
-                      로그아웃
+                      <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
+                        <LogOut className="w-4 h-4" />
+                      </div>
+                      <span>로그아웃</span>
                     </button>
                   </div>
                 )}
@@ -179,7 +184,7 @@ export function MyRatingIsHeader() {
                            {userProfile?.username?.charAt(0) || "U"}
                         </div>
                         <div className="overflow-hidden">
-                           <p className="text-xl font-black text-white truncate">{userProfile?.username}</p>
+                           <p className="text-xl font-black text-white truncate">{(userProfile as any)?.nickname || userProfile?.username || "CHEF"}</p>
                            <p className="text-xs text-white/40 font-bold truncate">{user.email}</p>
                         </div>
                     </div>

@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
     const updatePayload = {
         id: user.id,
         updated_at: new Date().toISOString(),
+        username: body.nickname, // Added username
+        nickname: body.nickname, // Added nickname for consistency
         gender: body.gender,
         age_group: body.age_group,
         occupation: body.occupation,

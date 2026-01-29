@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat } from "lucide-react";
@@ -101,24 +101,25 @@ export default function MyPage() {
 
   const { user: authUser, userProfile: authProfile, loading: authLoading, isAdmin } = useAuth();
   
-  // 1. 초기화 - 사용자 정보 및 통계 로드
+  const isLoadingRef = useRef(false);
+
   // 1. 초기화 - 사용자 정보 및 통계 로드
   const initStats = async () => {
-      if (!authUser) return;
+      if (!authUser || isLoadingRef.current) return;
+      isLoadingRef.current = true;
       setUserId(authUser.id);
       
       try {
+        console.log("[MyPage] Initializing Stats for:", authUser.id);
         const { data: dbProfile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', authUser.id)
           .single();
 
-        if (profileError) {
+        if (profileError && profileError.code !== 'PGRST116') {
           console.warn("[MyPage] Profile fetch error:", profileError);
         }
-
-        console.log("[MyPage] Fetched Profile Data:", dbProfile);
 
         setUserProfile({
           username: (dbProfile as any)?.username || authProfile?.username || 'user',
@@ -131,7 +132,6 @@ export default function MyPage() {
           social_links: (dbProfile as any)?.social_links || {},
           interests: (dbProfile as any)?.interests,
           is_public: (dbProfile as any)?.is_public,
-          // Add onboarding fields
           gender: (dbProfile as any)?.gender,
           age_group: (dbProfile as any)?.age_group || (dbProfile as any)?.age_range,
           occupation: (dbProfile as any)?.occupation,
@@ -157,17 +157,21 @@ export default function MyPage() {
         console.warn("[MyPage] initStats failed:", e);
       } finally {
         setInitialized(true);
+        isLoadingRef.current = false;
       }
   };
 
   useEffect(() => {
     if (authLoading) return;
     if (!authUser) {
+      console.log("[MyPage] No Auth -> Redirecting to login");
       router.push('/login');
       return;
     }
-    initStats();
-  }, [authUser, authProfile, authLoading, router]);
+    if (!initialized) {
+       initStats();
+    }
+  }, [authUser, authProfile, authLoading, initialized, router]);
 
   // 2. 탭 데이터 로드 - userId와 activeTab 변경 시에만
   useEffect(() => {
