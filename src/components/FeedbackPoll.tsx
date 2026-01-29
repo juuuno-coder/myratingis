@@ -128,7 +128,7 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
       </div>
       
       <div className="relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
+        <div className="flex flex-col gap-4 w-full max-w-xl mx-auto">
           {options.map((opt) => {
             const Icon = opt.icon;
             const isSelected = selected === opt.id;
@@ -138,37 +138,41 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
                 key={opt.id}
                 onClick={() => handleVoteLocal(opt.id)}
                 className={cn(
-                  "relative group flex flex-col items-center p-0 rounded-3xl border-4 transition-all duration-300 overflow-hidden w-full shadow-sm hover:shadow-xl",
-                  "aspect-square", 
+                  "relative group flex flex-row items-center p-2 rounded-[2rem] border-4 transition-all duration-300 w-full shadow-sm hover:shadow-xl bg-white",
                   isSelected 
-                    ? cn(opt.activeBorder, "bg-white ring-4 ring-offset-4 ring-offset-background", opt.color.replace('text-', 'ring-')) 
-                    : cn("bg-white border-transparent hover:border-slate-200")
+                    ? cn(opt.activeBorder, "ring-4 ring-offset-2 ring-offset-background z-10 scale-[1.02]", opt.color.replace('text-', 'ring-')) 
+                    : cn("border-transparent hover:border-slate-100")
                 )}
               >
-                {/* Image Section (Flex 1 to take available space) */}
-                <div className="w-full flex-1 bg-slate-100 relative overflow-hidden group-hover:brightness-110 transition-all">
+                {/* Left: Image (Small) */}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-100 group-hover:brightness-105 transition-all outline outline-1 outline-black/5">
                    {opt.image_url ? (
                      <Image src={opt.image_url} alt={opt.label} fill className="object-cover" />
                    ) : (
                      <div className="w-full h-full flex items-center justify-center">
-                        <Icon className={cn("w-12 h-12 opacity-50", opt.color)} />
+                        <Icon className={cn("w-10 h-10 opacity-50", opt.color)} />
                      </div>
                    )}
                    
-                   {/* Stamp Effect if selected */}
+                   {/* Stamp Effect */}
                    {isSelected && (
-                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300 bg-black/20 backdrop-blur-[2px]">
-                        <div className={cn("w-20 h-20 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white shadow-xl", opt.color.replace('text-', 'border-'))}>
-                           <CheckCircle2 className={cn("w-10 h-10", opt.color)} />
+                     <div className="absolute inset-0 flex items-center justify-center z-10 animate-in zoom-in duration-300 bg-black/20 backdrop-blur-[1px]">
+                        <div className={cn("w-16 h-16 rounded-full border-4 flex items-center justify-center -rotate-12 bg-white shadow-lg", opt.color.replace('text-', 'border-'))}>
+                           <CheckCircle2 className={cn("w-8 h-8", opt.color)} />
                         </div>
                      </div>
                    )}
                 </div>
 
-                {/* Content Section (Fixed height or auto based on content, below image) */}
-                <div className="w-full bg-white px-2 py-4 flex flex-col items-center justify-center gap-1 text-center min-h-[90px] shrink-0 relative z-20 border-t border-slate-100">
-                   <h3 className="text-lg font-black text-slate-900 break-keep leading-none whitespace-pre-wrap">{opt.label}</h3>
-                   <p className="text-xs font-medium text-slate-500 whitespace-pre-wrap leading-tight break-keep opacity-60 max-w-[90%]">{opt.desc}</p>
+                {/* Right: Content */}
+                <div className="flex-1 px-5 flex flex-col items-start justify-center gap-1.5 text-left min-w-0 py-2">
+                   <h3 className={cn("text-xl sm:text-2xl font-black leading-none tracking-tight", isSelected ? "text-slate-900" : "text-slate-700")}>{opt.label}</h3>
+                   <p className="text-xs sm:text-sm font-bold text-slate-400 leading-tight whitespace-pre-wrap break-keep">{opt.desc}</p>
+                </div>
+                
+                {/* Optional: Simple Arrow or Indicator on the far right */}
+                <div className={cn("pr-4 opacity-0 transition-opacity", isSelected && "opacity-100")}>
+                   <div className={cn("w-3 h-3 rounded-full", opt.color.replace('text-', 'bg-'))} />
                 </div>
               </button>
             );
