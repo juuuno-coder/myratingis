@@ -499,7 +499,7 @@
   }
 
   .chef-input-high-v::placeholder {
-    @apply text-chef-text/30 font-normal opacity-100;
+    @apply text-foreground/30 font-normal opacity-100;
   }
 
   /* 트리플 반점 프레임 */
