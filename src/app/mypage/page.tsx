@@ -115,7 +115,9 @@ export default function MyPage() {
       setUserId(authUser.id);
       
       try {
-        console.log("[MyPage] Initializing Stats for:", authUser.id);
+        console.log("[MyPage] Starting initStats for:", authUser.id);
+        
+        console.log("[MyPage] slug 1: Fetching profile...");
         const { data: dbProfile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -143,6 +145,9 @@ export default function MyPage() {
           expertise: (dbProfile as any)?.expertise,
           id: authUser.id, 
         });
+        console.log("[MyPage] step 1 complete. Profile set.");
+        
+        console.log("[MyPage] step 2: Fetching counts...");
 
         const getCount = async (query: any) => {
           const { count, error } = await query;
@@ -158,9 +163,11 @@ export default function MyPage() {
         ]);
         
         setStats({ projects: p, likes: l, collections: c, followers: 0, following: 0 });
+        console.log("[MyPage] step 2 complete. Stats set.");
       } catch (e) {
         console.warn("[MyPage] initStats failed:", e);
       } finally {
+        console.log("[MyPage] initStats final reached. Setting initialized=true");
         setInitialized(true);
         isLoadingRef.current = false;
       }
@@ -183,6 +190,7 @@ export default function MyPage() {
     if (!userId || !initialized) return;
     
     const loadData = async () => {
+      console.log(`[MyPage] loadData started. Tab: ${activeTab}, UserId: ${userId}`);
       setLoading(true);
       setProjects([]);
       
@@ -307,6 +315,7 @@ export default function MyPage() {
       } catch (err) {
         console.error('데이터 로드 실패:', err);
       } finally {
+        console.log("[MyPage] loadData finished. Setting loading=false");
         setLoading(false);
       }
     };
@@ -314,7 +323,7 @@ export default function MyPage() {
     loadData();
   }, [userId, activeTab, initialized]);
 
-  const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
+  const localCn = (...classes: any[]) => classes.filter(Boolean).join(' ');
 
   // 3. 컬렉션 선택 변경 시 아이템 로드
   const handleCollectionChange = async (collectionId: string) => {
