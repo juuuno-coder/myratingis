@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
+import { ADMIN_EMAILS } from "@/lib/constants";
 
 interface UserProfile {
   username: string;
@@ -105,46 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [loadProfileFromMetadata]);
 
-  // ====== 초기화 및 관찰자 설정 ======
-  useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
 
-    // 초기 세션 확인
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      updateState(session, session?.user || null);
-    }).catch((err) => {
-       console.warn("[AuthContext] Session fetch warning:", err);
-       // Error recovery: ensure loading disables even on error
-       setLoading(false);
-    });
-
-    // 상태 변경 리스너
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION'].includes(event)) {
-        await updateState(session, session?.user || null);
-
-        // [New] Claim guest ratings upon login (Background process)
-        if (event === 'SIGNED_IN' && session) {
-           const guestId = localStorage.getItem('guest_id');
-           if (guestId) {
-              fetch('/api/auth/claim-ratings', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                    },
-                    body: JSON.stringify({ guest_id: guestId })
-              }).catch(e => console.error("[Auth] Guest merge failed:", e));
-           }
-        }
-      } else if (event === "SIGNED_OUT") {
-        updateState(null, null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [updateState]);
 
   // [New] Realtime Profile Update Listener (Consolidated)
   useEffect(() => {
@@ -207,16 +169,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateState(session, u);
   }, [user, session, updateState]);
 
+  // ====== 초기화 및 관찰자 설정 (Moved down to avoid hoisting issues) ======
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    // 초기 세션 확인
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      updateState(session, session?.user || null);
+    }).catch((err) => {
+       console.warn("[AuthContext] Session fetch warning:", err);
+       setLoading(false);
+    });
+
+    // 상태 변경 리스너
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION'].includes(event)) {
+        await updateState(session, session?.user || null);
+
+        // [New] Claim guest ratings upon login (Background process)
+        if (event === 'SIGNED_IN' && session) {
+           const guestId = localStorage.getItem('guest_id');
+           if (guestId) {
+              fetch('/api/auth/claim-ratings', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ guest_id: guestId })
+              }).catch(e => console.error("[Auth] Guest merge failed:", e));
+           }
+
+           // [Auto-Promote Admins]
+           if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+              supabase.from('profiles').select('role').eq('id', session.user.id).single()
+              .then(({ data }) => {
+                 if (data && data.role !== 'admin') {
+                     supabase.from('profiles').update({ role: 'admin' }).eq('id', session.user.id).then(() => {
+                         console.log("User auto-promoted to admin");
+                         refreshUserProfile();
+                     });
+                 }
+              });
+           }
+        }
+      } else if (event === "SIGNED_OUT") {
+        updateState(null, null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [updateState, refreshUserProfile]);
+
   // ====== 권한 체크 & 메모이제이션 ======
   const isAdminUser = React.useMemo(() => {
-    const adminEmails = [
-      "juuuno@naver.com", 
-      "juuuno1116@gmail.com", 
-      "designd@designd.co.kr", 
-      "designdlab@designdlab.co.kr", 
-      "admin@vibefolio.net"
-    ];
-    const isMatched = !!(user?.email && adminEmails.includes(user.email)) || userProfile?.role === "admin";
+    const isMatched = !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
     
     // 원칙에 따라 로그가 필요할 때만 출력
     if (user && userProfile) {

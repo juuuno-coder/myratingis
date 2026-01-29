@@ -65,3 +65,11 @@ export const FIELD_CATEGORIES = [
   { id: "art", label: "문화/예술" },
   { id: "other", label: "기타" },
 ];
+
+export const ADMIN_EMAILS = [
+  "juuuno@naver.com", 
+  "designd@designd.co.kr", 
+  "designdlab@designdlab.co.kr", 
+  "duscontatus@gmail.com", 
+  "juuuno1116@gmail.com"
+];

@@ -31,10 +31,8 @@ const notoSansKr = Noto_Sans_KR({
 import { createClient } from "@supabase/supabase-js";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const defaultTitle =
-    "제 평가는요? (MyRatingIs) - 흑백요리사 컨셉 프로젝트 평가";
-  const defaultDesc =
-    "당신의 프로젝트/MVP를 미슐랭 스타급으로 평가받으세요. 냉철하고 감각적인 프로젝트 평가 솔루션.";
+  const defaultTitle = "제 평가는요?";
+  const defaultDesc = "당신은 오늘, 이 창작물의 운명을 결정할 전문 심사위원으로 초대되었습니다.";
   const defaultOgImage = "/images/og-myratingis.png";
 
   let title = defaultTitle;
