@@ -47,8 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-
-
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
     const metadata = currentUser.user_metadata || {};
     return {
@@ -108,8 +106,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [loadProfileFromMetadata]);
 
-
-
   // [New] Realtime Profile Update Listener (Consolidated)
   useEffect(() => {
     if (!user) return;
@@ -131,7 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                if(!prev) return null;
                return { 
                    ...prev, 
-                   // Merge all critical fields
                    points: newProfile.points ?? prev.points,
                    gender: newProfile.gender ?? prev.gender,
                    age_group: newProfile.age_group || newProfile.age_range || prev.age_group,
@@ -154,10 +149,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user]);
 
-  // ====== 자동 로그아웃 로직 (user 변경 시 실행) ======
-  // Note: AutoLogoutProvider가 별도로 존재하므로 여기서는 제거하거나, 
-  // AuthContext가 중심이라면 여기서 관리해야 합니다. 
-  
   const signOut = useCallback(async () => {
     setUser(null);
     setSession(null);
@@ -172,44 +163,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateState(session, u);
   }, [user, session, updateState]);
 
-  // ====== 초기화 및 관찰자 설정 (Moved down to avoid hoisting issues) ======
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // 초기 세션 확인
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      updateState(session, session?.user || null);
-    }).catch((err) => {
-       console.warn("[AuthContext] Session fetch warning:", err);
-       setLoading(false);
-    });
-
-    // 상태 변경 리스너
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION'].includes(event)) {
-        await updateState(session, session?.user || null);
-
-        // [New] Claim guest ratings upon login (Background process)
-        if (event === 'SIGNED_IN' && session) {
-           const guestId = localStorage.getItem('guest_id');
+    // Reliance on onAuthStateChange for initialization is safer and prevents race conditions
+    // leading to "AbortError: signal is aborted without reason"
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log(`[AuthContext] Auth Event: ${event}`);
+      
+      if (['INITIAL_SESSION', 'SIGNED_IN', 'TOKEN_REFRESHED'].includes(event)) {
+        await updateState(currentSession, currentSession?.user || null);
+        
+        if (event === 'SIGNED_IN' && currentSession) {
+           const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
            if (guestId) {
               fetch('/api/auth/claim-ratings', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
+                        'Authorization': `Bearer ${currentSession.access_token}`
                     },
                     body: JSON.stringify({ guest_id: guestId })
               }).catch(e => console.error("[Auth] Guest merge failed:", e));
            }
 
-           // [Auto-Promote Admins]
-           if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
-              supabase.from('profiles').select('role').eq('id', session.user.id).single()
+           if (currentSession.user.email && ADMIN_EMAILS.includes(currentSession.user.email)) {
+              supabase.from('profiles').select('role').eq('id', currentSession.user.id).single()
               .then(({ data }) => {
                  if (data && data.role !== 'admin') {
-                     supabase.from('profiles').update({ role: 'admin' }).eq('id', session.user.id).then(() => {
+                     supabase.from('profiles').update({ role: 'admin' }).eq('id', currentSession.user.id).then(() => {
                          console.log("User auto-promoted to admin");
                          refreshUserProfile();
                      });
@@ -219,22 +202,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
+      } else {
+        if (currentSession) {
+          updateState(currentSession, currentSession.user);
+        } else {
+          setLoading(false);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, [updateState, refreshUserProfile]);
 
-  // ====== 권한 체크 & 메모이제이션 ======
   const isAdminUser = React.useMemo(() => {
-    const isMatched = !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
-    
-    // 원칙에 따라 로그가 필요할 때만 출력
-    if (user && userProfile) {
-      // console.log(`[Auth] Determined: ${isMatched ? 'ADMIN' : 'USER'} (${user.email})`);
-    }
-
-    return isMatched;
+    return !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
   }, [user?.email, userProfile?.role]);
 
   const authValue = React.useMemo(() => ({
