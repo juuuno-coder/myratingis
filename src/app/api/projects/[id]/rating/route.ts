@@ -152,8 +152,11 @@ export async function POST(
       const body = await req.json();
       const { score, proposal, custom_answers, guest_id, ...scores } = body;
 
+      console.log(`[API/ProjectRating] POST started for Project ${projectId}. GuestID: ${guest_id}, UserID: ${userId}`);
+
       // Guest Check: If no userId, require guest_id
       if (!userId && !guest_id) {
+          console.error('[API/ProjectRating] No User ID and No Guest ID provided');
           return NextResponse.json({ error: 'Guest ID or Login required' }, { status: 400 });
       }
 
@@ -213,7 +216,6 @@ export async function POST(
           updateData.score = score;
       }
 
-      // 3. Atomic UPSERT (Matches the UNIQUE constraints we added to DB)
       const { error: ratingError } = await supabaseAdmin
         .from('ProjectRating')
         .upsert(updateData, { 
@@ -221,9 +223,12 @@ export async function POST(
         });
 
       if (ratingError) {
-          console.error('[API] Save Rating Error:', ratingError);
-          return NextResponse.json({ success: false, error: ratingError.message }, { status: 500 });
+          console.error('[API/ProjectRating] Postgres Error:', ratingError);
+          // If the error is about unique violation but upsert failed, it's usually an index mismatch
+          return NextResponse.json({ success: false, error: ratingError.message, details: ratingError.hint }, { status: 500 });
       }
+      
+      console.log(`[API/ProjectRating] Successfully saved rating for ${userId ? 'User '+userId : 'Guest '+guest_id}`);
 
       // 2. Check if first time rating? 
       // User asked for comment when feed back is left.
