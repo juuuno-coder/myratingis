@@ -50,8 +50,18 @@ export async function GET(
     const totalCount = ratings?.length || 0;
     
     // Dynamic Categories from Project Config
-    const customConfig = project.custom_data?.audit_config || project.custom_data?.custom_categories;
-    const catIds = customConfig?.categories?.map((c: any) => c.id) || ['score_1', 'score_2', 'score_3', 'score_4'];
+    let rawCustom = project.custom_data || {};
+    if (typeof rawCustom === 'string') {
+        try { rawCustom = JSON.parse(rawCustom); } catch (e) { rawCustom = {}; }
+    }
+    const customConfig = rawCustom?.audit_config || rawCustom?.custom_categories;
+    const categories = customConfig?.categories || [
+      { id: 'score_1', label: '기획력' }, 
+      { id: 'score_2', label: '완성도' }, 
+      { id: 'score_3', label: '독창성' }, 
+      { id: 'score_4', label: '상업성' }
+    ];
+    const catIds = categories.map((c: any) => c.id);
     
     let averages: Record<string, number> = {};
     let totalAvg = 0;
@@ -65,20 +75,26 @@ export async function GET(
       catIds.forEach((id: string) => sums[id] = 0);
 
       ratings?.forEach((curr: any) => {
-          catIds.forEach((id: string) => {
-              sums[id] += (Number(curr[id]) || 0);
+          catIds.forEach((id: string, idx: number) => {
+              // Map score_1...6 columns to category ids by order
+              const columnName = `score_${idx + 1}`;
+              sums[id] += (Number(curr[columnName]) || Number(curr[id]) || 0);
           });
 
           // Aggregate Expertise
-          const exp = (curr.profile as any)?.expertise?.fields || [];
-          exp.forEach((field: string) => {
-              expertiseStats[field] = (expertiseStats[field] || 0) + 1;
-          });
+          const profile = curr.profile as any;
+          if (profile) {
+              const expField = profile.expertise?.fields || profile.expertise || [];
+              const expList = Array.isArray(expField) ? expField : [];
+              expList.forEach((field: string) => {
+                  expertiseStats[field] = (expertiseStats[field] || 0) + 1;
+              });
 
-          // Aggregate Occupation
-          const occ = (curr.profile as any)?.occupation;
-          if (occ) {
-              occupationStats[occ] = (occupationStats[occ] || 0) + 1;
+              // Aggregate Occupation
+              const occ = profile.occupation;
+              if (occ) {
+                  occupationStats[occ] = (occupationStats[occ] || 0) + 1;
+              }
           }
       });
 
@@ -104,7 +120,12 @@ export async function GET(
         user_id: r.user_id,
         guest_id: r.guest_id,
         username: (r.profile as any)?.username || (r.user_id ? "Expert" : "Guest"),
-        expertise: (r.profile as any)?.expertise?.fields || [],
+        expertise: (() => {
+            const profile = r.profile as any;
+            if (!profile) return [];
+            const expField = profile.expertise?.fields || profile.expertise || [];
+            return Array.isArray(expField) ? expField : [];
+        })(),
         occupation: (r.profile as any)?.occupation,
         age_group: (r.profile as any)?.age_group,
         gender: (r.profile as any)?.gender,
