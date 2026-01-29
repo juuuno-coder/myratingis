@@ -133,7 +133,7 @@ function LoginContent() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-15 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-6 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner"
+                    className="w-full h-16 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner text-lg"
                   />
                 </div>
 
@@ -149,7 +149,7 @@ function LoginContent() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full h-15 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-6 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner"
+                    className="w-full h-16 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner text-lg"
                   />
                 </div>
               </div>
@@ -179,9 +179,9 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-16 bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:to-orange-700 text-lg font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(249,115,22,0.4)] border-t border-white/20"
+                className="w-full h-18 bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:to-orange-700 text-xl font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(249,115,22,0.4)] border-t border-white/20"
               >
-                {loading ? "AUTHENTICATING..." : "GET STARTED"}
+                {loading ? "AUTHENTICATING..." : "SIGN IN"}
               </Button>
             </form>
 
@@ -197,9 +197,9 @@ function LoginContent() {
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
-              className="w-full h-15 bg-white/5 border-2 border-white/10 text-chef-text hover:bg-white/10 rounded-2xl font-black text-xs tracking-widest uppercase transition-all shadow-xl group"
+              className="w-full h-16 bg-white/5 border-2 border-white/10 text-chef-text hover:bg-white/10 rounded-2xl font-black text-sm tracking-widest uppercase transition-all shadow-xl group"
             >
-              <FcGoogle className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+              <FcGoogle className="h-7 w-7 mr-4 group-hover:scale-110 transition-transform" />
               Continue with Google
             </Button>
 

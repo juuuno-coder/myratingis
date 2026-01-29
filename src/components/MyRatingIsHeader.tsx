@@ -23,7 +23,7 @@ export function MyRatingIsHeader() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] chef-header-dark shadow-2xl backdrop-blur-md bg-black/20 border-b border-white/5">
-      <div className="w-full px-6 md:px-10 h-16 flex items-center justify-between">
+      <div className="w-full px-6 md:px-10 h-20 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex-shrink-0 flex justify-start">
           <Link href="/" className="flex items-center gap-2 group">
@@ -68,11 +68,11 @@ export function MyRatingIsHeader() {
 
           {isAuthenticated && user ? (
             <>
-              <Button
+               <Button
                 onClick={() => router.push("/project/upload?mode=audit")}
-                className="bg-orange-600 hover:bg-orange-700 text-white bevel-cta px-6 h-10 font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-orange-600/20 hover:scale-105 transition-transform"
+                className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl px-6 h-12 font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-lg shadow-orange-600/20 hover:scale-105 transition-transform"
               >
-                <ChefHat className="w-4 h-4" />
+                <ChefHat className="w-5 h-5" />
                 평가 의뢰하기
               </Button>
               <div className="relative">
@@ -127,13 +127,13 @@ export function MyRatingIsHeader() {
             </>
           ) : (
             <div className="flex items-center gap-3">
-              <Link href="/login">
-                <Button variant="ghost" className="text-chef-text opacity-70 hover:opacity-100 hover:bg-white/5 px-5 h-10 font-bold text-xs uppercase tracking-widest transition-all rounded-xl">
+               <Link href="/login">
+                <Button variant="ghost" className="text-chef-text opacity-70 hover:opacity-100 hover:bg-white/5 px-6 h-12 font-bold text-sm uppercase tracking-widest transition-all rounded-xl">
                   로그인
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button className="bg-orange-600 text-white hover:bg-orange-700 px-6 h-10 font-bold text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-orange-600/20 rounded-xl hover:scale-105 active:scale-95">
+                <Button className="bg-orange-600 text-white hover:bg-orange-700 px-8 h-12 font-bold text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-orange-600/20 rounded-xl hover:scale-105 active:scale-95">
                   시작하기
                 </Button>
               </Link>

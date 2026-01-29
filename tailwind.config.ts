@@ -91,6 +91,11 @@ const config = {
         poppins: ["var(--font-poppins)", "sans-serif"],
         pretendard: ["Pretendard", "sans-serif"],
       },
+      spacing: {
+        '13': '3.25rem',
+        '15': '3.75rem',
+        '18': '4.5rem',
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
