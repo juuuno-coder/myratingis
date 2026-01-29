@@ -96,9 +96,18 @@
     --chef-text: #F8FAFC;
     --chef-border: rgba(255, 255, 255, 0.08);
     --chef-panel: #1E293B;
+    --chef-panel-hsl: 224 71.4% 17%; 
   }
 
   * { @apply border-border; }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
 
   body {
     @apply bg-background text-foreground antialiased selection:bg-orange-500/20;
@@ -669,9 +678,21 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px var(--chef-panel) inset !important;
-  -webkit-text-fill-color: var(--chef-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px #1a1a1a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: white !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Explicitly target dark mode to be sure */
+.dark input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #1a1a1a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.light input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #000000 !important;
 }
 
 /* Michelin Slider Custom Styles */

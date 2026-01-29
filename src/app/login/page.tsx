@@ -133,7 +133,7 @@ function LoginContent() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-16 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner text-lg"
+                    className="w-full h-16 bg-[#1a1a1a] border-2 border-white/5 text-white font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-[#222] outline-none transition-all placeholder:text-white/10 shadow-inner text-lg autofill:shadow-[0_0_0_1000px_#1a1a1a_inset] autofill:text-fill-white"
                   />
                 </div>
 
@@ -149,7 +149,7 @@ function LoginContent() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full h-16 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner text-lg"
+                    className="w-full h-16 bg-[#1a1a1a] border-2 border-white/5 text-white font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-[#222] outline-none transition-all placeholder:text-white/10 shadow-inner text-lg autofill:shadow-[0_0_0_1000px_#1a1a1a_inset] autofill:text-fill-white"
                   />
                 </div>
               </div>
