@@ -76,6 +76,68 @@ export type Database = {
         Update: { user_id?: string; project_id?: number; created_at?: string; };
         Relationships: [];
       };
+      ProjectInquiry: {
+        Row: {
+          id: number;
+          project_id: number;
+          user_id: string;
+          title: string;
+          content: string;
+          inquiry_type: string;
+          contact_name: string;
+          contact_email: string;
+          contact_phone: string | null;
+          status: string;
+          created_at: string;
+          is_private: boolean;
+        };
+        Insert: {
+          id?: number;
+          project_id: number;
+          user_id: string;
+          title: string;
+          content: string;
+          inquiry_type?: string;
+          contact_name?: string;
+          contact_email?: string;
+          contact_phone?: string | null;
+          status?: string;
+          created_at?: string;
+          is_private?: boolean;
+        };
+        Update: {
+          id?: number;
+          project_id?: number;
+          user_id?: string;
+          title?: string;
+          content?: string;
+          inquiry_type?: string;
+          contact_name?: string;
+          contact_email?: string;
+          contact_phone?: string | null;
+          status?: string;
+          created_at?: string;
+          is_private?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ProjectInquiry_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "Project";
+            referencedColumns: ["project_id"];
+          },
+          {
+            foreignKeyName: "ProjectInquiry_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      
+      // Deprecated: explicit 'inquiries' table kept if needed by other components not yet migrated
       inquiries: {
         Row: { id: number; project_id: number; creator_id: string; user_id: string; message: string; created_at: string; status: string; };
         Insert: { id?: number; project_id: number; creator_id: string; user_id: string; message: string; created_at?: string; status?: string; };

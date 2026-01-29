@@ -4,16 +4,21 @@ import { PostgrestError } from "@supabase/supabase-js";
 
 export interface Inquiry {
   id: number;
-  project_id: string;
-  creator_id: string;
+  project_id: number;
   user_id: string;
-  message: string;
+  title: string;
+  content: string;
+  inquiry_type: 'general' | 'proposal';
+  contact_name: string;
+  contact_email: string;
+  contact_phone?: string;
   created_at: string;
   status: "pending" | "answered";
-  projects: {
+  Project: {
     title: string;
     users: {
       username: string;
+      email?: string;
     };
   };
 }
@@ -23,13 +28,17 @@ export interface Inquiry {
  */
 export async function getUserInquiries(userId: string): Promise<Inquiry[]> {
   const { data, error } = await supabase
-    .from("inquiries")
+    .from("ProjectInquiry")
     .select(`
       id,
       project_id,
-      creator_id,
       user_id,
-      message,
+      title,
+      content,
+      inquiry_type,
+      contact_name,
+      contact_email,
+      contact_phone,
       created_at,
       status,
       Project (
@@ -47,29 +56,34 @@ export async function getUserInquiries(userId: string): Promise<Inquiry[]> {
     return [];
   }
   
-  // Map 'Project' from DB to 'projects' in Interface
-  return (data || []).map((item: any) => ({
-    ...item,
-    projects: Array.isArray(item.Project) ? item.Project[0] : item.Project
-  })) as any; // Temporary cast to avoid interface mismatch
+  // Return data as Inquiry[]
+  return (data as unknown as Inquiry[]) || [];
 }
 
 /**
  * Add an inquiry for a project.
  */
 export async function addInquiry(
-  projectId: string,
-  creatorId: string,
+  projectId: string | number,
   userId: string,
-  message: string
+  title: string,
+  content: string,
+  inquiryType: 'general' | 'proposal' = 'general',
+  contactName: string,
+  contactEmail: string,
+  contactPhone?: string
 ): Promise<Inquiry | null> {
   const { data, error } = await supabase
-    .from("inquiries")
+    .from("ProjectInquiry")
     .insert({
       project_id: Number(projectId),
-      creator_id: creatorId,
       user_id: userId,
-      message,
+      title,
+      content,
+      inquiry_type: inquiryType,
+      contact_name: contactName,
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
       status: "pending",
     })
     .select()
@@ -86,7 +100,7 @@ export async function addInquiry(
  * Delete an inquiry.
  */
 export async function deleteInquiry(inquiryId: number, userId: string): Promise<{ data: null; error: PostgrestError | null }> {
-  let query = supabase.from("inquiries").delete().eq("id", inquiryId);
+  let query = supabase.from("ProjectInquiry").delete().eq("id", inquiryId);
   // If userId is provided, it's a user deleting their own. Otherwise, it's an admin.
   if (userId) {
     query = query.eq("user_id", userId);
@@ -101,19 +115,24 @@ export async function deleteInquiry(inquiryId: number, userId: string): Promise<
  */
 export async function getAllInquiries(): Promise<Inquiry[]> {
   const { data, error } = await supabase
-    .from("inquiries")
+    .from("ProjectInquiry")
     .select(`
       id,
       project_id,
-      creator_id,
       user_id,
-      message,
+      title,
+      content,
+      inquiry_type,
+      contact_name,
+      contact_email,
+      contact_phone,
       created_at,
       status,
       Project (
         title,
         users (
-          username
+          username,
+          email
         )
       )
     `)
@@ -124,11 +143,7 @@ export async function getAllInquiries(): Promise<Inquiry[]> {
     return [];
   }
   
-  // Map 'Project' from DB to 'projects' in Interface
-  return (data || []).map((item: any) => ({
-    ...item,
-    projects: Array.isArray(item.Project) ? item.Project[0] : item.Project
-  })) as any; // Temporary cast to avoid interface mismatch
+  return (data as unknown as Inquiry[]) || [];
 }
 
 /**
@@ -139,7 +154,7 @@ export async function updateInquiryStatus(
   status: "pending" | "answered"
 ): Promise<Inquiry | null> {
   const { data, error } = await supabase
-    .from("inquiries")
+    .from("ProjectInquiry")
     .update({ status })
     .eq("id", inquiryId)
     .select()
@@ -151,3 +166,4 @@ export async function updateInquiryStatus(
   }
   return data as unknown as Inquiry;
 }
+

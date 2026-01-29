@@ -62,8 +62,8 @@ export function CollectionModal({ open, onOpenChange, project, onSuccess }: Coll
               // Create new collection
               const { data, error } = await supabase.from('Collection').insert({
                   user_id: user.id,
-                  name: newCollectionName.trim(),
-                  is_public: false
+                  name: newCollectionName.trim()
+                  // is_public removed as it is not in schema
               }).select().single();
               
               if (error) throw error;
@@ -71,9 +71,10 @@ export function CollectionModal({ open, onOpenChange, project, onSuccess }: Coll
           }
 
           // Add item
+          if (!projectId) throw new Error("Invalid Project ID");
           const { error: itemError } = await supabase.from('CollectionItem').insert({
               collection_id: collectionId,
-              project_id: projectId
+              project_id: Number(projectId)
           });
 
           if (itemError) {

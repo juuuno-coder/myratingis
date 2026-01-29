@@ -87,22 +87,24 @@ export default function InquiriesPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">
-                        {inquiry.projects?.title || "삭제된 프로젝트"}
+                      <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${inquiry.inquiry_type === 'proposal' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                              {inquiry.inquiry_type === 'proposal' ? '제안' : '문의'}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                             {dayjs(inquiry.created_at).format("YYYY.MM.DD HH:mm")}
+                          </span>
+                      </div>
+                      <CardTitle className="text-base font-bold mb-1">
+                        {inquiry.title}
                       </CardTitle>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <User size={14} />
-                          <span>{inquiry.projects?.users?.username || "알 수 없음"}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar size={14} />
-                          <span>
-                            {dayjs(inquiry.created_at).format("YYYY.MM.DD HH:mm")}
-                          </span>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">Project</span>
+                          <span>{inquiry.Project?.title || "삭제된 프로젝트"}</span>
                         </div>
                         <span
-                          className={`px-2 py-1 rounded text-xs ${
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                             inquiry.status === "answered"
                               ? "bg-green-100 text-green-700"
                               : "bg-yellow-100 text-yellow-700"
@@ -116,17 +118,16 @@ export default function InquiriesPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(inquiry.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 h-8 w-8"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} />
                     </Button>
                   </div>
                 </CardHeader>
                 <Separator />
                 <CardContent className="pt-4">
-                  <h4 className="font-semibold text-sm mb-2">문의 내용</h4>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                    {inquiry.message}
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {inquiry.content}
                   </p>
                 </CardContent>
               </Card>

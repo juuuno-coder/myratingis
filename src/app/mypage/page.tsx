@@ -256,13 +256,34 @@ export default function MyPage() {
           }
           
         } else if (activeTab === 'proposals') {
+          // Fetch from ProjectInquiry (New Table)
           const { data } = await supabase
-            .from('Proposal')
-            .select('*')
-            .eq('receiver_id', userId)
+            .from('ProjectInquiry' as any)
+            .select('*, Project(title, thumbnail_url)')
+            .or(`user_id.eq.${userId},contact_email.eq.${authUser?.email || ''}`) 
             .order('created_at', { ascending: false });
           
-          setProjects(data || []);
+          setProjects(data?.map((p: any) => ({
+             proposal_id: p.id,
+             title: p.title,
+             content: p.content,
+             status: p.status,
+             created_at: p.created_at,
+             inquiry_type: p.inquiry_type,
+             Project: p.Project, // Capital 'P' for Modal
+             project: p.Project, // Lowercase 'p' for potential other uses
+             contact: p.contact_email,
+             sender_id: p.user_id,
+             type: 'sent',
+             sender: { 
+                nickname: userProfile?.nickname || authProfile?.username || 'Me', 
+                profile_image_url: userProfile?.profile_image_url || (authProfile as any)?.avatar_url || (authProfile as any)?.profile_image_url || '/globe.svg' 
+             },
+             receiver: { 
+                nickname: p.Project?.title || 'Project', 
+                profile_image_url: p.Project?.thumbnail_url || '/placeholder.jpg' 
+             }
+          })) || []);
           
         } else if (activeTab === 'comments') {
           const { data } = await supabase

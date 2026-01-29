@@ -376,12 +376,12 @@ export async function DELETE(
         }
     } 
     
-    // The following block is removed as the JWT handling is now part of the 'if (authHeader)' block
-    // if (!authenticatedUser) {
-    //     const supabase = createClient();
-    //     const { data: { user } } = await supabase.auth.getUser();
-    //     if (user) authenticatedUser = { id: user.id, email: user.email };
-    // }
+    if (!authenticatedUser) {
+        // Session Fallback
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) authenticatedUser = { id: user.id, email: user.email };
+    }
 
     if (!authenticatedUser) {
         return NextResponse.json({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }, { status: 401 });
@@ -406,9 +406,10 @@ export async function DELETE(
        return NextResponse.json({ error: '삭제 권한이 없습니다.' }, { status: 403 });
     }
 
-    // 삭제 (Soft Delete)
+    // 삭제 (Hard Delete)
+    // Note: Ensure Foreign Keys are set to CASCADE in DB, otherwise this might fail if related records exist.
     const { error } = await (supabaseAdmin as any)
-      .from('Project').update({ deleted_at: new Date().toISOString() }).eq('project_id', Number(id));
+      .from('Project').delete().eq('project_id', Number(id));
 
     if (error) return NextResponse.json({ error: '삭제 실패', details: error.message }, { status: 500 });
 

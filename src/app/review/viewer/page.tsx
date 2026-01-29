@@ -485,8 +485,8 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Stage 02. Sticker Decision</span>
             </div>
-            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">판정 투표</h3>
-            <p className="text-sm text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "현업 마스터의 냉정한 피드백"}</p>
+            <h3 className="text-2xl font-black text-chef-text tracking-tighter italic uppercase">판정 투표</h3>
+            <p className="text-xs text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "현업 마스터의 냉정한 피드백"}</p>
           </div>
           
           <div className="flex-1 overflow-y-auto no-scrollbar pb-10">

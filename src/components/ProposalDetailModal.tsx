@@ -165,8 +165,8 @@ export function ProposalDetailModal({
             </div>
           )}
 
-          {/* 액션 버튼 (대기중인 경우에만) */}
-          {proposal.status === 'pending' && (
+          {/* 액션 버튼 (대기중인 경우에만, 그리고 보낸 제안이 아닌 경우에만) */}
+          {proposal.status === 'pending' && (proposal as any).type !== 'sent' && (
             <div className="flex gap-3 pt-4 border-t border-gray-100">
               <Button
                 onClick={() => handleStatusChange('accepted')}
