@@ -671,7 +671,7 @@ export default function ProjectUploadPage() {
                    setAuditQuestions(next);
                 }} 
                 className="w-full min-h-[100px] bg-white/5 border border-chef-border focus:border-orange-500 text-chef-text font-black text-lg p-6 bevel-cta placeholder:text-chef-text/5 outline-none transition-all chef-input-high-v resize-none leading-relaxed" 
-                placeholder="창작자에게 묻고 싶은 질문을 입력하세요." 
+                placeholder="평가위원에게 평가받고 싶은 질문을 입력하세요." 
                 rows={3}
               />
             </div>
