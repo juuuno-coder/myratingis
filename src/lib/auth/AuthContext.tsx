@@ -43,9 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const isUpdatingRef = useRef(false);
   const initializedRef = useRef(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
     const metadata = currentUser.user_metadata || {};
@@ -59,31 +59,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateState = useCallback(async (s: Session | null, u: User | null) => {
-    setSession(s);
-    setUser(u);
-    
-    if (u) {
-      // Optimistic Update: Set profile from metadata immediately to unblock UI
-      const base = loadProfileFromMetadata(u);
-      setUserProfile(base);
-      setLoading(false); // <--- Critical: Allow UI to render immediately
+    // Only one update at a time to prevent race conditions during auth transitions
+    if (isUpdatingRef.current && u) return; 
+    isUpdatingRef.current = true;
 
-      try {
+    try {
+      setSession(s);
+      setUser(u);
+      
+      if (u) {
+        // Step 1: Immediate optimistic update from metadata
+        const base = loadProfileFromMetadata(u);
+        setUserProfile(base);
+        setLoading(false); 
+
+        // Step 2: Background fetch from DB
         const { data: db, error } = await supabase
           .from('profiles')
           .select('*') 
           .eq('id', u.id)
           .single();
 
-        if (error) {
-           console.warn("[AuthContext] Profile Fetch Warning:", error.message);
-        }
-
         if (db) {
           const customImage = (db as any).profile_image_url || (db as any).avatar_url;
-          
           setUserProfile(prev => ({
-            ...prev!, // Safe assertion as we set base above
+            ...prev!,
             username: (db as any).username || base.username,
             nickname: (db as any).nickname || (db as any).username || base.username,
             profile_image_url: customImage || base.profile_image_url,
@@ -97,63 +97,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             occupation: (db as any).occupation,
           }));
         }
-      } catch (e) {
-        console.error("[AuthContext] Background profile fetch error:", e);
+      } else {
+        setUserProfile(null);
+        setLoading(false);
       }
-    } else {
-      setUserProfile(null);
+    } catch (e) {
+      console.error("[AuthContext] Update state error:", e);
       setLoading(false);
+    } finally {
+      isUpdatingRef.current = false;
     }
   }, [loadProfileFromMetadata]);
 
-  // [New] Realtime Profile Update Listener (Consolidated)
+  // Realtime listener for profile updates
   useEffect(() => {
     if (!user) return;
-
-    const profileChannel = supabase
-      .channel(`profile-updates:${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newProfile = payload.new as any;
-          if (newProfile) {
-            setUserProfile((prev) => {
-               if(!prev) return null;
-               return { 
-                   ...prev, 
-                   points: newProfile.points ?? prev.points,
-                   gender: newProfile.gender ?? prev.gender,
-                   age_group: newProfile.age_group || newProfile.age_range || prev.age_group,
-                   age_range: newProfile.age_group || newProfile.age_range || prev.age_range,
-                   occupation: newProfile.occupation ?? prev.occupation,
-                   expertise: newProfile.expertise ?? prev.expertise,
-                   role: newProfile.role ?? prev.role,
-                   username: newProfile.username ?? prev.username,
-                   nickname: newProfile.nickname ?? newProfile.username ?? prev.nickname,
-                   profile_image_url: newProfile.profile_image_url ?? newProfile.avatar_url ?? prev.profile_image_url
-               };
-            });
-          }
+    const channel = supabase.channel(`profile-updates:${user.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, 
+      (payload) => {
+        const np = payload.new as any;
+        if (np) {
+          setUserProfile(p => p ? { ...p, 
+            points: np.points ?? p.points, 
+            username: np.username ?? p.username,
+            nickname: np.nickname ?? np.username ?? p.nickname,
+            profile_image_url: np.profile_image_url ?? np.avatar_url ?? p.profile_image_url,
+            role: np.role ?? p.role
+          } : null);
         }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(profileChannel);
-    };
+      }).subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setUserProfile(null);
-    await supabase.auth.signOut();
     router.push("/login");
   }, [router]);
 
@@ -167,66 +147,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // Reliance on onAuthStateChange for initialization is safer and prevents race conditions
-    // leading to "AbortError: signal is aborted without reason"
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log(`[AuthContext] Auth Event: ${event}`);
+    // Use onAuthStateChange as the primary source of truth.
+    // We wrap core logic in a non-async wrapper if needed, but async is okay if handled.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, curSess) => {
+      console.log(`[AuthContext] Connection Event: ${event}`);
       
+      // Handle session state
       if (['INITIAL_SESSION', 'SIGNED_IN', 'TOKEN_REFRESHED'].includes(event)) {
-        await updateState(currentSession, currentSession?.user || null);
+        updateState(curSess, curSess?.user || null);
         
-        if (event === 'SIGNED_IN' && currentSession) {
+        // Background tasks only on SIGNED_IN
+        if (event === 'SIGNED_IN' && curSess) {
            const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
            if (guestId) {
               fetch('/api/auth/claim-ratings', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentSession.access_token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${curSess.access_token}` },
                     body: JSON.stringify({ guest_id: guestId })
-              }).catch(e => console.error("[Auth] Guest merge failed:", e));
-           }
-
-           if (currentSession.user.email && ADMIN_EMAILS.includes(currentSession.user.email)) {
-              supabase.from('profiles').select('role').eq('id', currentSession.user.id).single()
-              .then(({ data }) => {
-                 if (data && data.role !== 'admin') {
-                     supabase.from('profiles').update({ role: 'admin' }).eq('id', currentSession.user.id).then(() => {
-                         console.log("User auto-promoted to admin");
-                         refreshUserProfile();
-                     });
-                 }
-              });
+              }).catch(() => {});
            }
         }
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
       } else {
-        if (currentSession) {
-          updateState(currentSession, currentSession.user);
-        } else {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [updateState, refreshUserProfile]);
+  }, [updateState]);
 
   const isAdminUser = React.useMemo(() => {
     return !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
   }, [user?.email, userProfile?.role]);
 
   const authValue = React.useMemo(() => ({
-    user,
-    session,
-    loading,
-    isAuthenticated: !!user,
-    userProfile,
-    isAdmin: isAdminUser,
-    signOut,
-    refreshUserProfile
+    user, session, loading, isAuthenticated: !!user, userProfile, isAdmin: isAdminUser, signOut, refreshUserProfile
   }), [user, session, loading, userProfile, isAdminUser, signOut, refreshUserProfile]);
 
   return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;
