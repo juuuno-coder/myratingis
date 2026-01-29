@@ -180,9 +180,10 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
       };
 
       // profiles 테이블 업데이트
+      const { id, ...dataToSave } = updateData as any;
       const { error: profileError } = await supabase
         .from('profiles')
-        .update(updateData)
+        .update(dataToSave)
         .eq('id', user.id);
 
       // users 테이블이 존재할 수 있으므로 시도 (있는 경우에만)

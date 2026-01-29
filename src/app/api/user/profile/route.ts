@@ -13,11 +13,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     
     // Sanitize payload
+    const { id, ...dataToUpdate } = body;
     const updatePayload = {
-        id: user.id,
         updated_at: new Date().toISOString(),
-        username: body.nickname, // Added username
-        nickname: body.nickname, // Added nickname for consistency
+        nickname: body.nickname, 
+        username: body.nickname, 
         gender: body.gender,
         age_group: body.age_group,
         occupation: body.occupation,
@@ -26,30 +26,17 @@ export async function POST(req: NextRequest) {
 
     console.log('[API] Updating Profile:', user.id, updatePayload);
 
-    // 1. Try Update first
-    const { error: updateError, data } = await supabase
+    // 1. Use Upsert for most robust profile management
+    const { error: upsertError } = await supabase
        .from('profiles')
-       .update(updatePayload)
-       .eq('id', user.id)
-       .select('id');
+       .upsert({
+           id: user.id,
+           ...updatePayload
+       }, { onConflict: 'id' });
 
-    if (updateError) {
-        console.error('[API] Update failed:', updateError);
-        throw updateError;
-    }
-    
-    // 2. If no data returned, row might not exist -> Upsert
-    if (!data || data.length === 0) {
-         console.log('[API] Profile missing, attempting Upsert...');
-         const { error: upsertError } = await supabase
-            .from('profiles')
-            .upsert(updatePayload)
-            .select('id');
-         
-         if (upsertError) {
-             console.error('[API] Upsert failed:', upsertError);
-             throw upsertError;
-         }
+    if (upsertError) {
+        console.error('[API] Profile Update failed:', upsertError);
+        throw upsertError;
     }
 
     return NextResponse.json({ success: true });

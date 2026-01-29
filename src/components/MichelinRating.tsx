@@ -94,25 +94,18 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
           });
           setScores(initialScores);
         } else {
-          // Fallback to default but ensure state is fresh
+          // Fallback to default
           setCategories(DEFAULT_CATEGORIES);
-        }
-        setAverages(data.averages || {});
-        } else {
           const initial: Record<string, number> = {};
-          DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
-          
-          if (data.myRating) {
-            DEFAULT_CATEGORIES.forEach(c => {
-               initial[c.id] = Number(data.myRating[c.id] || 0);
-            });
-          }
+          DEFAULT_CATEGORIES.forEach(c => {
+             initial[c.id] = data.myRating ? Number(data.myRating[c.id] || 0) : 0;
+          });
           setScores(initial);
-          setAverages(data.averages || {});
         }
         
-        setTotalAvg(data.totalAvg);
-        setTotalCount(data.totalCount);
+        setAverages(data.averages || {});
+        setTotalAvg(data.totalAvg || 0);
+        setTotalCount(data.totalCount || 0);
 
         if (ratingId) {
           const { data: specificRating, error: sError } = await (supabase as any)
