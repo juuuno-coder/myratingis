@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // 1. Fetch Project for categories
     const { data: project } = await supabaseAdmin
       .from('Project')
-      .select('*, user_id, title, category, custom_data')
+      .select('*')
       .eq('project_id', Number(projectId))
       .single();
 
@@ -38,13 +38,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (error) throw error;
 
     // Determine Categories
-    const categories = project?.custom_data?.audit_config?.categories || project?.custom_data?.custom_categories || [
+    let rawCustom = project?.custom_data || {};
+    if (typeof rawCustom === 'string') {
+      try { rawCustom = JSON.parse(rawCustom); } catch (e) { rawCustom = {}; }
+    }
+
+    const categories = rawCustom?.audit_config?.categories || rawCustom?.categories || rawCustom?.custom_categories || [
       { id: 'score_1', label: '기획력' }, 
       { id: 'score_2', label: '완성도' }, 
       { id: 'score_3', label: '독창성' }, 
       { id: 'score_4', label: '상업성' }
     ];
-    const catIds = categories.map((c: any) => c.id);
+    const catIds = categories.map((c: any) => c.id || c.label);
 
     // Calculate Average
     let averages: Record<string, number> = {};
@@ -163,7 +168,13 @@ export async function POST(
       // 2. Prepare Balanced Update Data (Merge)
       // Get project categories to map IDs to columns
       const { data: project } = await supabaseAdmin.from('Project').select('custom_data').eq('project_id', Number(projectId)).single();
-      const categories = project?.custom_data?.audit_config?.categories || project?.custom_data?.custom_categories || [
+      
+      let rawCustom = project?.custom_data || {};
+      if (typeof rawCustom === 'string') {
+        try { rawCustom = JSON.parse(rawCustom); } catch (e) { rawCustom = {}; }
+      }
+
+      const categories = rawCustom?.audit_config?.categories || rawCustom?.categories || rawCustom?.custom_categories || [
         { id: 'score_1' }, { id: 'score_2' }, { id: 'score_3' }, { id: 'score_4' }
       ];
 
