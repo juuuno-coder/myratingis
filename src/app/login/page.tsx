@@ -91,28 +91,26 @@ function LoginContent() {
 
         <div className="w-full max-w-md relative z-10">
           <div 
-            className="rounded-none p-10 chef-black-panel shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]"
-            style={{ filter: "drop-shadow(0 0 1px var(--chef-border))" }}
+            className="rounded-[2.5rem] p-10 chef-black-panel shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border-2 border-white/5 backdrop-blur-3xl"
           >
             {/* 로고 영역 */}
-            <div className="flex justify-center mb-12">
+            <div className="flex justify-center mb-10">
               <div className="relative group">
                 <Image
                   src="/myratingis-logo.png"
                   alt="MyRatingIs"
                   width={180}
                   height={54}
-                  className="h-10 w-auto invert brightness-0"
+                  className="h-9 w-auto invert brightness-0"
                 />
-                <div className="absolute -inset-4 bg-orange-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
 
             <div className="text-center mb-10">
               <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
-                로그인
+                LOG IN
               </h2>
-              <div className="h-1 w-12 bg-orange-500 mx-auto mt-4 rounded-none" />
+              <div className="h-1.5 w-10 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mt-3 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -122,10 +120,10 @@ function LoginContent() {
                 </div>
               )}
 
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="email-address" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    이메일 주소
+                  <label htmlFor="email-address" className="text-[11px] font-black text-chef-text opacity-40 uppercase tracking-[0.2em] ml-1">
+                    Email Address
                   </label>
                   <input
                     id="email-address"
@@ -135,13 +133,13 @@ function LoginContent() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="CHEF@MYRATING.IS"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-15 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-6 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.2em] ml-1">
-                    비밀번호
+                  <label htmlFor="password" className="text-[11px] font-black text-chef-text opacity-40 uppercase tracking-[0.2em] ml-1">
+                    Password
                   </label>
                   <input
                     id="password"
@@ -151,7 +149,7 @@ function LoginContent() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full h-14 bg-chef-panel border border-chef-border text-chef-text font-bold px-6 rounded-none focus:border-orange-500 outline-none transition-all placeholder:text-chef-text/10"
+                    className="w-full h-15 bg-chef-panel/50 border-2 border-white/5 text-chef-text font-bold px-6 rounded-2xl focus:border-orange-500/50 focus:bg-chef-panel outline-none transition-all placeholder:text-chef-text/10 shadow-inner"
                   />
                 </div>
               </div>
@@ -181,9 +179,9 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-16 bg-orange-600 text-white hover:bg-orange-700 text-lg font-black bevel-section transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
+                className="w-full h-16 bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:to-orange-700 text-lg font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(249,115,22,0.4)] border-t border-white/20"
               >
-                {loading ? "로그인 중..." : "입장하기"}
+                {loading ? "AUTHENTICATING..." : "GET STARTED"}
               </Button>
             </form>
 
@@ -199,10 +197,10 @@ function LoginContent() {
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
-              className="w-full h-14 bg-white border-2 border-chef-border text-black hover:bg-gray-50 rounded-none font-black text-[10px] tracking-[0.2em] uppercase transition-all shadow-sm"
+              className="w-full h-15 bg-white/5 border-2 border-white/10 text-chef-text hover:bg-white/10 rounded-2xl font-black text-xs tracking-widest uppercase transition-all shadow-xl group"
             >
-              <FcGoogle className="h-5 w-5 mr-3" />
-              구글 계정으로 계속하기
+              <FcGoogle className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+              Continue with Google
             </Button>
 
             <div className="mt-12 text-center">

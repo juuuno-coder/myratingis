@@ -17,91 +17,93 @@
 
 @layer base {
   :root {
-    /* High Contrast Monochrome Light Mode */
-    --background: 0 0% 100%; /* Pure White */
-    --foreground: 0 0% 0%; /* Pure Black */
+    /* Premium Modern Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 224 71.4% 4.1%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 224 71.4% 4.1%;
 
-    /* Primary: Sharp Black or Brand Orange */
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 24.6 95% 53.1%; /* Modern Orange */
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 0 0% 96%; 
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
 
-    --muted: 0 0% 98%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    /* Accent: Brand Orange (#F97316) */
-    --accent: 24.6 95% 53.1%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 0 0% 0%; /* Sharp Black Borders */
-    --input: 0 0% 94%;
-    --ring: 0 0% 0%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 24.6 95% 53.1%;
 
-    --radius: 0rem; /* Hard Edges for B&W Vibe */
+    --radius: 0.85rem; /* Soft, premium rounding */
 
-    /* MyRatingIs 전용 변수 (High Contrast) */
-    --vibe-orange: 21 100% 43.9%;
-    --vibe-amber: 37.7 92.1% 50.2%;
-    --vibe-hover: 0 0% 0%;
+    /* Custom Design Tokens */
+    --vibe-orange: 24.6 95% 53.1%;
+    --vibe-soft-orange: 24.6 95% 96%;
+    --header-bg: rgba(255, 255, 255, 0.85);
 
-    --divider: 0 0% 0%;
+    /* Original Chef/Michelin Variables for Legacy Support */
+    --chef-bg: #FFFFFF;
+    --chef-card-bg: #FFFFFF;
+    --chef-text: #0F172A;
+    --chef-border: #E2E8F0;
+    --chef-panel: #F8FAFC;
   }
 
   .dark {
-    --background: 144 10% 4%;
-    --foreground: 0 0% 98%;
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
 
-    --card: 144 10% 4%;
-    --card-foreground: 0 0% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 144 10% 4%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
 
     --primary: 24.6 95% 53.1%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 144 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 144 4% 16%;
-    --muted-foreground: 144 5% 65%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
 
-    --accent: 24.6 95% 53.1%;
-    --accent-foreground: 144 10% 4%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 144 4% 16%;
-    --input: 144 4% 16%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
     --ring: 24.6 95% 53.1%;
+
+    /* Original Chef/Michelin Variables for Legacy Support */
+    --chef-bg: #030712;
+    --chef-card-bg: #0F172A;
+    --chef-text: #F8FAFC;
+    --chef-border: rgba(255, 255, 255, 0.08);
+    --chef-panel: #1E293B;
   }
 
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
   body {
-    @apply bg-background text-foreground;
-    scrollbar-gutter: stable;
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    @apply bg-background text-foreground antialiased selection:bg-orange-500/20;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -487,24 +489,17 @@
     border: 2px solid var(--chef-border);
   }
 
-  /* 입력 필드 시인성 개선 */
+  /* 입력 필드 시인성 개선 (Premium Rounded) */
   .chef-input-high-v {
-    color: var(--chef-text) !important;
-    font-weight: 500 !important;
-    background-color: var(--chef-panel) !important;
-    border: 1px solid var(--chef-border) !important;
-    border-radius: 0px !important; /* 직사각형 형태 */
-    transition: all 0.2s ease;
+    @apply rounded-xl px-5 h-12 bg-chef-panel border border-chef-border/50 text-chef-text font-medium transition-all duration-200 outline-none;
   }
 
   .chef-input-high-v:focus {
-    background-color: var(--chef-card-bg) !important;
-    box-shadow: inset 0 0 0 2px var(--chef-border);
+    @apply border-primary ring-4 ring-primary/10 bg-background shadow-lg shadow-primary/5;
   }
 
   .chef-input-high-v::placeholder {
-    color: var(--chef-text);
-    opacity: 0.3;
+    @apply text-chef-text/30 font-normal opacity-100;
   }
 
   /* 트리플 반점 프레임 */
@@ -655,47 +650,17 @@
     box-shadow: inset 4px 0 0 0 currentColor;
   }
 
-  /* Bevel cut corners style (Smoother) */
+  /* Transition from clunky bevels to modern premium rounding */
   .bevel-cta {
-    clip-path: polygon(
-      6px 0, 
-      calc(100% - 6px) 0, 
-      100% 6px, 
-      100% calc(100% - 6px), 
-      calc(100% - 6px) 100%, 
-      6px 100%, 
-      0 calc(100% - 6px), 
-      0 6px
-    );
-    filter: drop-shadow(0 0 0.5px var(--chef-border));
+    @apply rounded-xl shadow-md border border-white/10;
   }
 
   .bevel-sm {
-    clip-path: polygon(
-      3px 0, 
-      calc(100% - 3px) 0, 
-      100% 3px, 
-      100% calc(100% - 3px), 
-      calc(100% - 3px) 100%, 
-      3px 100%, 
-      0 calc(100% - 3px), 
-      0 3px
-    );
-    filter: drop-shadow(0 0 0.5px var(--chef-border));
+    @apply rounded-lg shadow-sm border border-white/5;
   }
 
   .bevel-section {
-    clip-path: polygon(
-      12px 0, 
-      calc(100% - 12px) 0, 
-      100% 12px, 
-      100% calc(100% - 12px), 
-      calc(100% - 12px) 100%, 
-      12px 100%, 
-      0 calc(100% - 12px), 
-      0 12px
-    );
-    filter: drop-shadow(0 0 0.5px var(--chef-border));
+    @apply rounded-[1.5rem] shadow-xl border border-white/5;
   }
 }
 

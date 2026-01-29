@@ -30,33 +30,13 @@ export default function ProjectUploadPage() {
   const searchParams = useSearchParams();
   const { user, userProfile, loading: authLoading, isAdmin } = useAuth();
   
-  // Reward States (Admin Only Feature Dev)
+  // 1. Move ALL Hooks to the top (Before any early returns)
   const [rewardType, setRewardType] = useState<'none' | 'point' | 'coupon'>('none');
   const [rewardAmount, setRewardAmount] = useState(500);
   const [recipientCount, setRecipientCount] = useState(10);
   const [distributeMethod, setDistributeMethod] = useState<'fcfs' | 'author'>('fcfs');
-  
-  const mode = searchParams.get('mode') || 'audit'; 
-  
   const [auditStep, setAuditStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      toast.error("평가 의뢰를 위해 로그인이 필요합니다.");
-      router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-  }, [authLoading, user, router]);
-
-  if (authLoading) {
-     return (
-        <div className="min-h-screen flex items-center justify-center chef-bg-page">
-            <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full" />
-        </div>
-     );
-  }
-
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -68,7 +48,7 @@ export default function ProjectUploadPage() {
     return d.toISOString().split('T')[0];
   });
   const [auditType, setAuditType] = useState<'link' | 'image' | 'video' | 'document'>('link');
-  const [mediaData, setMediaData] = useState<string | string[]>(auditType === 'image' || auditType === 'document' ? [] : "");
+  const [mediaData, setMediaData] = useState<string | string[]>([]);
   const [customCategories, setCustomCategories] = useState<any[]>([
     { id: 'm1', label: '기획력', desc: '탄탄한 논리와 명확한 문제 해결 전략' },
     { id: 'm2', label: '독창성', desc: '기존의 틀을 깨는 신선하고 개성 있는 시도' },
@@ -76,6 +56,39 @@ export default function ProjectUploadPage() {
     { id: 'm4', label: '완성도', desc: '작은 디테일까지 놓치지 않은 집요한 마감' },
     { id: 'm5', label: '상업성', desc: '시장의 니즈를 꿰뚫는 가치와 비즈니스 가능성' }
   ]);
+  const [selectedPreset, setSelectedPreset] = useState<'professional' | 'michelin' | 'mz'>('professional');
+  const [pollOptions, setPollOptions] = useState<any[]>([]);
+  const [pollDesc, setPollDesc] = useState("현업 마스터의 냉정한 피드백");
+  const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
+
+  const mode = searchParams.get('mode') || 'audit'; 
+
+  // 2. Auth Guard Effects
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast.error("평가 의뢰를 위해 로그인이 필요합니다.");
+      router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+    }
+  }, [authLoading, user, router]);
+
+  // 3. Early Return ONLY AFTER Hook Initializations
+  if (authLoading) {
+     return (
+        <div className="min-h-screen flex items-center justify-center chef-bg-page px-6">
+            <div className="flex flex-col items-center gap-6">
+               <div className="animate-spin w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)]" />
+               <p className="text-sm font-black text-chef-text opacity-30 uppercase tracking-[0.3em] animate-pulse">Initializing Lab...</p>
+            </div>
+        </div>
+     );
+  }
+
+  // 4. Initialization Logic
+  useEffect(() => {
+    if (!pollOptions.length) {
+       setPollOptions(STICKER_PRESETS.professional);
+    }
+  }, []);
 
   const STICKER_PRESETS: Record<string, any[]> = {
     professional: [
@@ -94,11 +107,6 @@ export default function ProjectUploadPage() {
       { id: 'mz3', label: '길을 잃었습니다...\nGPS 재탐색 필요', desc: '무엇을 말하려는지 잘 모르겠어요.\n핵심 기능과 타겟을 다시 정의해 보세요.', image_url: '/review/a3.jpeg' }
     ]
   };
-
-  const [selectedPreset, setSelectedPreset] = useState<'professional' | 'michelin' | 'mz'>('professional');
-  const [pollOptions, setPollOptions] = useState<any[]>(STICKER_PRESETS.professional);
-  const [pollDesc, setPollDesc] = useState("현업 마스터의 냉정한 피드백");
-  const [auditQuestions, setAuditQuestions] = useState<string[]>(["이 프로젝트의 가장 큰 장점은 무엇인가요?"]);
 
   const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {
     setSelectedPreset(preset);

@@ -128,13 +128,13 @@ export function MyRatingIsHeader() {
           ) : (
             <div className="flex items-center gap-3">
               <Link href="/login">
-                <Button variant="ghost" className="text-chef-text opacity-60 hover:opacity-100 hover:bg-white/5 px-4 font-black text-xs uppercase tracking-widest transition-all">
+                <Button variant="ghost" className="text-chef-text opacity-70 hover:opacity-100 hover:bg-white/5 px-5 h-10 font-bold text-xs uppercase tracking-widest transition-all rounded-xl">
                   로그인
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button className="bg-chef-text text-chef-bg hover:opacity-90 bevel-cta px-5 h-9 font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:scale-105">
-                  회원가입
+                <Button className="bg-orange-600 text-white hover:bg-orange-700 px-6 h-10 font-bold text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-orange-600/20 rounded-xl hover:scale-105 active:scale-95">
+                  시작하기
                 </Button>
               </Link>
             </div>
