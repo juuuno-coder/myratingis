@@ -491,7 +491,7 @@
 
   /* 입력 필드 시인성 개선 (Premium Rounded) */
   .chef-input-high-v {
-    @apply rounded-xl px-5 h-12 bg-chef-panel border border-chef-border/50 text-chef-text font-medium transition-all duration-200 outline-none;
+    @apply rounded-xl px-5 h-12 bg-chef-panel border border-border/50 text-chef-text font-medium transition-all duration-200 outline-none;
   }
 
   .chef-input-high-v:focus {
