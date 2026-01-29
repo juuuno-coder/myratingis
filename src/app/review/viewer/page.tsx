@@ -118,7 +118,7 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
                transition={{ delay: 0.6 }}
                className="space-y-2 md:space-y-3"
              >
-                <h4 className="text-xl md:text-2xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-lg mx-auto px-4">
+                <h4 className="text-lg md:text-xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-2xl mx-auto px-4">
                   {project.summary || project.description || "당신을 위해 준비된 미지의 과제"}
                 </h4>
              </motion.div>

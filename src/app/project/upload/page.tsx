@@ -24,6 +24,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChefHat, Sparkles, Info, Globe, Link } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { supabase } from "@/lib/supabase/client";
+const STICKER_PRESETS: Record<string, any[]> = {
+  professional: [
+    { id: 'pr1', label: '당장 계약하시죠!\n탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
+    { id: 'pr2', label: '좋긴 한데...\n한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나\n디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
+    { id: 'pr3', label: '기획부터 다시!\n싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한\n전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
+  ],
+  michelin: [
+    { id: 'mi1', label: '3스타급 완성도!\n완벽한 미식 경험', desc: '예술성과 상업성을 모두 잡은,\n누구나 소유하고 싶어 할 만큼 가치가 뛰어난 프로젝트', image_url: '/review/a1.jpeg' },
+    { id: 'mi2', label: '훌륭한 요리,\n하지만 향신료가 부족함', desc: '기본기는 탄탄하지만 이 프로젝트만의\n확실한 개성(Kick)을 더 보여줄 필요가 있는 상태', image_url: '/review/a2.jpeg' },
+    { id: 'mi3', label: '재료 선택부터\n다시 고민해야 할 맛', desc: '타겟과 목적이 불분명하여 근본적인\n기획 의도부터 다시 정립해야 하는 프로젝트', image_url: '/review/a3.jpeg' }
+  ],
+  mz: [
+    { id: 'mz1', label: '폼 미쳤다!\n그대로 입사하세요', desc: '더 이상 설명이 필요 없는 압승!\n즉각적인 실행이 가능한 수준의 고퀄리티', image_url: '/review/a1.jpeg' },
+    { id: 'mz2', label: '예쁜데 뭔가...\n묘하게 2% 부족함', desc: '비주얼은 좋으나 사용성이나 실용성 측면에서\n한 단계 업그레이드가 필요한 단계', image_url: '/review/a2.jpeg' },
+    { id: 'mz3', label: '길을 잃었습니다...\nGPS 재탐색 필요', desc: '무엇을 말하려는지 잘 모르겠어요.\n핵심 기능과 타겟을 다시 정의해 보세요.', image_url: '/review/a3.jpeg' }
+  ]
+};
 
 export default function ProjectUploadPage() {
   const router = useRouter();
@@ -72,50 +89,12 @@ export default function ProjectUploadPage() {
   }, [authLoading, user, router]);
 
   // 3. Early Return ONLY AFTER Hook Initializations
-  if (authLoading) {
-     return (
-        <div className="min-h-screen flex items-center justify-center chef-bg-page px-6">
-            <div className="flex flex-col items-center gap-6">
-               <div className="animate-spin w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)]" />
-               <p className="text-sm font-black text-chef-text opacity-30 uppercase tracking-[0.3em] animate-pulse">Initializing Lab...</p>
-            </div>
-        </div>
-     );
-  }
-
   // 4. Initialization Logic
   useEffect(() => {
     if (!pollOptions.length) {
        setPollOptions(STICKER_PRESETS.professional);
     }
   }, []);
-
-  const STICKER_PRESETS: Record<string, any[]> = {
-    professional: [
-      { id: 'pr1', label: '당장 계약하시죠!\n탐나는 결과물', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
-      { id: 'pr2', label: '좋긴 한데...\n한 끗이 아쉽네요', desc: '기획의 방향은 훌륭하나, 사용자 경험(UX)이나\n디테일한 마감에서 보완이 필요한 상태', image_url: '/review/a2.jpeg' },
-      { id: 'pr3', label: '기획부터 다시!\n싹 갈아엎읍시다', desc: '컨셉의 정체성이 모호하거나 핵심 기능에 대한\n전면적인 재검토가 필요한 프로젝트', image_url: '/review/a3.jpeg' }
-    ],
-    michelin: [
-      { id: 'mi1', label: '3스타급 완성도!\n완벽한 미식 경험', desc: '예술성과 상업성을 모두 잡은,\n누구나 소유하고 싶어 할 만큼 가치가 뛰어난 프로젝트', image_url: '/review/a1.jpeg' },
-      { id: 'mi2', label: '훌륭한 요리,\n하지만 향신료가 부족함', desc: '기본기는 탄탄하지만 이 프로젝트만의\n확실한 개성(Kick)을 더 보여줄 필요가 있는 상태', image_url: '/review/a2.jpeg' },
-      { id: 'mi3', label: '재료 선택부터\n다시 고민해야 할 맛', desc: '타겟과 목적이 불분명하여 근본적인\n기획 의도부터 다시 정립해야 하는 프로젝트', image_url: '/review/a3.jpeg' }
-    ],
-    mz: [
-      { id: 'mz1', label: '폼 미쳤다!\n그대로 입사하세요', desc: '더 이상 설명이 필요 없는 압승!\n즉각적인 실행이 가능한 수준의 고퀄리티', image_url: '/review/a1.jpeg' },
-      { id: 'mz2', label: '예쁜데 뭔가...\n묘하게 2% 부족함', desc: '비주얼은 좋으나 사용성이나 실용성 측면에서\n한 단계 업그레이드가 필요한 단계', image_url: '/review/a2.jpeg' },
-      { id: 'mz3', label: '길을 잃었습니다...\nGPS 재탐색 필요', desc: '무엇을 말하려는지 잘 모르겠어요.\n핵심 기능과 타겟을 다시 정의해 보세요.', image_url: '/review/a3.jpeg' }
-    ]
-  };
-
-  const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {
-    setSelectedPreset(preset);
-    setPollOptions(STICKER_PRESETS[preset]);
-    const desc = preset === 'professional' ? "[몰입형] 현업 전문가의 리얼한 반응" 
-               : preset === 'michelin' ? "[미슐랭형] 미식 가이드 컨셉" 
-               : "[MZ·위트형] 직관적이고 가벼운 반응";
-    setPollDesc(desc);
-  };
 
   // [New] Edit Mode Data Fetching
   const editId = searchParams.get('edit');
@@ -177,6 +156,18 @@ export default function ProjectUploadPage() {
       setLinkPreview(null);
     }
   }, [mediaData, auditType]);
+
+  // No early return here anymore to ensure all hooks are called every render.
+
+  const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {
+    setSelectedPreset(preset);
+    setPollOptions(STICKER_PRESETS[preset]);
+    const desc = preset === 'professional' ? "[몰입형] 현업 전문가의 리얼한 반응" 
+               : preset === 'michelin' ? "[미슐랭형] 미식 가이드 컨셉" 
+               : "[MZ·위트형] 직관적이고 가벼운 반응";
+    setPollDesc(desc);
+  };
+
 
   const handleSubmit = async () => {
     if (!title.trim()) return toast.error("제목을 입력해주세요.");
@@ -741,35 +732,45 @@ export default function ProjectUploadPage() {
 
   return (
     <div className="min-h-screen chef-bg-page selection:bg-orange-500/30">
-      
-      {/* Dynamic Stepper Header */}
-      <div className="fixed top-16 left-0 right-0 z-40 chef-header-dark border-b border-chef-border">
-         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-               <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">평가 의뢰 연구소</span>
+      {authLoading ? (
+        <div className="min-h-screen flex items-center justify-center px-6">
+            <div className="flex flex-col items-center gap-6">
+               <div className="animate-spin w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)]" />
+               <p className="text-sm font-black text-chef-text opacity-30 uppercase tracking-[0.3em] animate-pulse">Initializing Lab...</p>
             </div>
-            <div className="flex items-center gap-3">
-               {[1, 2, 3, 4, ...(isAdmin ? [5] : [])].map(s => (
-                 <div key={s} className="flex items-center gap-2">
-                    <div className={cn(
-                      "w-8 h-1 transition-all duration-500 bevel-cta", 
-                      auditStep >= s ? "bg-orange-500 shadow-[0_0_10px_#f97316]" : "bg-chef-text opacity-10"
-                    )} />
-                    {s < (isAdmin ? 5 : 4) && <div className="text-[6px] text-chef-text opacity-5 font-black">/</div>}
-                 </div>
-               ))}
-            </div>
-         </div>
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* Dynamic Stepper Header */}
+          <div className="fixed top-16 left-0 right-0 z-40 chef-header-dark border-b border-chef-border">
+             <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                   <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">평가 의뢰 연구소</span>
+                </div>
+                <div className="flex items-center gap-3">
+                   {[1, 2, 3, 4, ...(isAdmin ? [5] : [])].map(s => (
+                     <div key={s} className="flex items-center gap-2">
+                        <div className={cn(
+                          "w-8 h-1 transition-all duration-500 bevel-cta", 
+                          auditStep >= s ? "bg-orange-500 shadow-[0_0_10px_#f97316]" : "bg-chef-text opacity-10"
+                        )} />
+                        {s < (isAdmin ? 5 : 4) && <div className="text-[6px] text-chef-text opacity-5 font-black">/</div>}
+                     </div>
+                   ))}
+                </div>
+             </div>
+          </div>
 
-      <div className="pt-40 pb-32">
-        <main className="max-w-4xl mx-auto px-6">
-          <AnimatePresence mode="wait">
-            {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : auditStep === 3 ? renderStep3() : auditStep === 4 ? renderStep4() : renderStep5()}
-          </AnimatePresence>
-        </main>
-      </div>
+          <div className="pt-40 pb-32">
+            <main className="max-w-4xl mx-auto px-6">
+              <AnimatePresence mode="wait">
+                {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : auditStep === 3 ? renderStep3() : auditStep === 4 ? renderStep4() : renderStep5()}
+              </AnimatePresence>
+            </main>
+          </div>
+        </>
+      )}
     </div>
   );
 }

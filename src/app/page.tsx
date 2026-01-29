@@ -61,10 +61,10 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-sm md:text-lg lg:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed px-4 break-keep"
+          className="text-xs md:text-base lg:text-lg text-white/60 font-medium max-w-4xl mx-auto leading-relaxed px-4 break-keep"
         >
-          잠재고객과 전문평가위원이 여러분의 프로젝트를 솔직하게 평가합니다.<br />
-          공정하면서도 냉정한 평가는 성장의 자산이 됩니다.
+          전문평가위원과 잠재고객의 날카로운 시선으로<br />
+          여러분의 프로젝트가 가진 진짜 가치를 증명해 드립니다.
         </motion.p>
 
         {/* Cloche Illustration */}
