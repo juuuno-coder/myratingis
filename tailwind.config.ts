@@ -55,6 +55,12 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Chef/Michelin Premium Theme Colors
+        "chef-bg": "var(--chef-bg)",
+        "chef-card": "var(--chef-card-bg)",
+        "chef-text": "var(--chef-text)",
+        "chef-border": "var(--chef-border)",
+        "chef-panel": "var(--chef-panel)",
       },
       borderRadius: {
         lg: "var(--radius)",
