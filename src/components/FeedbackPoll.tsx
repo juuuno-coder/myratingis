@@ -157,7 +157,7 @@ export const FeedbackPoll = React.forwardRef<FeedbackPollRef, FeedbackPollProps>
 
                 {/* Right: Content */}
                 <div className="flex-1 px-5 flex flex-col items-start justify-center gap-1.5 text-left min-w-0 py-2">
-                   <h3 className={cn("text-xl sm:text-2xl font-black leading-none tracking-tight", isSelected ? "text-slate-900" : "text-slate-700")}>{opt.label}</h3>
+                   <h3 className={cn("text-base sm:text-lg font-black leading-tight tracking-tight", isSelected ? "text-slate-900" : "text-slate-700")}>{opt.label}</h3>
                    <p className="text-xs sm:text-sm font-bold text-slate-400 leading-tight whitespace-pre-wrap break-keep">{opt.desc}</p>
                 </div>
                 

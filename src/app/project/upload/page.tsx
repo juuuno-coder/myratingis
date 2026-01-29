@@ -59,6 +59,8 @@ export default function ProjectUploadPage() {
 
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<any>(null);
   const [visibility, setVisibility] = useState<'public' | 'unlisted'>('public');
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {
     const d = new Date();
@@ -67,9 +69,6 @@ export default function ProjectUploadPage() {
   });
   const [auditType, setAuditType] = useState<'link' | 'image' | 'video' | 'document'>('link');
   const [mediaData, setMediaData] = useState<string | string[]>(auditType === 'image' || auditType === 'document' ? [] : "");
-  const [linkPreview, setLinkPreview] = useState<{title?: string, description?: string, image?: string} | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  
   const [customCategories, setCustomCategories] = useState<any[]>([
     { id: 'm1', label: '기획력', desc: '탄탄한 논리와 명확한 문제 해결 전략' },
     { id: 'm2', label: '독창성', desc: '기존의 틀을 깨는 신선하고 개성 있는 시도' },
@@ -110,6 +109,67 @@ export default function ProjectUploadPage() {
     setPollDesc(desc);
   };
 
+  // [New] Edit Mode Data Fetching
+  const editId = searchParams.get('edit');
+  useEffect(() => {
+    if (editId) {
+      const fetchProject = async () => {
+        const { data, error } = await supabase
+          .from('Project')
+          .select('*')
+          .eq('project_id', Number(editId))
+          .single();
+        
+        if (!error && data) {
+          const p = data as any;
+          setTitle(p.title || "");
+          setSummary(p.summary || "");
+          setVisibility(p.visibility as any || 'public');
+          if (p.audit_deadline) setAuditDeadline(p.audit_deadline.split('T')[0]);
+          
+          const config = p.custom_data?.audit_config;
+          if (config) {
+            setAuditType(config.type || 'link');
+            setMediaData(config.mediaA || "");
+            if (config.categories) setCustomCategories(config.categories);
+            if (config.poll) {
+                setPollDesc(config.poll.desc || "");
+                setPollOptions(config.poll.options || []);
+            }
+            if (config.questions) setAuditQuestions(config.questions);
+          }
+        }
+      };
+      fetchProject();
+    }
+  }, [editId]);
+
+  useEffect(() => {
+    if (auditType === 'link' && typeof mediaData === 'string' && mediaData.includes('.')) {
+      const timer = setTimeout(async () => {
+        setIsLoadingPreview(true);
+        try {
+          const urlToFetch = mediaData.startsWith('http') ? mediaData : `https://${mediaData}`;
+          const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
+          if (response.ok) {
+            const data = await response.json();
+            setLinkPreview(data.title || data.image ? data : null);
+          } else {
+            setLinkPreview(null);
+          }
+        } catch (e) {
+          console.error("OG Preview Error", e);
+          setLinkPreview(null);
+        } finally {
+          setIsLoadingPreview(false);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setLinkPreview(null);
+    }
+  }, [mediaData, auditType]);
+
   const handleSubmit = async () => {
     if (!title.trim()) return toast.error("제목을 입력해주세요.");
     if (customCategories.length < 3) return toast.error("평가 항목은 최소 3개 이상이어야 합니다.");
@@ -148,8 +208,8 @@ export default function ProjectUploadPage() {
         }
       };
 
-      const res = await fetch("/api/projects", {
-        method: "POST",
+      const res = await fetch(editId ? `/api/projects/${editId}` : "/api/projects", {
+        method: editId ? "PUT" : "POST",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -160,8 +220,8 @@ export default function ProjectUploadPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "등록 실패");
       
-      toast.success("평가 의뢰가 성공적으로 등록되었습니다!");
-      router.push(`/project/share/${data.project.project_id}`);
+      toast.success(editId ? "수정이 완료되었습니다!" : "평가 의뢰가 성공적으로 등록되었습니다!");
+      router.push(`/project/share/${editId || data.project.project_id}`);
     } catch (error: any) {
       toast.error(error.message || "등록 중 오류가 발생했습니다.");
     } finally {
@@ -177,33 +237,38 @@ export default function ProjectUploadPage() {
         </div>
 
         {/* Informational Banner for Creators */}
-        <div className="bg-orange-500/5 border border-orange-500/20 p-8 rounded-sm space-y-4 bevel-sm">
-           <div className="flex items-center gap-3">
-              <Sparkles className="text-orange-500 w-5 h-5 animate-pulse" />
+        <div className="bg-orange-500/5 border border-orange-500/10 p-10 rounded-sm space-y-6 bevel-sm relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform duration-1000 -mr-4 -mt-4">
+              <Sparkles size={120} />
+           </div>
+           <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-orange-500 text-white flex items-center justify-center bevel-sm">
+                 <Sparkles size={20} />
+              </div>
               <h4 className="text-sm font-black text-orange-500 uppercase tracking-[0.2em] italic">Creator Tip: 비회원 참여 및 데이터 통합</h4>
            </div>
-           <p className="text-xs text-chef-text opacity-70 leading-relaxed font-bold max-w-2xl">
+           <p className="text-xs text-chef-text opacity-80 leading-relaxed font-bold max-w-2xl relative z-10">
               제 평가는요? 시스템은 <span className="text-orange-500">비회원 참여</span>를 공식 지원합니다. 
               가입하지 않은 팀원이나 커스터머에게도 링크 하나로 평가를 요청하세요. 
               참여자가 추후 가입할 경우, 이전에 남긴 모든 소중한 피드백이 해당 계정으로 자동 통합되어 안전하게 관리됩니다.
            </p>
         </div>
         
-        <div className="space-y-4">
-          <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
+        <div className="space-y-6">
+          <div className="chef-black-panel p-1 rounded-sm border border-chef-border/30 hover:border-orange-500/50 transition-colors shadow-sm">
             <input 
               placeholder="평가받을 제목 (예: 커피 배달 매칭 MVP)" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              className="w-full h-16 bg-chef-panel border-none text-xl font-black text-chef-text px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
+              className="w-full h-20 bg-chef-panel border-none text-2xl font-black text-chef-text px-10 placeholder:text-chef-text/20 outline-none chef-input-high-v rounded-sm"
             />
           </div>
-          <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
+          <div className="chef-black-panel p-1 rounded-sm border border-chef-border/30 hover:border-orange-500/50 transition-colors shadow-sm">
             <input 
               placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" 
               value={summary} 
               onChange={e => setSummary(e.target.value)} 
-              className="w-full h-12 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-8 placeholder:text-chef-text/30 outline-none chef-input-high-v rounded-sm"
+              className="w-full h-14 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-10 placeholder:text-chef-text/20 outline-none chef-input-high-v rounded-sm"
             />
           </div>
         </div>
@@ -329,21 +394,7 @@ export default function ProjectUploadPage() {
               <div className="chef-black-panel p-1 rounded-sm border-none shadow-sm">
                 <input 
                   value={typeof mediaData === 'string' ? mediaData : ''} 
-                  onChange={async e => {
-                    const val = e.target.value;
-                    setMediaData(val);
-                    if (auditType === 'link' && val.includes('.')) {
-                      setIsLoadingPreview(true);
-                      try {
-                        const urlToFetch = val.startsWith('http') ? val : `https://${val}`;
-                        const response = await fetch(`/api/og-preview?url=${encodeURIComponent(urlToFetch)}`);
-                        if (response.ok) {
-                          const data = await response.json();
-                          setLinkPreview(data.title || data.image ? data : null);
-                        }
-                      } catch (e) { console.error(e); } finally { setIsLoadingPreview(false); }
-                    } else { setLinkPreview(null); }
-                  }} 
+                  onChange={e => setMediaData(e.target.value)} 
                   placeholder={auditType === 'link' ? "wayo.co.kr" : "YouTube 영상 주소..."} 
                   className="w-full h-16 bg-chef-panel border-none text-chef-text font-black px-8 text-lg bevel-sm placeholder:text-chef-text/30 outline-none transition-colors chef-input-high-v rounded-sm"
                 />
@@ -395,9 +446,9 @@ export default function ProjectUploadPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {customCategories.map((cat, idx) => (
-            <div key={idx} className="chef-black-panel bevel-section p-8 border border-chef-border relative group hover:border-orange-500/50 transition-all bg-chef-card">
+            <div key={idx} className="chef-black-panel bevel-section p-10 border border-chef-border/50 relative group hover:border-orange-500 transition-all bg-chef-card shadow-lg">
               <div className="flex items-center gap-6">
                 <div className="w-12 h-12 bg-chef-panel text-chef-text opacity-20 flex items-center justify-center bevel-sm shrink-0 font-black text-xs">
                    0{idx+1}
@@ -426,8 +477,10 @@ export default function ProjectUploadPage() {
       </section>
 
       <div className="flex justify-between items-center pt-8">
-        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-chef-text opacity-50 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={() => setAuditStep(3)} className="h-16 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest">다음: 스티커 투표 설정 <FontAwesomeIcon icon={faPlus} className="ml-3" /></Button>
+        <Button variant="ghost" onClick={() => setAuditStep(1)} className="h-14 px-8 font-black text-chef-text opacity-40 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
+        <Button onClick={() => setAuditStep(3)} className="h-20 px-16 bg-chef-text text-chef-bg hover:opacity-90 text-lg font-black bevel-cta transition-transform hover:scale-105 shadow-2xl uppercase tracking-widest border border-chef-border/20">
+            다음: 스티커 투표 설정 <FontAwesomeIcon icon={faPlus} className="ml-3" />
+        </Button>
       </div>
     </motion.div>
   );

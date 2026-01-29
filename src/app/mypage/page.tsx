@@ -2,8 +2,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat } from "lucide-react";
+import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { QRCodeCanvas } from "qrcode.react";
 import { ProfileManager } from "@/components/ProfileManager";
 import { ImageCard } from "@/components/ImageCard";
 import { ProposalCard } from "@/components/ProposalCard";
@@ -101,6 +104,8 @@ export default function MyPage() {
 
   const { user: authUser, userProfile: authProfile, loading: authLoading, isAdmin } = useAuth();
   
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [sharingProject, setSharingProject] = useState<any>(null);
   const isLoadingRef = useRef(false);
 
   // 1. 초기화 - 사용자 정보 및 통계 로드
@@ -144,15 +149,15 @@ export default function MyPage() {
           return error ? 0 : (count || 0);
         };
 
-        const [p, l, c, fr, fg] = await Promise.all([
+        const [p, l, c] = await Promise.all([
           getCount(supabase.from('Project').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
           getCount(supabase.from('Like').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
           getCount(supabase.from('Collection').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
-          getCount(supabase.from('Follow').select('*', { count: 'exact', head: true }).eq('following_id', authUser.id)),
-          getCount(supabase.from('Follow').select('*', { count: 'exact', head: true }).eq('follower_id', authUser.id)),
+          // Follow feature table missing - suppressing console errors
+          // supabase.from('Follow')...
         ]);
         
-        setStats({ projects: p, likes: l, collections: c, followers: fr, following: fg });
+        setStats({ projects: p, likes: l, collections: c, followers: 0, following: 0 });
       } catch (e) {
         console.warn("[MyPage] initStats failed:", e);
       } finally {
@@ -185,7 +190,7 @@ export default function MyPage() {
         if (activeTab === 'projects' || activeTab === 'audit_requests') {
           const { data } = await supabase
             .from('Project')
-            .select('project_id, title, thumbnail_url, likes_count, views_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline, site_url')
+            .select('project_id, title, thumbnail_url, likes_count, views_count, rating_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline, site_url')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
           
@@ -200,6 +205,7 @@ export default function MyPage() {
             thumbnail_url: p.thumbnail_url || '/placeholder.jpg',
             likes: p.likes_count || 0,
             views: p.views_count || 0,
+            rating_count: p.rating_count || 0,
             created_at: p.created_at,
             description: p.content_text || '',
             rendering_type: p.rendering_type || 'image',
@@ -615,7 +621,7 @@ export default function MyPage() {
                                     <img 
                                         src={SmartThumb} 
                                         alt={project.title} 
-                                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
+                                        className="w-full h-full object-cover transition-opacity duration-500" 
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-chef-panel to-chef-card opacity-30">
@@ -637,22 +643,26 @@ export default function MyPage() {
                             </div>
 
                             <h3 className="text-xl md:text-2xl font-black text-chef-text tracking-tighter truncate mb-2">{project.title}</h3>
-                            <p className="text-sm text-chef-text opacity-40 font-medium line-clamp-2 mb-6 leading-relaxed">
-                                {project.description || "작성된 설명이 없습니다."}
+                            <p className="text-[11px] text-chef-text opacity-40 font-bold line-clamp-2 mb-6 leading-relaxed">
+                                {project.description || project.summary || "작성된 설명이 없습니다."}
                             </p>
 
-                            <div className="flex items-center gap-6 mt-auto">
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-auto">
                                 <div className="flex items-center gap-1.5">
                                    <Eye className="w-3.5 h-3.5 text-chef-text opacity-20" />
-                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Views {project.views || 0}</span>
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest whitespace-nowrap">조회수 {project.views || 0}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                   <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest">Likes {project.likes || 0}</span>
+                                   <Heart className="w-3.5 h-3.5 text-chef-text opacity-20" />
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest whitespace-nowrap">좋아요 {project.likes || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                   <ChefHat className="w-3.5 h-3.5 text-orange-500" />
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest whitespace-nowrap">평가수 {project.rating_count || 0}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 ml-auto md:ml-0">
                                    <Clock className="w-3.5 h-3.5 text-chef-text opacity-20" />
-                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest leading-none">
+                                   <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest leading-none whitespace-nowrap">
                                         {project.created_at ? new Date(project.created_at).toLocaleDateString() : "-"}
                                    </span>
                                 </div>
@@ -681,7 +691,14 @@ export default function MyPage() {
                                  >
                                     <Trash2 className="w-4 h-4" />
                                  </Button>
-                             </div>
+                                 <Button 
+                                    onClick={(e) => { e.stopPropagation(); setSharingProject(project); setShareModalOpen(true); }} 
+                                    className="w-12 h-12 rounded-xl bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white border border-orange-500/20 transition-all flex items-center justify-center p-0"
+                                    title="공유하기"
+                                 >
+                                    <Share2 className="w-4 h-4" />
+                                 </Button>
+                              </div>
 
                              {project.visibility === 'private' && (
                                 <p className="text-[9px] text-center font-bold text-chef-text opacity-20 uppercase tracking-tighter mt-1 leading-none">
@@ -1016,6 +1033,98 @@ export default function MyPage() {
           projectTitle={currentFeedbackProject.title}
         />
       )}
+      {/* Share Modal */}
+      <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
+        <DialogContent className="max-w-md bg-chef-card border-chef-border text-chef-text rounded-[2.5rem] p-10 overflow-hidden">
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
+              <h3 className="text-3xl font-black tracking-tighter uppercase italic">프로젝트 공유</h3>
+              <p className="text-xs font-bold text-chef-text opacity-40 uppercase tracking-widest">링크 또는 QR코드로 공유하세요</p>
+            </div>
+
+            <div className="flex flex-col items-center gap-6 p-8 bg-chef-panel rounded-[2rem] border border-chef-border/50">
+               <div className="p-4 bg-white rounded-2xl shadow-2xl">
+                  <QRCodeCanvas 
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                    size={200}
+                    level="H"
+                    includeMargin={false}
+                  />
+               </div>
+               <div className="w-full space-y-3">
+                  <Label className="text-[10px] font-black opacity-30 uppercase tracking-widest">평가 참여 링크</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                        readOnly 
+                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                        className="flex-1 bg-chef-card border-chef-border h-12 text-xs font-bold"
+                    />
+                    <Button 
+                        onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/review/viewer?id=${sharingProject?.id}`);
+                            toast.success("링크가 복사되었습니다!");
+                        }}
+                        className="bg-orange-600 hover:bg-orange-700 text-white w-12 h-12 p-0 rounded-xl bevel-sm"
+                    >
+                        <Copy size={16} />
+                    </Button>
+                  </div>
+               </div>
+            </div>
+
+            <Button onClick={() => setShareModalOpen(false)} className="w-full h-16 bg-chef-text text-chef-bg font-black rounded-2xl bevel-cta">
+              닫기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Share Modal */}
+      <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
+        <DialogContent className="max-w-md bg-chef-card border-chef-border text-chef-text rounded-[2.5rem] p-10 overflow-hidden">
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
+              <h3 className="text-3xl font-black tracking-tighter uppercase italic">프로젝트 공유</h3>
+              <p className="text-xs font-bold text-chef-text opacity-40 uppercase tracking-widest">링크 또는 QR코드로 공유하세요</p>
+            </div>
+
+            <div className="flex flex-col items-center gap-6 p-8 bg-chef-panel rounded-[2rem] border border-chef-border/50">
+               <div className="p-4 bg-white rounded-2xl shadow-2xl">
+                  <QRCodeCanvas 
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                    size={200}
+                    level="H"
+                    includeMargin={false}
+                  />
+               </div>
+               <div className="w-full space-y-3">
+                  <Label className="text-[10px] font-black opacity-30 uppercase tracking-widest">평가 참여 링크</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                        readOnly 
+                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                        className="flex-1 bg-chef-card border-chef-border h-12 text-xs font-bold"
+                    />
+                    <Button 
+                        onClick={() => {
+                            if (typeof window !== 'undefined') {
+                                navigator.clipboard.writeText(`${window.location.origin}/review/viewer?id=${sharingProject?.id}`);
+                                toast.success("링크가 복사되었습니다!");
+                            }
+                        }}
+                        className="bg-orange-600 hover:bg-orange-700 text-white w-12 h-12 p-0 rounded-xl bevel-sm shrink-0"
+                    >
+                        <Copy size={16} />
+                    </Button>
+                  </div>
+               </div>
+            </div>
+
+            <Button onClick={() => setShareModalOpen(false)} className="w-full h-16 bg-chef-text text-chef-bg font-black rounded-2xl bevel-cta">
+              닫기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

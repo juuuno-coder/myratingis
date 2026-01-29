@@ -455,9 +455,11 @@
   /* Tailwind 스타일 연동 유틸리티 */
   .text-chef-text { color: var(--chef-text); }
   .bg-chef-bg { background-color: var(--chef-bg); }
+  .bg-chef-text { background-color: var(--chef-text); }
   .bg-chef-card { background-color: var(--chef-card-bg); }
   .bg-chef-panel { background-color: var(--chef-panel); }
   .border-chef-border { border-color: var(--chef-border); }
+  .bg-chef-frame { background-color: var(--chef-frame); }
 
   .dark .chef-bg-dark {
     background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('/dark-texture-bg.jpg');
@@ -665,6 +667,7 @@
       0 calc(100% - 6px), 
       0 6px
     );
+    filter: drop-shadow(0 0 0.5px var(--chef-border));
   }
 
   .bevel-sm {
@@ -678,6 +681,7 @@
       0 calc(100% - 3px), 
       0 3px
     );
+    filter: drop-shadow(0 0 0.5px var(--chef-border));
   }
 
   .bevel-section {
@@ -691,6 +695,7 @@
       0 calc(100% - 12px), 
       0 12px
     );
+    filter: drop-shadow(0 0 0.5px var(--chef-border));
   }
 }
 

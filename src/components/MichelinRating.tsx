@@ -81,7 +81,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
         
         const customCategories = data.project?.custom_data?.audit_config?.categories || data.project?.custom_data?.custom_categories;
         
-        if (customCategories) {
+        if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
           const custom = customCategories.map((c: any) => ({
             ...c,
             icon: ICON_MAP[c.icon] || Target
@@ -89,15 +89,15 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
           setCategories(custom);
           
           const initialScores: Record<string, number> = {};
-          custom.forEach((c: any) => initialScores[c.id] = 0);
-          
-          if (data.myRating) {
-            custom.forEach((c: any) => {
-              initialScores[c.id] = Number(data.myRating[c.id] || 0);
-            });
-          }
+          custom.forEach((c: any) => {
+            initialScores[c.id] = data.myRating ? Number(data.myRating[c.id] || 0) : 0;
+          });
           setScores(initialScores);
-          setAverages(data.averages || {});
+        } else {
+          // Fallback to default but ensure state is fresh
+          setCategories(DEFAULT_CATEGORIES);
+        }
+        setAverages(data.averages || {});
         } else {
           const initial: Record<string, number> = {};
           DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
@@ -195,16 +195,47 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       return Math.round(rawScore * 10) / 10;
   };
 
-  const handlePointerDown = (e: React.PointerEvent<Element>, categoryId: string) => {
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
       e.preventDefault();
-      // Cast target to Element to allow setPointerCapture
+      if (!svgRef.current) return;
+
+      const rect = svgRef.current.getBoundingClientRect();
+      const scaleX = CHART_SIZE / rect.width;
+      const scaleY = CHART_SIZE / rect.height;
+      const mouseX = (e.clientX - rect.left) * scaleX;
+      const mouseY = (e.clientY - rect.top) * scaleY;
+      
+      const vX = mouseX - CENTER;
+      const vY = mouseY - CENTER;
+      const dist = Math.sqrt(vX * vX + vY * vY);
+      
+      // If clicking near center, we need to pick based on angle
+      // If clicking further out, we can still use angle or proximity.
+      // Mouse angle from -PI to PI
+      const mouseAngle = Math.atan2(vY, vX);
+      
+      // Normalize to 0..2PI and align with our -PI/2 starting point
+      let normalizedAngle = (mouseAngle + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
+      
+      let closestIdx = 0;
+      let minDiff = Infinity;
+      
+      categories.forEach((_, i) => {
+          const axisAngle = (Math.PI * 2 * i) / categories.length;
+          let diff = Math.abs(normalizedAngle - axisAngle);
+          if (diff > Math.PI) diff = Math.PI * 2 - diff;
+          if (diff < minDiff) {
+              minDiff = diff;
+              closestIdx = i;
+          }
+      });
+
+      const targetId = categories[closestIdx].id;
+      setDraggingCategory(targetId);
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
-      setDraggingCategory(categoryId);
-      // We can't call handlePointerMove directly if types mismatch too much, but here logic is fine if we use Element
-      // Actually handlePointerMove expects SVGSVGElement logic for rect. 
-      // But handlePointerMove uses svgRef.current to get rect, so e.currentTarget is not used for rect.
-      // e.clientX is available on PointerEvent<Element>.
-      handlePointerMove(e, categoryId); 
+      
+      // Force immediate update
+      handlePointerMove(e, targetId); 
   };
 
   const handlePointerMove = (e: React.PointerEvent<Element>, categoryId?: string) => {
@@ -295,25 +326,36 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       
       return (
           <g key={c.id}>
-             {/* Interaction Target */}
-             <circle
-               cx={p.x}
-               cy={p.y}
-               r={30} // Even larger for mobile ease
-               fill="transparent"
-               className="cursor-pointer touch-none"
-               onPointerDown={(e) => handlePointerDown(e, c.id)}
-             />
-             {/* Visual Dot */}
-             <circle
-               cx={p.x}
-               cy={p.y}
-               r={isActive ? 8 : 5}
-               fill={c.color || '#f59e0b'}
-               stroke="white"
-               strokeWidth={2}
-               className={cn("pointer-events-none transition-all duration-75", isActive && "scale-125")}
-             />
+              {/* Interaction Target (Enlarged) */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={40} 
+                fill="transparent"
+                className="cursor-pointer touch-none"
+              />
+              {/* Visual Dot */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={isActive ? 10 : 6}
+                fill={c.color || '#f59e0b'}
+                stroke="white"
+                strokeWidth={isActive ? 3 : 2}
+                className={cn("pointer-events-none transition-all duration-150 ease-out", isActive && "filter drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]")}
+              />
+              {isActive && (
+                <circle
+                   cx={p.x}
+                   cy={p.y}
+                   r={18}
+                   fill="none"
+                   stroke={c.color || '#f59e0b'}
+                   strokeWidth={1}
+                   strokeDasharray="4 2"
+                   className="animate-spin-slow pointer-events-none"
+                />
+              )}
              
              {/* Label */}
              {(() => {
@@ -418,12 +460,13 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
     <div className="w-full relative overflow-hidden group">
       <div className="flex flex-col gap-12 items-center w-full min-h-[460px]">
         {/* Interactive Radar Chart */}
-        <div className="relative w-full max-w-[400px] aspect-square flex justify-center items-center py-4 select-none touch-none">
+        <div className="relative w-full max-w-[400px] aspect-square flex justify-center items-center py-10 select-none touch-none">
             {mounted ? (
                 <svg 
                     ref={svgRef}
                     viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`} 
-                    className="w-full h-full drop-shadow-xl"
+                    className="w-full h-full drop-shadow-xl overflow-visible"
+                    onPointerDown={handlePointerDown}
                     onPointerMove={(e) => draggingCategory && handlePointerMove(e)}
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerUp}

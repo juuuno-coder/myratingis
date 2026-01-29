@@ -211,9 +211,9 @@ export default function ReportPage() {
                <div className="h-[400px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={reportStats?.radarData}>
-                      <PolarGrid stroke="#ffffff10" />
+                      <PolarGrid stroke="#ffffff10" radialLines={false} gridType="polygon" />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: '#ffffff40', fontSize: 12, fontWeight: 'bold' }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
+                      <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
                       <Radar
                         name="Avg Score"
                         dataKey="value"
@@ -478,7 +478,7 @@ export default function ReportPage() {
                                 Object.entries(r.custom_answers || {}).map(([q, a], qIdx) => (
                                     <div key={qIdx} className="space-y-2 group/q">
                                        <div className="flex items-center gap-2">
-                                          <span className="text-[10px] font-black text-orange-500/60 uppercase tracking-widest px-2 py-0.5 bg-orange-500/5 rounded border border-orange-500/10">Question {qIdx + 1}</span>
+                                          <span className="text-[10px] font-black text-orange-500/60 uppercase tracking-widest px-2 py-0.5 bg-orange-500/5 rounded border border-orange-500/10">질문 {qIdx + 1}</span>
                                           <div className="h-px flex-1 bg-white/5" />
                                        </div>
                                        <p className="text-xs font-bold text-white/60 leading-relaxed italic group-hover/q:text-white/80 transition-colors">"{q}"</p>
@@ -498,7 +498,7 @@ export default function ReportPage() {
                             {hasProposal && (
                                 <div className="space-y-4 pt-4">
                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] font-black text-blue-400/60 uppercase tracking-widest px-2 py-0.5 bg-blue-400/5 rounded border border-blue-400/10">Comprehensive Opinion</span>
+                                      <span className="text-[10px] font-black text-blue-400/60 uppercase tracking-widest px-2 py-0.5 bg-blue-400/5 rounded border border-blue-400/10">종합 평가 의견</span>
                                       <div className="h-px flex-1 bg-white/5" />
                                    </div>
                                    <div className="bg-gradient-to-br from-white/5 to-white/[0.02] p-6 rounded-[2rem] text-sm font-medium leading-relaxed italic text-orange-100 border border-white/10 shadow-inner">
@@ -510,7 +510,7 @@ export default function ReportPage() {
 
                          {/* Result Badge or Stats if any */}
                          <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[10px] uppercase font-black tracking-widest text-white/20">
-                            <span>Expert Verification Level A+</span>
+                            <span>전문가 검증 레벨 A+</span>
                             <span>{new Date(r.created_at).toLocaleDateString()}</span>
                          </div>
                       </motion.div>

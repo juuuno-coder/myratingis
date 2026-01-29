@@ -22,22 +22,25 @@ export async function GET(request: NextRequest) {
     // Use microlink for reliable preview and screenshot
     const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=true&embed=screenshot.url`;
     
-    const response = await fetch(microlinkUrl);
-    const data = await response.json();
+    try {
+      const response = await fetch(microlinkUrl, { signal: AbortSignal.timeout(5000) });
+      const data = await response.json();
 
-    if (data.status === 'success') {
-       return NextResponse.json({
-         title: data.data.title,
-         description: data.data.description,
-         // Use screenshot or fallback to image
-         image: data.data.screenshot?.url || data.data.image?.url
-       });
-    } else {
-       // Fallback for fail
-       return NextResponse.json({ error: 'Failed to fetch preview' }, { status: 500 });
+      if (data.status === 'success') {
+         return NextResponse.json({
+           title: data.data.title,
+           description: data.data.description,
+           image: data.data.screenshot?.url || data.data.image?.url
+         });
+      }
+    } catch (e) {
+      console.warn('Microlink failed:', e);
     }
+
+    // Fallback for fail - return success with empty info to stop client retries or 500 errors
+    return NextResponse.json({ title: '', description: '', image: '' });
   } catch (error: any) {
     console.error('OG Preview Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ title: '', description: '', image: '' });
   }
 }

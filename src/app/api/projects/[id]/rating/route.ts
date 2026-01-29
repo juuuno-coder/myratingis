@@ -38,8 +38,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (error) throw error;
 
     // Determine Categories
-    const categories = project?.custom_data?.custom_categories || [
-      { id: 'score_1' }, { id: 'score_2' }, { id: 'score_3' }, { id: 'score_4' }
+    const categories = project?.custom_data?.audit_config?.categories || project?.custom_data?.custom_categories || [
+      { id: 'score_1', label: '기획력' }, 
+      { id: 'score_2', label: '완성도' }, 
+      { id: 'score_3', label: '독창성' }, 
+      { id: 'score_4', label: '상업성' }
     ];
     const catIds = categories.map((c: any) => c.id);
 
@@ -55,8 +58,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       catIds.forEach((id: string) => sums[id] = 0);
 
       allRatings.forEach((curr: any) => {
-        catIds.forEach((id: string) => {
-          sums[id] += (Number(curr[id]) || 0);
+        catIds.forEach((id: string, idx: number) => {
+          // Map score_1...6 columns to category ids by order
+          const columnName = `score_${idx + 1}`;
+          sums[id] += (Number(curr[columnName]) || Number(curr[id]) || 0);
         });
       });
 
@@ -68,12 +73,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       totalAvg = Number((sumAvgs / catIds.length).toFixed(1));
     }
 
-    // 3. Fetch My Rating
-    let myRating = null;
+    // 3. Map My Rating to include category ids
+    let myRating: any = null;
+    let rawMyRating = null;
     if (userId) {
-      myRating = allRatings.find((r: any) => r.user_id === userId) || null;
+      rawMyRating = allRatings.find((r: any) => r.user_id === userId) || null;
     } else if (guestId) {
-      myRating = allRatings.find((r: any) => r.guest_id === guestId) || null;
+      rawMyRating = allRatings.find((r: any) => r.guest_id === guestId) || null;
+    }
+
+    if (rawMyRating) {
+        myRating = { ...rawMyRating };
+        catIds.forEach((id: string, idx: number) => {
+            const columnName = `score_${idx + 1}`;
+            myRating[id] = Number(rawMyRating[columnName]) || Number(rawMyRating[id]) || 0;
+        });
     }
 
     // 4. Check Visibility
@@ -147,18 +161,32 @@ export async function POST(
         .maybeSingle();
 
       // 2. Prepare Balanced Update Data (Merge)
+      // Get project categories to map IDs to columns
+      const { data: project } = await supabaseAdmin.from('Project').select('custom_data').eq('project_id', Number(projectId)).single();
+      const categories = project?.custom_data?.audit_config?.categories || project?.custom_data?.custom_categories || [
+        { id: 'score_1' }, { id: 'score_2' }, { id: 'score_3' }, { id: 'score_4' }
+      ];
+
+      const mappedScores: any = {};
+      categories.forEach((cat: any, idx: number) => {
+          const val = body[cat.id] ?? body[`score_${idx+1}`];
+          if (val !== undefined) {
+              mappedScores[`score_${idx+1}`] = parseFloat(val);
+          }
+      });
+
       const updateData = {
           project_id: Number(projectId),
           user_id: userId,
           guest_id: userId ? null : guest_id,
-          score: score !== undefined ? score : existingRating?.score,
-          // Merge logic: use new value if provided, else keep existing, else default to 0
-          score_1: (scores?.score_1 ?? body.score_1) ?? existingRating?.score_1 ?? 0,
-          score_2: (scores?.score_2 ?? body.score_2) ?? existingRating?.score_2 ?? 0,
-          score_3: (scores?.score_3 ?? body.score_3) ?? existingRating?.score_3 ?? 0,
-          score_4: (scores?.score_4 ?? body.score_4) ?? existingRating?.score_4 ?? 0,
-          score_5: (scores?.score_5 ?? body.score_5) ?? existingRating?.score_5 ?? 0,
-          score_6: (scores?.score_6 ?? body.score_6) ?? existingRating?.score_6 ?? 0,
+          score: score !== undefined ? score : (existingRating?.score || 0),
+          // Map scores to score_1...6 columns
+          score_1: mappedScores.score_1 ?? existingRating?.score_1 ?? 0,
+          score_2: mappedScores.score_2 ?? existingRating?.score_2 ?? 0,
+          score_3: mappedScores.score_3 ?? existingRating?.score_3 ?? 0,
+          score_4: mappedScores.score_4 ?? existingRating?.score_4 ?? 0,
+          score_5: mappedScores.score_5 ?? existingRating?.score_5 ?? 0,
+          score_6: mappedScores.score_6 ?? existingRating?.score_6 ?? 0,
           proposal: proposal !== undefined ? proposal : existingRating?.proposal,
           custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
           updated_at: new Date().toISOString()

@@ -118,7 +118,7 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
                transition={{ delay: 0.6 }}
                className="space-y-2 md:space-y-3"
              >
-                <h4 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-lg mx-auto px-4">
+                <h4 className="text-xl md:text-2xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-lg mx-auto px-4">
                   {project.summary || project.description || "당신을 위해 준비된 미지의 과제"}
                 </h4>
              </motion.div>
@@ -463,7 +463,7 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse" />
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Stage 01. Star Rating</span>
              </div>
-             <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">평점 평가</h3>
+             <h3 className="text-2xl font-black text-chef-text tracking-tighter italic uppercase">평점 평가</h3>
              <p className="text-chef-text opacity-40 font-bold uppercase tracking-widest text-[10px]">각 지표별 슬라이더를 조절하여 점수를 매겨주세요</p>
            </div>
            
@@ -483,7 +483,7 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Stage 02. Sticker Decision</span>
             </div>
-            <h3 className="text-2xl font-black text-chef-text tracking-tighter italic uppercase">판정 투표</h3>
+            <h3 className="text-xl font-black text-chef-text tracking-tighter italic uppercase">판정 투표</h3>
             <p className="text-xs text-chef-text opacity-50 font-black tracking-tight leading-snug max-w-sm mx-auto">{project?.custom_data?.audit_config?.poll?.desc || "현업 마스터의 냉정한 피드백"}</p>
           </div>
           
@@ -504,7 +504,7 @@ function ViewerContent() {
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Stage 03. Depth Feedback</span>
             </div>
-            <h3 className="text-3xl font-black text-chef-text tracking-tighter italic uppercase">종합 의견</h3>
+            <h3 className="text-2xl font-black text-chef-text tracking-tighter italic uppercase">종합 의견</h3>
             <p className="text-sm text-chef-text opacity-40 font-black tracking-widest uppercase">작가를 위해 더 날카롭고 따뜻한 조언을 남겨주세요.</p>
           </div>
           
