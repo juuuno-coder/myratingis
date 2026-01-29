@@ -368,7 +368,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                           </button>
                       </div>
 
-                      {p.has_rated ? (
+                      {p.has_rated && isAuthenticated ? (
                         <Button 
                           onClick={() => router.push(`/report/${p.project_id}`)}
                           className="h-14 rounded-2xl bevel-cta bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-green-600/10"
@@ -398,7 +398,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                          </Button>
                       )}
 
-                      {!p.has_rated && (
+                      {(!p.has_rated || !isAuthenticated) && (
                         <p className="text-[9px] text-center font-bold text-orange-600 opacity-40 uppercase tracking-tighter mt-1 animate-pulse">
                           의견이 필요합니다!
                         </p>

@@ -1053,8 +1053,8 @@ export default function MyPage() {
 
             <div className="flex flex-col items-center gap-6 p-8 bg-chef-panel rounded-[2rem] border border-chef-border/50">
                <div className="p-4 bg-white rounded-2xl shadow-2xl">
-                  <QRCodeCanvas 
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                   <QRCodeCanvas 
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?projectId=${sharingProject?.id}`} 
                     size={200}
                     level="H"
                     includeMargin={false}
@@ -1065,62 +1065,15 @@ export default function MyPage() {
                   <div className="flex gap-2">
                     <Input 
                         readOnly 
-                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
+                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?projectId=${sharingProject?.id}`} 
                         className="flex-1 bg-chef-card border-chef-border h-12 text-xs font-bold"
                     />
                     <Button 
                         onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/review/viewer?id=${sharingProject?.id}`);
+                            navigator.clipboard.writeText(`${window.location.origin}/review/viewer?projectId=${sharingProject?.id}`);
                             toast.success("링크가 복사되었습니다!");
                         }}
                         className="bg-orange-600 hover:bg-orange-700 text-white w-12 h-12 p-0 rounded-xl bevel-sm"
-                    >
-                        <Copy size={16} />
-                    </Button>
-                  </div>
-               </div>
-            </div>
-
-            <Button onClick={() => setShareModalOpen(false)} className="w-full h-16 bg-chef-text text-chef-bg font-black rounded-2xl bevel-cta">
-              닫기
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      {/* Share Modal */}
-      <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
-        <DialogContent className="max-w-md bg-chef-card border-chef-border text-chef-text rounded-[2.5rem] p-10 overflow-hidden">
-          <div className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-3xl font-black tracking-tighter uppercase italic">프로젝트 공유</h3>
-              <p className="text-xs font-bold text-chef-text opacity-40 uppercase tracking-widest">링크 또는 QR코드로 공유하세요</p>
-            </div>
-
-            <div className="flex flex-col items-center gap-6 p-8 bg-chef-panel rounded-[2rem] border border-chef-border/50">
-               <div className="p-4 bg-white rounded-2xl shadow-2xl">
-                  <QRCodeCanvas 
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
-                    size={200}
-                    level="H"
-                    includeMargin={false}
-                  />
-               </div>
-               <div className="w-full space-y-3">
-                  <Label className="text-[10px] font-black opacity-30 uppercase tracking-widest">평가 참여 링크</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                        readOnly 
-                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/review/viewer?id=${sharingProject?.id}`} 
-                        className="flex-1 bg-chef-card border-chef-border h-12 text-xs font-bold"
-                    />
-                    <Button 
-                        onClick={() => {
-                            if (typeof window !== 'undefined') {
-                                navigator.clipboard.writeText(`${window.location.origin}/review/viewer?id=${sharingProject?.id}`);
-                                toast.success("링크가 복사되었습니다!");
-                            }
-                        }}
-                        className="bg-orange-600 hover:bg-orange-700 text-white w-12 h-12 p-0 rounded-xl bevel-sm shrink-0"
                     >
                         <Copy size={16} />
                     </Button>
