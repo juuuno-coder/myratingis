@@ -60,7 +60,10 @@ export async function middleware(request: NextRequest) {
     );
 
     // Refresh session if needed
-    await supabase.auth.getUser();
+    // Skip this on the callback route where the exchange is handled specifically
+    if (!request.nextUrl.pathname.startsWith('/auth/callback')) {
+      await supabase.auth.getUser();
+    }
 
   } catch (e) {
     // If Supabase client fails (e.g. env vars missing during build time for static generation),

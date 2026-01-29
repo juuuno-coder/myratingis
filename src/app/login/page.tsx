@@ -9,6 +9,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,15 @@ function LoginContent() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      const returnTo = searchParams.get("returnTo") || "/";
+      router.push(returnTo);
+    }
+  }, [isAuthenticated, authLoading, router, searchParams]);
 
   useEffect(() => {
     const errorParam = searchParams.get("error");

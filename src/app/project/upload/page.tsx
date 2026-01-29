@@ -45,7 +45,7 @@ const STICKER_PRESETS: Record<string, any[]> = {
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, userProfile, loading: authLoading, isAdmin } = useAuth();
+  const { user, session, userProfile, loading: authLoading, isAdmin } = useAuth();
   
   // 1. Move ALL Hooks to the top (Before any early returns)
   const [rewardType, setRewardType] = useState<'none' | 'point' | 'coupon'>('none');
@@ -181,13 +181,13 @@ export default function ProjectUploadPage() {
 
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) {
+      if (!session) {
         toast.error("로그인이 필요합니다.");
         router.push("/login?returnTo=/project/upload");
         return;
       }
+
+      const token = session.access_token;
 
       const projectData = {
         title,
@@ -448,8 +448,8 @@ export default function ProjectUploadPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-black text-chef-text opacity-20">{customCategories.length}/6</span>
-            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 6} className="bevel-sm border-chef-border h-10 font-black text-chef-text bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[10px] tracking-widest px-4 uppercase transition-all">
+            <span className="text-xs font-black text-chef-text opacity-20">{customCategories.length}/10</span>
+            <Button variant="outline" onClick={() => setCustomCategories([...customCategories, { id: `cat-${Date.now()}`, label: "", desc: "" }])} disabled={customCategories.length >= 10} className="bevel-sm border-chef-border h-10 font-black text-chef-text bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[10px] tracking-widest px-4 uppercase transition-all">
               <FontAwesomeIcon icon={faPlus} className="mr-2" /> 항목 추가
             </Button>
           </div>
@@ -529,25 +529,43 @@ export default function ProjectUploadPage() {
             {pollOptions.map((opt, idx) => (
               <div key={idx} className="chef-menu-card group">
                 {/* 상단 이미지 영역 */}
-                <label className="w-full aspect-[4/3] bg-chef-panel border-b border-chef-border flex items-center justify-center cursor-pointer overflow-hidden relative group/img">
-                  {opt.image_url ? (
-                    <img src={opt.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
-                  ) : (
-                    <FontAwesomeIcon icon={faCamera} className="text-chef-text opacity-10 text-3xl" />
-                  )}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
-                    <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">이미지 선택</span>
-                  </div>
-                  <input type="file" className="hidden" onChange={async e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const url = await uploadImage(file);
-                      const next = [...pollOptions];
-                      next[idx].image_url = url;
-                      setPollOptions(next);
-                    }
-                  }} />
-                </label>
+                <div className="relative group/img">
+                  <label 
+                    htmlFor={`sticker-upload-${idx}`}
+                    className="w-full aspect-[4/3] bg-chef-panel border-b border-chef-border flex items-center justify-center cursor-pointer overflow-hidden relative"
+                  >
+                    {opt.image_url ? (
+                      <img src={opt.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
+                    ) : (
+                      <FontAwesomeIcon icon={faCamera} className="text-chef-text opacity-10 text-3xl" />
+                    )}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
+                      <span className="text-[10px] text-white font-black uppercase tracking-widest border border-white/20 px-4 py-2">이미지 선택</span>
+                    </div>
+                  </label>
+                  <input 
+                    id={`sticker-upload-${idx}`}
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={async e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const toastId = toast.loading(`${idx + 1}번 스티커 이미지 업로드 중...`);
+                        try {
+                          const url = await uploadImage(file);
+                          const next = [...pollOptions];
+                          next[idx].image_url = url;
+                          setPollOptions(next);
+                          toast.success("업로드 완료!", { id: toastId });
+                        } catch (err: any) {
+                          console.error("Sticker upload error:", err);
+                          toast.error("업로드 실패: " + (err.message || "알 수 없는 오류"), { id: toastId });
+                        }
+                      }
+                    }} 
+                  />
+                </div>
 
                 {/* 하단 90% 블랙 불투명 영역 */}
                 <div className="chef-menu-bottom min-h-[160px] py-6 px-4">
@@ -629,8 +647,8 @@ export default function ProjectUploadPage() {
               />
             </div>
           ))}
-          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 3} className="w-full h-16 bevel-cta border border-dashed border-chef-border text-chef-text opacity-20 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 font-black uppercase tracking-widest transition-all">
-            <FontAwesomeIcon icon={faPlus} className="mr-3" /> 새 질문 추가하기 (최대 3개)
+          <Button variant="ghost" onClick={() => setAuditQuestions([...auditQuestions, ""])} disabled={auditQuestions.length >= 6} className="w-full h-16 bevel-cta border border-dashed border-chef-border text-chef-text opacity-20 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 font-black uppercase tracking-widest transition-all">
+            <FontAwesomeIcon icon={faPlus} className="mr-3" /> 새 질문 추가하기 (최대 6개)
           </Button>
         </div>
       </section>

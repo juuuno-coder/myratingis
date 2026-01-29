@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 export interface MichelinRatingRef {
   submit: () => Promise<boolean>;
@@ -34,6 +35,7 @@ const ICON_MAP: Record<string, any> = {
 
 export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRatingProps>(
   ({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId, onChange }, ref) => {
+  const { session } = useAuth();
   const [projectData, setProjectData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -43,7 +45,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   const [isEditing, setIsEditing] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Chart Interaction State
   const svgRef = useRef<SVGSVGElement>(null);
   const [draggingCategory, setDraggingCategory] = useState<string | null>(null);
 
@@ -66,7 +67,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   const fetchRatingData = async () => {
     if (isDemo) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const headers: any = {};
       if (session) headers['Authorization'] = `Bearer ${session.access_token}`;
       
@@ -79,28 +79,37 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       if (data.success && data.project) {
         setProjectData(data.project);
         
-        // 1. 카테고리 파싱 (문자열인 경우 처리 추가)
         let rawCustom = data.project.custom_data;
         if (typeof rawCustom === 'string') {
           try { rawCustom = JSON.parse(rawCustom); } catch (e) { rawCustom = {}; }
         }
         
-        const customCategories = rawCustom?.audit_config?.categories || rawCustom?.custom_categories;
+        // 1. Robust Category Search (Checking all potential paths)
+        const customCategories = 
+            rawCustom?.audit_config?.categories || 
+            rawCustom?.categories || 
+            rawCustom?.custom_categories || 
+            data.project.categories; 
         
         if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
-          const custom = customCategories.map((c: any) => ({
-            ...c,
-            icon: ICON_MAP[c.icon] || Target
+          console.log(`[MichelinRating] Loaded ${customCategories.length} custom categories`);
+          const custom = customCategories.map((c: any, idx: number) => ({
+            id: c.id || `score_${idx + 1}`,
+            label: c.label || c.name || `지표 ${idx + 1}`,
+            icon: ICON_MAP[c.icon] || Target,
+            color: c.color || DEFAULT_CATEGORIES[idx % DEFAULT_CATEGORIES.length].color,
+            desc: c.desc || c.description || '',
+            sticker: c.sticker || DEFAULT_CATEGORIES[idx % DEFAULT_CATEGORIES.length].sticker
           }));
           setCategories(custom);
           
           const initialScores: Record<string, number> = {};
           custom.forEach((c: any) => {
-            initialScores[c.id] = data.myRating ? Number(data.myRating[c.id] || data.myRating[c.label] || 0) : 0;
+            initialScores[c.id] = data.myRating ? Number(data.myRating[c.id] || 0) : 0;
           });
           setScores(initialScores);
         } else {
-          // Fallback to default
+          console.log(`[MichelinRating] Using Default Categories (4 items)`);
           setCategories(DEFAULT_CATEGORIES);
           const initial: Record<string, number> = {};
           DEFAULT_CATEGORIES.forEach(c => {
@@ -122,23 +131,22 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
           
           if (!sError && specificRating) {
             const updatedScores: Record<string, number> = {};
-            // current categories might be updated by now
             const cats = (customCategories && Array.isArray(customCategories)) ? customCategories : DEFAULT_CATEGORIES;
             cats.forEach((c: any) => {
-              updatedScores[c.id] = Number(specificRating[c.id] || 0);
+               updatedScores[c.id] = Number(specificRating[c.id] || 0);
             });
             setScores(updatedScores);
           }
         }
       }
     } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return;
       console.error("[MichelinRating] Failed to load ratings:", e);
     }
   };
 
   useEffect(() => {
     if (projectId) {
-        console.log("[MichelinRating] Fetching for Project:", projectId);
         fetchRatingData();
     }
     else if (isDemo) {
@@ -146,7 +154,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
         DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
         setScores(initial);
     }
-  }, [projectId, guestId]);
+  }, [projectId, guestId, session]);
 
   const isAllRated = () => {
     return categories.every(cat => (scores[cat.id] || 0) > 0);
@@ -167,36 +175,18 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
     isValid: isAllRated
   }));
 
-  // --- Interactive Chart Logic ---
-  const CHART_SIZE = 400; // viewBox size
+  const CHART_SIZE = 400; 
   const CENTER = CHART_SIZE / 2;
-  const RADIUS = 140; // Max radius for value 5
+  const RADIUS = 140; 
   
   const valueToPoint = (val: number, index: number, total: number) => {
       const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
-      const INNER_RADIUS = 12; // Offset center for easier grabbing
+      const INNER_RADIUS = 12; 
       const r = INNER_RADIUS + (val / 5) * (RADIUS - INNER_RADIUS);
       return {
           x: CENTER + r * Math.cos(angle),
           y: CENTER + r * Math.sin(angle)
       };
-  };
-
-  const calculateScoreFromPoint = (x: number, y: number, categoryIndex: number, total: number) => {
-      const dx = x - CENTER;
-      const dy = y - CENTER;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      // Calculate angle to ensure we are somewhat close to the axis (optional, but good for UX)
-      // For now, simpler: map distance along the axis.
-      // Actually simple distance is enough because we snap to axis.
-      
-      // Max dist RADIUS = 5.0
-      let rawScore = (dist / RADIUS) * 5;
-      if (rawScore > 5) rawScore = 5;
-      if (rawScore < 0) rawScore = 0;
-      
-      return Math.round(rawScore * 10) / 10;
   };
 
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -211,14 +201,8 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       
       const vX = mouseX - CENTER;
       const vY = mouseY - CENTER;
-      const dist = Math.sqrt(vX * vX + vY * vY);
-      
-      // If clicking near center, we need to pick based on angle
-      // If clicking further out, we can still use angle or proximity.
-      // Mouse angle from -PI to PI
       const mouseAngle = Math.atan2(vY, vX);
       
-      // Normalize to 0..2PI and align with our -PI/2 starting point
       let normalizedAngle = (mouseAngle + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
       
       let closestIdx = 0;
@@ -237,8 +221,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       const targetId = categories[closestIdx].id;
       setDraggingCategory(targetId);
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
-      
-      // Force immediate update
       handlePointerMove(e, targetId); 
   };
 
@@ -253,11 +235,9 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       const mouseX = (e.clientX - rect.left) * scaleX;
       const mouseY = (e.clientY - rect.top) * scaleY;
 
-      // Find index
       const index = categories.findIndex(c => c.id === targetId);
       if (index === -1) return;
 
-      // Project mouse point onto the axis line
       const angle = (Math.PI * 2 * index) / categories.length - Math.PI / 2;
       const axisX = Math.cos(angle);
       const axisY = Math.sin(angle);
@@ -282,8 +262,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       setDraggingCategory(null);
   };
 
-  // Generate Polygons
-  const getPolygonPoints = (scale: number) => { // scale 0 to 1
+  const getPolygonPoints = (scale: number) => { 
       const val = scale * 5;
       return categories.map((_, i) => {
           const p = valueToPoint(val, i, categories.length);
@@ -301,7 +280,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       return `${p.x},${p.y}`;
   }).join(" ");
   
-  // Generate Axes Lines
   const axes = categories.map((c, i) => {
       const INNER_RADIUS = 12;
       const start = {
@@ -323,14 +301,12 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       );
   });
 
-  // Generate Interactive Handles (invisible larger targets)
   const handles = categories.map((c, i) => {
       const p = valueToPoint(scores[c.id] || 0, i, categories.length);
       const isActive = draggingCategory === c.id;
       
       return (
           <g key={c.id}>
-              {/* Interaction Target (Enlarged) */}
               <circle
                 cx={p.x}
                 cy={p.y}
@@ -338,7 +314,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                 fill="transparent"
                 className="cursor-pointer touch-none"
               />
-              {/* Visual Dot */}
               <circle
                 cx={p.x}
                 cy={p.y}
@@ -360,8 +335,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                    className="animate-spin-slow pointer-events-none"
                 />
               )}
-             
-             {/* Label */}
              {(() => {
                 const labelPos = valueToPoint(6.2, i, categories.length);
                 return (
@@ -380,24 +353,12 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       );
   });
 
-
-  // --- Render ---
-
-  // Standard Render (Categories + Sliders)
-  // ... (keeping existing render logic for sliders below chart)
-
   const activeCategory = typeof activeCategoryIndex === 'number' ? categories[activeCategoryIndex] : null;
 
   if (activeCategory) {
-    // Keep single category view mostly same, but maybe simpler chart?
-    // Actually the user asks for drag drop UI, usually referring to the full chart.
-    // For single view, we just use the slider as it is easy.
     return (
       <div className="w-full space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
-         {/* ... (Keep existing Single Category View UI) ... */}
-         {/* Reusing the code from original file for Single View */}
          <div className="flex flex-col items-center gap-6">
-           {/* ... Header ... */}
            <div className="relative group">
               <div className="w-32 h-32 rounded-[2.5rem] bg-chef-text text-chef-bg flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 duration-500">
                  {activeCategory.sticker ? (
@@ -441,7 +402,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                      }} 
                    />
                 </div>
-               
                <input 
                   type="range" 
                   min="0" 
@@ -463,7 +423,6 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
   return (
     <div className="w-full relative overflow-hidden group">
       <div className="flex flex-col gap-12 items-center w-full min-h-[460px]">
-        {/* Interactive Radar Chart */}
         <div className="relative w-full max-w-[400px] aspect-square flex justify-center items-center py-10 select-none touch-none">
             {mounted ? (
                 <svg 
@@ -475,22 +434,15 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerUp}
                 >
-                    {/* Background Grid Polygons */}
-                    <polygon points={getPolygonPoints(1.0)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <polygon points={getPolygonPoints(0.8)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <polygon points={getPolygonPoints(0.6)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <polygon points={getPolygonPoints(0.4)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <polygon points={getPolygonPoints(0.2)} fill="none" stroke="#e2e8f0" strokeDasharray="3 3" />
-                    
-                    {/* Axes */}
+                    <polygon points={getPolygonPoints(1.0)} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    <polygon points={getPolygonPoints(0.8)} fill="none" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.6)} fill="none" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.4)} fill="none" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+                    <polygon points={getPolygonPoints(0.2)} fill="none" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
                     {axes}
-                    
-                    {/* Community Avg Polygon */}
                     {totalAvg > 0 && (
                         <polygon points={avgPoints} fill="currentColor" fillOpacity={0.05} stroke="currentColor" strokeOpacity={0.2} className="text-chef-text" />
                     )}
-
-                    {/* My Score Polygon */}
                     <polygon 
                         points={myPoints} 
                         fill="#f59e0b" 
@@ -499,15 +451,12 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                         strokeWidth={4}
                         className="transition-all duration-75"
                     />
-
-                    {/* Interactive Handles */}
                     {handles}
                 </svg>
             ) : (
                 <div className="w-full h-full bg-chef-panel/20 animate-pulse rounded-full" />
             )}
            
-           {/* Center Score Badge -> Now Top Right */}
            <div className="absolute top-0 right-0 p-2 pointer-events-none">
               <div className="bg-chef-card/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-chef-border flex flex-col items-end transition-transform hover:scale-105">
                 <span className="text-4xl font-black text-chef-text tabular-nums leading-none mb-1">{currentTotalAvg.toFixed(1)}</span>
@@ -556,13 +505,11 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
                         }} 
                       />
                     </div>
-
                     <div className="absolute inset-0 flex justify-between px-1 pointer-events-none items-center">
                       {[0, 1, 2, 3, 4, 5].map(v => (
                         <div key={v} className={cn("w-[2px] h-2 transition-colors", (scores[cat.id] || 0) >= v ? "bg-white/40" : "bg-chef-text/10")} />
                       ))}
                     </div>
-
                     <input 
                       type="range" 
                       min="0" 

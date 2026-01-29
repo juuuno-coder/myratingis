@@ -43,7 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const isUpdatingRef = useRef(false);
   const initializedRef = useRef(false);
   const router = useRouter();
 
@@ -58,11 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const updateState = useCallback(async (s: Session | null, u: User | null) => {
-    // Only one update at a time to prevent race conditions during auth transitions
-    if (isUpdatingRef.current && u) return; 
-    isUpdatingRef.current = true;
+  const lastUpdateIdRef = useRef(0);
 
+  const updateState = useCallback(async (s: Session | null, u: User | null) => {
+    const updateId = ++lastUpdateIdRef.current;
+    
     try {
       setSession(s);
       setUser(u);
@@ -79,6 +78,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select('*') 
           .eq('id', u.id)
           .single();
+
+        // Only apply DB update if this is still the most recent update request
+        if (updateId !== lastUpdateIdRef.current) return;
 
         if (db) {
           const customImage = (db as any).profile_image_url || (db as any).avatar_url;
@@ -103,9 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.error("[AuthContext] Update state error:", e);
-      setLoading(false);
-    } finally {
-      isUpdatingRef.current = false;
+      // Ensure we clear loading even on error, but only if it's the latest update
+      if (updateId === lastUpdateIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [loadProfileFromMetadata]);
 
@@ -147,16 +150,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // Use onAuthStateChange as the primary source of truth.
-    // We wrap core logic in a non-async wrapper if needed, but async is okay if handled.
+    // Safety fallback: if no event fires within 10 seconds, clear loading
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 10000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, curSess) => {
-      console.log(`[AuthContext] Connection Event: ${event}`);
+      console.log(`[AuthContext] Auth Event: ${event}`);
+      clearTimeout(safetyTimeout);
       
-      // Handle session state
       if (['INITIAL_SESSION', 'SIGNED_IN', 'TOKEN_REFRESHED'].includes(event)) {
         updateState(curSess, curSess?.user || null);
         
-        // Background tasks only on SIGNED_IN
         if (event === 'SIGNED_IN' && curSess) {
            const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
            if (guestId) {
@@ -174,8 +179,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [updateState]);
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
+  }, [updateState]); // Removed loading from deps to avoid re-running if timeout hits
 
   const isAdminUser = React.useMemo(() => {
     return !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
