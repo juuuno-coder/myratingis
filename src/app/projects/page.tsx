@@ -231,7 +231,7 @@ export default function ProjectsPage() {
                 >
                    {/* Left: Thumbnail Section */}
                    <div 
-                     className="w-full md:w-60 aspect-video md:aspect-[4/3] rounded-3xl overflow-hidden bg-chef-panel shrink-0 border border-chef-border relative cursor-pointer group"
+                     className="w-full md:w-80 aspect-video md:aspect-[16/10] rounded-3xl overflow-hidden bg-chef-panel shrink-0 border border-chef-border relative cursor-pointer group"
                      onClick={() => {
                         if (!isAuthenticated) { router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`); return; }
                         router.push(`/review/viewer?projectId=${p.project_id}`);
@@ -261,7 +261,7 @@ export default function ProjectsPage() {
                           src={SmartThumb} 
                           alt={p.title} 
                           fill 
-                          className="object-contain transition-transform duration-700" 
+                          className="object-cover transition-transform duration-700 group-hover:scale-105" 
                           unoptimized={SmartThumb.includes('microlink.io')}
                         />
                       ) : (
