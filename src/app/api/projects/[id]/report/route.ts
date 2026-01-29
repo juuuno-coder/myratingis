@@ -23,8 +23,8 @@ export async function GET(
     // 1. Verify Ownership
     const { data: project } = await supabaseAdmin
         .from('Project')
-        .select('user_id, custom_data')
-        .eq('project_id', projectId)
+        .select('*')
+        .eq('project_id', Number(projectId))
         .single();
     
     if (!project || project.user_id !== userId) {
@@ -36,15 +36,15 @@ export async function GET(
     const { data: ratings, error: ratingError } = await supabaseAdmin
       .from("ProjectRating")
       .select("*, profile:profiles(username, expertise, occupation, age_group, gender)")
-      .eq("project_id", projectId);
+      .eq("project_id", Number(projectId));
 
     if (ratingError) throw ratingError;
 
     // 3. Fetch Polls
-    const { data: votes, error: voteError } = await supabaseAdmin
+    const { data: votes } = await supabaseAdmin
       .from("ProjectPoll")
       .select("*")
-      .eq("project_id", projectId);
+      .eq("project_id", Number(projectId));
 
     // 4. Aggregation Logic
     const totalCount = ratings?.length || 0;
@@ -61,14 +61,22 @@ export async function GET(
       { id: 'score_3', label: '독창성' }, 
       { id: 'score_4', label: '상업성' }
     ];
-    const catIds = categories.map((c: any) => c.id);
+    const catIds = categories.map((c: any) => c.id || c.label);
     
     let averages: Record<string, number> = {};
     let totalAvg = 0;
 
-    // Expertise Distribution
+    // Expertise Distribution & Votes
     const expertiseStats: Record<string, number> = {};
     const occupationStats: Record<string, number> = {};
+    const voteCounts: Record<string, number> = {};
+
+    // Seed from separate poll table if exists
+    if (votes) {
+        votes.forEach((v: any) => {
+            voteCounts[v.vote_type] = (voteCounts[v.vote_type] || 0) + 1;
+        });
+    }
 
     if (totalCount > 0) {
       const sums: Record<string, number> = {};
@@ -80,6 +88,11 @@ export async function GET(
               const columnName = `score_${idx + 1}`;
               sums[id] += (Number(curr[columnName]) || Number(curr[id]) || 0);
           });
+
+          // Aggregate vote_type from Rating table
+          if (curr.vote_type) {
+              voteCounts[curr.vote_type] = (voteCounts[curr.vote_type] || 0) + 1;
+          }
 
           // Aggregate Expertise
           const profile = curr.profile as any;
@@ -106,20 +119,14 @@ export async function GET(
       totalAvg = Number((sumAvgs / catIds.length).toFixed(1));
     }
 
-    // Poll Aggregation
-    const voteCounts: Record<string, number> = {};
-    if (votes) {
-        votes.forEach((v: any) => {
-            voteCounts[v.vote_type] = (voteCounts[v.vote_type] || 0) + 1;
-        });
-    }
+    // Feedbacks list
 
     // Feedback Comments (Proposal & Custom Answers)
     const feedbacks = ratings?.map((r: any) => ({
         id: r.id,
         user_id: r.user_id,
         guest_id: r.guest_id,
-        username: (r.profile as any)?.username || (r.user_id ? "Expert" : "Guest"),
+        username: (r.profile as any)?.username || (r.user_id ? "익명의 전문가" : "비회원 게스트"),
         expertise: (() => {
             const profile = r.profile as any;
             if (!profile) return [];
@@ -130,6 +137,7 @@ export async function GET(
         age_group: (r.profile as any)?.age_group,
         gender: (r.profile as any)?.gender,
         score: r.score,
+        vote_type: r.vote_type,
         proposal: r.proposal,
         custom_answers: r.custom_answers,
         created_at: r.created_at
