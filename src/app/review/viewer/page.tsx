@@ -204,7 +204,12 @@ function ViewerContent() {
       
       const res = await fetch(`/api/projects/${projectId}/rating`, {
         method: 'POST', headers,
-        body: JSON.stringify({ scores: michelinScores, score: avgScore, custom_answers: customAnswers, guest_id: !session ? guestId : undefined })
+        body: JSON.stringify({ 
+            ...michelinScores, 
+            score: avgScore, 
+            custom_answers: customAnswers, 
+            guest_id: !session ? guestId : undefined 
+        })
       });
       if (!res.ok) throw new Error("Rating failed");
       

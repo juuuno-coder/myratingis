@@ -186,12 +186,11 @@ export async function POST(
           }
       });
 
-      const updateData = {
+      const updateData: any = {
           project_id: Number(projectId),
           user_id: userId,
           guest_id: userId ? null : guest_id,
-          score: score !== undefined ? score : (existingRating?.score || 0),
-          // Map scores to score_1...6 columns
+          // Map scores to score_1...6 columns and calculate the average score
           score_1: mappedScores.score_1 ?? existingRating?.score_1 ?? 0,
           score_2: mappedScores.score_2 ?? existingRating?.score_2 ?? 0,
           score_3: mappedScores.score_3 ?? existingRating?.score_3 ?? 0,
@@ -202,6 +201,17 @@ export async function POST(
           custom_answers: custom_answers !== undefined ? custom_answers : existingRating?.custom_answers,
           updated_at: new Date().toISOString()
       };
+
+      // Recalculate average score from all 6 columns if not explicitly provided
+      if (score === undefined) {
+          const activeScores = [updateData.score_1, updateData.score_2, updateData.score_3, updateData.score_4, updateData.score_5, updateData.score_6]
+            .filter(s => s > 0);
+          updateData.score = activeScores.length > 0 
+            ? Number((activeScores.reduce((a, b) => a + b, 0) / activeScores.length).toFixed(1)) 
+            : 0;
+      } else {
+          updateData.score = score;
+      }
 
       // 3. Atomic UPSERT (Matches the UNIQUE constraints we added to DB)
       const { error: ratingError } = await supabaseAdmin

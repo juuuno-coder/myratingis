@@ -122,11 +122,12 @@ export async function GET(
     // Feedbacks list
 
     // Feedback Comments (Proposal & Custom Answers)
+    // Feedback Comments (Proposal & Custom Answers)
     const feedbacks = ratings?.map((r: any) => ({
         id: r.id,
         user_id: r.user_id,
         guest_id: r.guest_id,
-        username: (r.profile as any)?.username || (r.user_id ? "익명의 전문가" : "비회원 게스트"),
+        username: (r.profile as any)?.username || (r.profile as any)?.nickname || (r.user_id ? "익명의 전문가" : "비회원 게스트"),
         expertise: (() => {
             const profile = r.profile as any;
             if (!profile) return [];
