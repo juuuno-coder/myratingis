@@ -122,79 +122,45 @@ export async function GET(request: NextRequest) {
       const userIds = [...new Set(data.map((p: any) => p.user_id).filter(Boolean))] as string[];
       const projectIds = data.map((p: any) => p.project_id);
 
-      // [Optimized] Only fetch "My Rating" status. Total counts are now on the Project table.
       const targetClient = process.env.SUPABASE_SERVICE_ROLE_KEY ? supabaseAdmin : supabaseAnon;
       
       let myRatingsSet = new Set();
       let myLikesSet = new Set();
       let myBookmarksSet = new Set();
 
-      if (currentAuthenticatedUserId) {
-          // 1. Ratings
-          const { data: myRatings } = await (targetClient.from('ProjectRating' as any) as any)
-             .select('project_id')
-             .eq('user_id', currentAuthenticatedUserId)
-             .in('project_id', projectIds);
-          
-          if (myRatings) {
-             myRatings.forEach((r: any) => myRatingsSet.add(r.project_id));
-          }
+      // Parallel Fetching
+      const statsPromise = currentAuthenticatedUserId ? Promise.all([
+          (targetClient.from('ProjectRating' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
+          (targetClient.from('ProjectLike' as any) as any).select('project_id').eq('user_id', currentAuthenticatedUserId).in('project_id', projectIds),
+          (targetClient.from('CollectionItem' as any) as any).select('project_id, Collection!inner(user_id)').eq('Collection.user_id', currentAuthenticatedUserId).in('project_id', projectIds)
+      ]) : Promise.resolve([ {data:[]}, {data:[]}, {data:[]} ]);
 
-          // 2. Likes
-          const { data: myLikes } = await (targetClient.from('ProjectLike' as any) as any)
-             .select('project_id')
-             .eq('user_id', currentAuthenticatedUserId)
-             .in('project_id', projectIds);
+      const profilesPromise = userIds.length > 0 ? (targetClient.from('profiles').select('*').in('id', userIds)) : Promise.resolve({data:[]});
 
-          if (myLikes) {
-             myLikes.forEach((l: any) => myLikesSet.add(l.project_id));
-          }
+      const [ [ratingsRes, likesRes, bookmarksRes], profilesRes ] = await Promise.all([
+          statsPromise,
+          profilesPromise
+      ]);
 
-          // 3. Bookmarks (Collections)
-          // Find all collection items for this user's collections that match these projects
-          const { data: myBookmarks } = await (targetClient.from('CollectionItem' as any) as any)
-             .select('project_id, Collection!inner(user_id)')
-             .eq('Collection.user_id', currentAuthenticatedUserId)
-             .in('project_id', projectIds);
+      // Process Stats
+      if (ratingsRes.data) ratingsRes.data.forEach((r: any) => myRatingsSet.add(r.project_id));
+      if (likesRes.data) likesRes.data.forEach((l: any) => myLikesSet.add(l.project_id));
+      if (bookmarksRes.data) bookmarksRes.data.forEach((b: any) => myBookmarksSet.add(b.project_id));
 
-          if (myBookmarks) {
-             myBookmarks.forEach((b: any) => myBookmarksSet.add(b.project_id));
-          }
-      }
-
+      // Process Users
       const userMap = new Map();
-      if (userIds.length > 0) {
-        // users 테이블 조회 (Optimized: Try 'profiles' first as it is the standard now)
-        const possibleTables = ['profiles', 'users', 'User'];
-        let usersData: any[] | null = null;
-
-        for (const tableName of possibleTables) {
-          const result = await (targetClient
-            .from(tableName as any) as any)
-            .select('*') 
-            .in('id', userIds);
-          
-          if (!result.error && result.data && result.data.length > 0) {
-            usersData = result.data;
-            break;
-          }
-        }
-
-        if (usersData && usersData.length > 0) {
-          usersData.forEach((u: any) => {
+      if (profilesRes.data) {
+           profilesRes.data.forEach((u: any) => {
             userMap.set(u.id, {
               username: u.username || u.nickname || u.name || u.display_name || u.email?.split('@')[0] || 'Unknown',
               avatar_url: u.avatar_url || u.profile_image_url || u.profileImage || u.image || '/globe.svg',
               expertise: u.expertise || null,
             });
           });
-        }
       }
 
       data.forEach((project: any) => {
         project.User = userMap.get(project.user_id) || { username: 'Unknown', avatar_url: '/globe.svg' };
-        // Use the pre-calculated column. If null (old row), default to 0. 
-        // Note: The SQL migration updates existing rows, so this should be accurate.
         project.rating_count = project.rating_count || 0; 
         project.has_rated = myRatingsSet.has(project.project_id);
         project.is_liked = myLikesSet.has(project.project_id);
