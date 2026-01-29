@@ -148,9 +148,9 @@ function ViewerContent() {
   const handleStartReview = () => {
     if (!isAuthenticated) {
         setIsLoginGuidanceOpen(true);
-        return;
+    } else {
+        setShowIntro(false);
     }
-    setShowIntro(false);
   };
 
   useEffect(() => {
@@ -271,7 +271,33 @@ function ViewerContent() {
         </div>
       </div>
       <Dialog open={confirmModal.isOpen} onOpenChange={o => setConfirmModal(p => ({ ...p, isOpen: o }))}><DialogContent className="max-w-md bg-chef-card rounded-3xl p-8"><DialogHeader><DialogTitle>{confirmModal.title}</DialogTitle><DialogDescription>{confirmModal.description}</DialogDescription></DialogHeader><DialogFooter className="mt-6"><Button variant="outline" onClick={() => setConfirmModal(p => ({ ...p, isOpen: false }))}>취소</Button><Button onClick={confirmModal.onConfirm} className="bg-orange-600 text-white">확인</Button></DialogFooter></DialogContent></Dialog>
-      <Dialog open={isLoginGuidanceOpen} onOpenChange={setIsLoginGuidanceOpen}><DialogContent className="max-w-md"><DialogHeader><DialogTitle>Login Required</DialogTitle><DialogDescription>Please login to start evaluation.</DialogDescription></DialogHeader><DialogFooter><Button onClick={() => router.push(`/login?returnPath=${encodeURIComponent(window.location.href)}`)}>Login</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={isLoginGuidanceOpen} onOpenChange={setIsLoginGuidanceOpen}>
+        <DialogContent className="max-w-md bg-chef-card border-chef-border text-chef-text rounded-[2rem] p-8">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
+                <ChefHat className="text-orange-500" /> 평가 위원 로그인
+            </DialogTitle>
+            <DialogDescription className="text-chef-text opacity-60 font-medium">
+              로그인하시면 평가 이력이 보관되며, 창작자에게 신뢰도를 줄 수 있는 배지가 표시됩니다. 물론 비회원으로 평가하실 수도 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button 
+                variant="outline" 
+                onClick={() => { setIsLoginGuidanceOpen(false); setShowIntro(false); }}
+                className="flex-1 h-12 rounded-xl font-bold opacity-60 hover:opacity-100"
+            >
+                비회원으로 진행하기
+            </Button>
+            <Button 
+                onClick={() => router.push(`/login?returnTo=${encodeURIComponent(window.location.href)}`)}
+                className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white font-black rounded-xl"
+            >
+                로그인하기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
