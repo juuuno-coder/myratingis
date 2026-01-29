@@ -76,10 +76,16 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
       const res = await fetch(url, { headers });
       const data = await res.json();
 
-      if (data.success) {
+      if (data.success && data.project) {
         setProjectData(data.project);
         
-        const customCategories = data.project?.custom_data?.audit_config?.categories || data.project?.custom_data?.custom_categories;
+        // 1. 카테고리 파싱 (문자열인 경우 처리 추가)
+        let rawCustom = data.project.custom_data;
+        if (typeof rawCustom === 'string') {
+          try { rawCustom = JSON.parse(rawCustom); } catch (e) { rawCustom = {}; }
+        }
+        
+        const customCategories = rawCustom?.audit_config?.categories || rawCustom?.custom_categories;
         
         if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
           const custom = customCategories.map((c: any) => ({
@@ -90,7 +96,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
           
           const initialScores: Record<string, number> = {};
           custom.forEach((c: any) => {
-            initialScores[c.id] = data.myRating ? Number(data.myRating[c.id] || 0) : 0;
+            initialScores[c.id] = data.myRating ? Number(data.myRating[c.id] || data.myRating[c.label] || 0) : 0;
           });
           setScores(initialScores);
         } else {
@@ -115,8 +121,10 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
             .single();
           
           if (!sError && specificRating) {
-            const updatedScores: Record<string, number> = { ...scores };
-            categories.forEach((c: any) => {
+            const updatedScores: Record<string, number> = {};
+            // current categories might be updated by now
+            const cats = (customCategories && Array.isArray(customCategories)) ? customCategories : DEFAULT_CATEGORIES;
+            cats.forEach((c: any) => {
               updatedScores[c.id] = Number(specificRating[c.id] || 0);
             });
             setScores(updatedScores);
@@ -124,12 +132,15 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
         }
       }
     } catch (e) {
-      console.error("Failed to load ratings", e);
+      console.error("[MichelinRating] Failed to load ratings:", e);
     }
   };
 
   useEffect(() => {
-    if (projectId) fetchRatingData();
+    if (projectId) {
+        console.log("[MichelinRating] Fetching for Project:", projectId);
+        fetchRatingData();
+    }
     else if (isDemo) {
         const initial: Record<string, number> = {};
         DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
