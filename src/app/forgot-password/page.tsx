@@ -88,6 +88,10 @@ export default function ForgotPasswordPage() {
                 {email} 주소로<br />
                 비밀번호 재설정 링크가 포함된 이메일을 보냈습니다.
               </p>
+              <p className="text-xs text-orange-600 font-bold mb-8 px-4">
+                ※ 메일이 오지 않는다면 구글 소셜 로그인으로 가입된 계정일 수 있습니다.<br/>
+                로그인 페이지에서 <span className="underline">구글 로그인</span>을 시도해주세요.
+              </p>
               <Button asChild variant="outline" className="w-full h-12">
                 <Link href="/login">로그인 페이지로 이동</Link>
               </Button>
