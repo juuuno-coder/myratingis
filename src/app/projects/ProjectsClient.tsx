@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 import { ChefHat, Star, Eye, MessageSquare, Clock, ArrowRight, Sparkles, Heart, Bookmark, Send } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
+// Firebase Imports
+import { db } from '@/lib/firebase/client';
+import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, limit } from "firebase/firestore";
+// Modals
 import { InquiryModal } from '@/components/InquiryModal';
 import { CollectionModal } from '@/components/CollectionModal';
 
@@ -33,32 +36,61 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
   const fetchProjects = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const resp = await fetch('/api/projects?mode=audit');
-      const json = await resp.json();
-      
-      if (json.projects) {
-        setProjects(json.projects);
+      // Create a query against the collection.
+      // Note: Composite indexes might be needed for complex queries.
+      // For now, let's fetch list and filter in memory if needed or use simple queries.
+      let q = query(
+          collection(db, "projects"), 
+          where("visibility", "==", "public"),
+          orderBy("createdAt", "desc"),
+          limit(20)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const fetchedProjects: any[] = [];
+
+      for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          // Skip if audit_config is missing (audit mode logic)
+          if (!data.custom_data?.audit_config) continue;
+
+          // Check if current user liked this project
+          let isLiked = false;
+          if (user) {
+              try {
+                  const likeSnap = await getDoc(doc(db, "projects", docSnap.id, "likes", user.uid));
+                  isLiked = likeSnap.exists();
+              } catch(e) {}
+          }
+
+          fetchedProjects.push({
+              project_id: docSnap.id,
+              ...data,
+              is_liked: isLiked,
+              likes_count: data.like_count || 0, // Ensure like_count exists or default to 0
+              User: { username: data.author_email?.split('@')[0] || "Unknown" } // Fallback for user info
+          });
       }
+      
+      setProjects(fetchedProjects);
     } catch (e) {
       console.error("Failed to fetch audit projects", e);
+      toast.error("프로젝트 목록을 불러오지 못했습니다.");
     } finally {
       if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Only fetch if we don't have initial data or on specific filter changes
-    if (initialProjects.length === 0) {
-      fetchProjects();
-    }
-  }, [initialProjects.length]);
+    // Force fetch on mount since we removed SSR data
+    fetchProjects();
+  }, [user]); // Refetch when user logs in to update 'is_liked' status
 
   // Social Actions
   const handleLike = async (e: React.MouseEvent, project: any) => {
     e.stopPropagation();
     if (!isAuthenticated || !user) {
         toast.error("로그인이 필요합니다.");
-        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
         return;
     }
 
@@ -73,12 +105,16 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
     ));
 
     try {
+        const likeRef = doc(db, "projects", project.project_id, "likes", user.uid);
         if (originalLiked) {
             // Unlike
-            await (supabase.from('ProjectLike' as any) as any).delete().match({ project_id: project.project_id, user_id: user.id });
+            await deleteDoc(likeRef);
         } else {
             // Like
-            await (supabase.from('ProjectLike' as any) as any).insert({ project_id: project.project_id, user_id: user.id });
+            await setDoc(likeRef, {
+                user_id: user.uid,
+                created_at: serverTimestamp()
+            });
         }
     } catch (err) {
         console.error("Like error", err);
@@ -94,55 +130,16 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
 
   const handleBookmark = async (e: React.MouseEvent, project: any) => {
     e.stopPropagation();
-    if (!isAuthenticated || !user) {
-         toast.error("로그인이 필요합니다.");
-         return;
-    }
-
-    const originalBookmarked = project.is_bookmarked;
-
-    if (originalBookmarked) {
-        // Remove from Collection (Optimistic)
-        setProjects(prev => prev.map(p => 
-             p.project_id === project.project_id ? { ...p, is_bookmarked: false } : p
-        ));
-
-        try {
-            // Remove from all collections for this user for this project
-             const { data: collections } = await (supabase.from('Collection' as any) as any).select('collection_id').eq('user_id', user.id);
-             if (collections && collections.length > 0) {
-                 const colIds = collections.map((c: any) => c.collection_id);
-                 await (supabase.from('CollectionItem' as any) as any).delete().in('collection_id', colIds).eq('project_id', project.project_id);
-             }
-        } catch (err) {
-            console.error("Bookmark remove error", err);
-            // Revert
-            setProjects(prev => prev.map(p => 
-                 p.project_id === project.project_id ? { ...p, is_bookmarked: true } : p
-            ));
-            toast.error("삭제 실패");
-        }
-    } else {
-        // Open Modal to Add
-        setCollectionModal({ open: true, project: project });
-    }
+    toast.info("북마크 기능은 준비 중입니다.");
   };
 
   const handleInquiry = async (e: React.MouseEvent, project: any) => {
      e.stopPropagation();
-     if (!isAuthenticated || !user) {
-          toast.error("로그인이 필요합니다.");
-          return;
-     }
-
-     setInquiryModal({ open: true, project: project });
+     toast.info("1:1 문의 기능은 준비 중입니다.");
   };
 
   const onCollectionSuccess = () => {
-      // Update local state to bookedmarked = true
-      setProjects(prev => prev.map(p => 
-          p.project_id === collectionModal.project.project_id ? { ...p, is_bookmarked: true } : p
-      ));
+      // Placeholder
   };
 
   const handleProjectRoute = (p: any) => {
