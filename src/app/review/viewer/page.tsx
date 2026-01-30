@@ -114,7 +114,7 @@ function ViewerContent() {
   const steps = ['rating', 'voting', 'subjective', 'summary'];
 
   useEffect(() => {
-    // Robust Guest ID generation (Fallback for environments without crypto.randomUUID)
+    // Robust Guest ID generation
     const generateGuestId = () => {
       if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
         return window.crypto.randomUUID();
@@ -122,9 +122,24 @@ function ViewerContent() {
       return 'g-' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
     };
 
-    const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || generateGuestId()) : null;
-    if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
+    let gid: string | null = null;
+    if (typeof window !== 'undefined') {
+        try {
+            gid = localStorage.getItem('guest_id');
+            if (!gid) {
+                gid = generateGuestId();
+                localStorage.setItem('guest_id', gid);
+            }
+        } catch (e) {
+            console.warn("[Viewer] LocalStorage access blocked. Using session-based fallback.");
+            // Generate a temporary ID that persists during the current page session
+            gid = (window as any)._temp_guest_id || generateGuestId();
+            (window as any)._temp_guest_id = gid;
+        }
+    }
+    
     setGuestId(gid);
+    console.log("[Viewer] Current Guest ID:", gid);
 
     if (!projectId) {
       router.push('/');
