@@ -70,10 +70,8 @@ const nextConfig = {
 
   // Webpack 설정 최적화
   webpack: (config, { dev, isServer }) => {
-    // 빌드 시 메모리 사용량을 줄이기 위해 parallelism 조정
+    // 빌드 시 메모리 사용량을 조절하여 안정성 확보
     if (!dev) {
-      config.parallelism = 50;
-      // 대용량 모듈이 있을 경우 소스맵 비활성화로 메모리 확보
       config.devtool = false;
     }
     return config;
