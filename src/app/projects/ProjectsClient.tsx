@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
 // Firebase Imports
 import { db } from '@/lib/firebase/client';
-import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, limit } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, limit, getCountFromServer } from "firebase/firestore";
 // Modals
 import { InquiryModal } from '@/components/InquiryModal';
 import { CollectionModal } from '@/components/CollectionModal';
@@ -48,6 +48,8 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
       const querySnapshot = await getDocs(q);
       const tempProjects: any[] = [];
 
+      // Pre-fetching imports if needed, assumed imported or add to imports
+      
       for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
           
@@ -64,6 +66,21 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
           let isLiked = false;
           let hasRated = false;
           
+          // Determine Rating Count (Robust)
+          let realRatingCount = data.rating_count || data.evaluations_count || 0;
+          
+          // If count is missing/zero, double check DB (Safety net for migration)
+          if (!realRatingCount) {
+             try {
+                 const countSnap = await getCountFromServer(
+                    query(collection(db, "evaluations"), where("projectId", "==", docSnap.id))
+                 );
+                 realRatingCount = countSnap.data().count;
+             } catch(e) {
+                 // console.warn("Failed to count evals", e);
+             }
+          }
+
           if (user) {
               try {
                   // Check Like
@@ -87,10 +104,11 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
               ...data,
               is_liked: isLiked,
               has_rated: hasRated,
-              // Map counts robustly (handling various migration formats)
+              
+              // Map counts robustly
               likes_count: data.likes_count || data.like_count || data.likes || 0,
               views_count: data.views_count || data.view_count || data.views || 0,
-              rating_count: data.rating_count || data.evaluations_count || 0,
+              rating_count: realRatingCount,
               
               User: { username: data.author_email?.split('@')[0] || "Unknown" },
               createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.created_at ? new Date(data.created_at) : new Date())
