@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
+import { auth } from "@/lib/firebase/client"; // Firebase Auth
+import { createUserWithEmailAndPassword } from "firebase/auth"; // Firebase Methods
+import { useAuth } from "@/lib/auth/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
@@ -14,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { signInWithGoogle } = useAuth(); // Use context for Google
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -37,29 +40,21 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.session) {
-        toast.success("회원가입이 완료되었습니다!");
-        router.push("/onboarding");
-      } else {
-        toast.success("회원가입 확인 이메일이 발송되었습니다!", {
-          description: "이메일을 확인하여 계정을 활성화해주세요.",
-          duration: 5000,
-        });
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
-      }
+      // Firebase Signup
+      await createUserWithEmailAndPassword(auth, email, password);
+      
+      toast.success("회원가입이 완료되었습니다! 환영합니다.");
+      // AuthContext will detect the new user and create the Firestore document.
+      // We redirect to onboarding to ensure profile setup.
+      router.push("/onboarding");
+      
     } catch (error: any) {
       console.error("[Signup] Error:", error);
-      setError(error.message || "회원가입 중 오류가 발생했습니다.");
+      let msg = "회원가입 중 오류가 발생했습니다.";
+      if (error.code === 'auth/email-already-in-use') {
+          msg = "이미 가입된 이메일입니다. 로그인해주세요.";
+      }
+      setError(msg);
       setLoading(false);
     }
   };
@@ -67,13 +62,8 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-        },
-      });
-      if (error) throw error;
+      await signInWithGoogle();
+      // Redirect handled inside signInWithGoogle or AuthContext
     } catch (error: any) {
       console.error("[Signup] Google Error:", error);
       setError(error.message);
