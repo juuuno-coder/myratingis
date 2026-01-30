@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase/client";
-import { doc, getDoc, collection, query, where, getCountFromServer } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getCountFromServer, getDocs, orderBy } from "firebase/firestore";
 
 import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -193,33 +193,41 @@ export default function MyPage() {
       
       try {
         if (activeTab === 'projects' || activeTab === 'audit_requests') {
-          const { data } = await supabase
-            .from('Project')
-            .select('project_id, title, thumbnail_url, likes_count, views_count, rating_count, created_at, content_text, rendering_type, custom_data, scheduled_at, visibility, audit_deadline, site_url')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+          // Firebase Firestore Query
+          const projectsRef = collection(db, "projects");
+          const q = query(
+            projectsRef, 
+            where("author_uid", "==", userId), 
+            orderBy("createdAt", "desc")
+          );
           
-          let filteredData = data || [];
+          const querySnapshot = await getDocs(q);
+          
+          let fetchedProjects = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              title: data.title || '제목 없음',
+              thumbnail_url: data.thumbnail_url || '/placeholder.jpg',
+              likes: data.likes || 0,
+              views: data.views || 0,
+              rating_count: data.rating_count || 0,
+              created_at: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+              description: data.content_text || data.description || '',
+              rendering_type: data.rendering_type || 'image',
+              alt_description: data.title || '',
+              custom_data: data.custom_data,
+              scheduled_at: data.scheduled_at,
+              visibility: data.visibility || 'public',
+              site_url: data.site_url,
+            };
+          });
+
           if (activeTab === 'audit_requests') {
-            filteredData = filteredData.filter((p: any) => p.custom_data?.audit_config || p.audit_deadline);
+            fetchedProjects = fetchedProjects.filter((p: any) => p.custom_data?.audit_config || p.audit_deadline);
           }
 
-          setProjects(filteredData.map((p: any) => ({
-            id: String(p.project_id),
-            title: p.title || '제목 없음',
-            thumbnail_url: p.thumbnail_url || '/placeholder.jpg',
-            likes: p.likes_count || 0,
-            views: p.views_count || 0,
-            rating_count: p.rating_count || 0,
-            created_at: p.created_at,
-            description: p.content_text || '',
-            rendering_type: p.rendering_type || 'image',
-            alt_description: p.title || '',
-            custom_data: p.custom_data,
-            scheduled_at: p.scheduled_at,
-            visibility: p.visibility || 'public',
-            site_url: p.site_url,
-          })));
+          setProjects(fetchedProjects);
           
         } else if (activeTab === 'likes') {
           const { data } = await supabase
