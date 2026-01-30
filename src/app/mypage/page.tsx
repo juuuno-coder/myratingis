@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { db } from "@/lib/firebase/client";
+import { doc, getDoc, collection, query, where, getCountFromServer } from "firebase/firestore";
 
 import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,62 +114,57 @@ export default function MyPage() {
   const initStats = async () => {
       if (!authUser || isLoadingRef.current) return;
       isLoadingRef.current = true;
-      setUserId(authUser.id);
+      setUserId(authUser.uid);
       
       try {
-        console.log("[MyPage] Starting initStats for:", authUser.id);
+        console.log("[MyPage] Starting initStats for:", authUser.uid);
         
-        console.log("[MyPage] slug 1: Fetching profile...");
-        const { data: dbProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.warn("[MyPage] Profile fetch error:", profileError);
-        }
+        // 1. Fetch Profile from Firestore
+        const userDocRef = doc(db, "users", authUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        const fsProfile = userDocSnap.exists() ? userDocSnap.data() : {};
+        console.log("[MyPage] Firestore Profile:", fsProfile);
 
         setUserProfile({
-          username: (dbProfile as any)?.username || authProfile?.username || 'user',
-          nickname: (dbProfile as any)?.nickname || (dbProfile as any)?.username || authProfile?.username || '사용자',
+          username: fsProfile.username || authUser.displayName || 'user',
+          nickname: fsProfile.nickname || authUser.displayName || '사용자',
           email: authUser.email,
-          profile_image_url: (dbProfile as any)?.profile_image_url || (dbProfile as any)?.avatar_url || authProfile?.profile_image_url || '/globe.svg',
-          role: (dbProfile as any)?.role || authProfile?.role || 'user',
-          bio: (dbProfile as any)?.bio || '',
-          cover_image_url: (dbProfile as any)?.cover_image_url || null,
-          social_links: (dbProfile as any)?.social_links || {},
-          interests: (dbProfile as any)?.interests,
-          is_public: (dbProfile as any)?.is_public,
-          gender: (dbProfile as any)?.gender,
-          age_group: (dbProfile as any)?.age_group || (dbProfile as any)?.age_range,
-          occupation: (dbProfile as any)?.occupation,
-          expertise: (dbProfile as any)?.expertise,
-          id: authUser.id, 
+          profile_image_url: fsProfile.profile_image || fsProfile.photoURL || authUser.photoURL || '/globe.svg',
+          role: fsProfile.role || 'user',
+          bio: fsProfile.bio || '',
+          cover_image_url: fsProfile.cover_image_url || null,
+          social_links: fsProfile.social_links || {},
+          interests: fsProfile.interests,
+          is_public: fsProfile.is_public ?? true,
+          gender: fsProfile.gender,
+          age_group: fsProfile.age_group,
+          occupation: fsProfile.occupation,
+          expertise: fsProfile.expertise,
+          id: authUser.uid, 
         });
-        console.log("[MyPage] step 1 complete. Profile set.");
-        
-        console.log("[MyPage] step 2: Fetching counts...");
 
-        const getCount = async (query: any) => {
-          const { count, error } = await query;
-          return error ? 0 : (count || 0);
-        };
+        // 2. Fetch Stats from Firestore
+        try {
+            const projectsCountSnap = await getCountFromServer(
+                query(collection(db, "projects"), where("author_uid", "==", authUser.uid))
+            );
+            // Likes/Collections might need migration or different queries
+            // For now, setting basic counts
+            setStats({ 
+                projects: projectsCountSnap.data().count, 
+                likes: 0, // Implement later
+                collections: 0, // Implement later
+                followers: 0, 
+                following: 0 
+            });
+        } catch (statErr) {
+            console.warn("Stats fetch failed:", statErr);
+        }
 
-        const [p, l, c] = await Promise.all([
-          getCount(supabase.from('Project').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
-          getCount(supabase.from('Like').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
-          getCount(supabase.from('Collection').select('*', { count: 'exact', head: true }).eq('user_id', authUser.id)),
-          // Follow feature table missing - suppressing console errors
-          // supabase.from('Follow')...
-        ]);
-        
-        setStats({ projects: p, likes: l, collections: c, followers: 0, following: 0 });
-        console.log("[MyPage] step 2 complete. Stats set.");
       } catch (e) {
         console.warn("[MyPage] initStats failed:", e);
       } finally {
-        console.log("[MyPage] initStats final reached. Setting initialized=true");
         setInitialized(true);
         isLoadingRef.current = false;
       }
