@@ -155,13 +155,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Use a flag to wait for the first real auth event before finalizing "none" state
     let firstEventReceived = false;
 
+    // Use a ref to track the latest user state to avoid stale closure issues in timeouts
+    const userRef = useRef<User | null>(null);
+
     const initAuth = async () => {
       try {
+        console.log('[AuthContext] 🛡️ [AUTH_VER_V5] Initializing Auth Pipeline...');
         console.log('[AuthContext] 🔍 Checking initial storage session...');
         const { data: { session: s } } = await supabase.auth.getSession();
         
         if (s) {
           console.log('[AuthContext] ✅ Found session in storage:', s.user?.email);
+          userRef.current = s.user;
           await updateState(s, s.user);
           firstEventReceived = true;
         } else {
@@ -179,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
       const eventName = event as any;
+      userRef.current = u ?? null;
       console.log(`[AuthContext] 📢 AUTH_EVENT: ${eventName} | User: ${u?.email || 'none'}`);
       
       if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
@@ -191,13 +197,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             router.push(returnTo);
           }
         } else if (eventName === 'INITIAL_SESSION') {
-          // If no user on INITIAL_SESSION, we can conclude loading unless SIGNED_IN is coming
-          console.log('[AuthContext] ⏹️ INITIAL_SESSION concludes: No user.');
-          firstEventReceived = true;
-          setLoading(false);
+          // IMPORTANT: If no user on INITIAL_SESSION, wait 3 seconds and then TRY GETSESSION ONCE MORE.
+          console.log('[AuthContext] 🔍 INITIAL_SESSION: none. Holding loading for 3s grace period...');
+          setTimeout(async () => {
+            if (!userRef.current) {
+                 console.log('[AuthContext] 🔄 Grace period reached. Performing one last manual session check...');
+                 const { data: { session: finalSess } } = await supabase.auth.getSession();
+                 if (finalSess) {
+                    console.log('[AuthContext] ✨ Session found on final check! Rescuing state.');
+                    userRef.current = finalSess.user;
+                    await updateState(finalSess, finalSess.user);
+                    firstEventReceived = true;
+                 } else {
+                    console.log('[AuthContext] ⏹️ Final check concluded: No user.');
+                    firstEventReceived = true;
+                    setLoading(false);
+                 }
+            } else {
+                console.log('[AuthContext] ✅ User arrived during grace period. Finalizing.');
+                setLoading(false);
+            }
+          }, 3000);
         }
       } else if (eventName === "SIGNED_OUT") {
         firstEventReceived = true;
+        userRef.current = null;
         await updateState(null, null);
         setLoading(false);
       } else {
@@ -212,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('[AuthContext] ⚠️ Safety timeout: Breaking loading state.');
             setLoading(false);
         }
-    }, 6000);
+    }, 8000); // 8 seconds for safety in bad networks
 
     return () => {
       subscription.unsubscribe();
