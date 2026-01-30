@@ -114,7 +114,15 @@ function ViewerContent() {
   const steps = ['rating', 'voting', 'subjective', 'summary'];
 
   useEffect(() => {
-    const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || crypto.randomUUID()) : null;
+    // Robust Guest ID generation (Fallback for environments without crypto.randomUUID)
+    const generateGuestId = () => {
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      return 'g-' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    };
+
+    const gid = typeof window !== 'undefined' ? (localStorage.getItem('guest_id') || generateGuestId()) : null;
     if (gid && typeof window !== 'undefined') localStorage.setItem('guest_id', gid);
     setGuestId(gid);
 
@@ -222,8 +230,11 @@ function ViewerContent() {
       setIsSubmitted(true);
       setCurrentStep(steps.length - 1);
       toast.success("평가가 제출되었습니다! 🎉");
-    } catch (e) {
-      toast.error("평가 등록 실패");
+    } catch (e: any) {
+      console.error("[Viewer] Final Submit Error:", e);
+      toast.error("평가 등록 실패", {
+          description: e.message || "잠시 후 다시 시도해주세요."
+      });
     }
   };
 

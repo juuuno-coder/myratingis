@@ -142,7 +142,7 @@ export async function POST(
       let userId: string | null = null;
       
       if (authHeader) {
-          const token = authHeader.replace('Bearer ', '');
+          const token = authHeader.replace(/^Bearer\s+/i, '');
           const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
           if (user && !authError) {
               userId = user.id;
@@ -223,9 +223,17 @@ export async function POST(
         });
 
       if (ratingError) {
-          console.error('[API/ProjectRating] Postgres Error:', ratingError);
-          // If the error is about unique violation but upsert failed, it's usually an index mismatch
-          return NextResponse.json({ success: false, error: ratingError.message, details: ratingError.hint }, { status: 500 });
+          console.error('[API/ProjectRating] Postgres Error:', {
+              message: ratingError.message,
+              details: ratingError.details,
+              hint: ratingError.hint,
+              code: ratingError.code
+          });
+          return NextResponse.json({ 
+              success: false, 
+              error: ratingError.message, 
+              code: ratingError.code 
+          }, { status: 500 });
       }
       
       console.log(`[API/ProjectRating] Successfully saved rating for ${userId ? 'User '+userId : 'Guest '+guest_id}`);
