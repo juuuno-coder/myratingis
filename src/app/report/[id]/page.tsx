@@ -215,6 +215,20 @@ export default function ReportPage() {
       <MyRatingIsHeader />
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
+        <div className="bg-red-900/90 p-6 rounded-xl border-2 border-red-500 mb-8 text-sm font-mono text-white overflow-auto">
+          <p className="font-bold text-red-300 mb-2 border-b border-white/20 pb-2">🚨 VOTE DATA INSPECTOR</p>
+          <p>Ratings Loaded: {ratings.length}</p>
+          <div className="mt-4 space-y-2">
+             <p className="font-bold text-yellow-400">Raw Vote Types Found:</p>
+             <div className="bg-black/50 p-4 rounded text-xs break-all">
+               {JSON.stringify(ratings.map(r => r.vote_type), null, 2)}
+             </div>
+          </div>
+          <div className="mt-4">
+              <p className="font-bold text-blue-400">Current Poll Counts:</p>
+              <pre className="text-xs">{JSON.stringify(reportStats?.barData, null, 2)}</pre>
+          </div>
+        </div>
          {/* Hero Title */}
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
