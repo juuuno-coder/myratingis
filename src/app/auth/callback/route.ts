@@ -44,5 +44,15 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
   }
 
+  // If no code, look for error parameters from Supabase redirect
+  const errorName = searchParams.get('error')
+  const errorDescription = searchParams.get('error_description')
+  
+  if (errorName || errorDescription) {
+    const fullError = errorDescription || errorName || 'Unknown Auth Error';
+    console.error('[Auth Callback] ❌ Supabase returned error:', fullError);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(fullError)}`)
+  }
+
   return NextResponse.redirect(`${origin}/login?error=no_auth_code`)
 }
