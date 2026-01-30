@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const initializedRef = useRef(false);
+  const userRef = useRef<User | null>(null); // Fixed: Moved to top level
   const router = useRouter();
 
   const loadProfileFromMetadata = useCallback((currentUser: User): UserProfile => {
@@ -154,14 +155,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    console.log('[AuthContext] 🛡️ [AUTH_VER_V6] Initializing Auth Pipeline...');
-    setAuthStatus("🛡️ [V6] 인증 파이프라인 가동...");
+    console.log('[AuthContext] 🛡️ [AUTH_VER_V7] Initializing Auth Pipeline...');
+    setAuthStatus("🛡️ [V7] 인증 파이프라인 가동...");
 
     // Use a flag to wait for the first real auth event before finalizing "none" state
     let firstEventReceived = false;
-
-    // Use a ref to track the latest user state to avoid stale closure issues in timeouts
-    const userRef = useRef<User | null>(null);
 
     const initAuth = async () => {
       try {
