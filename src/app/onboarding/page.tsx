@@ -24,17 +24,20 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    if (!loading && !user) {
+    // Only redirect if we ARE CERTAIN that there is no user and loading has finished
+    if (loading === false && !user) {
+        console.log('[Onboarding] ⚠️ No user found after loading, redirecting to login...');
         router.push('/login');
         return;
     }
-    if (user) {
+    
+    if (user && formData.nickname === "") {
         setFormData(prev => ({
             ...prev,
             nickname: (userProfile as any)?.nickname || user.user_metadata?.full_name || prev.nickname
         }));
     }
-  }, [user, loading, router, userProfile]);
+  }, [user, loading, router, userProfile, formData.nickname]);
 
   const handleNext = () => {
     if (step === 2 && !formData.nickname.trim()) {
