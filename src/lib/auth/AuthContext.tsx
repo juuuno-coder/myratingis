@@ -157,21 +157,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        // Step 1: Explicitly fetch session (checks cookies and storage)
-        const { data: { session: s }, error } = await supabase.auth.getSession();
-        
+        const { data: { session: s } } = await supabase.auth.getSession();
         if (s) {
           console.log('[AuthContext] 🏠 Session Found:', s.user?.email);
           await updateState(s, s.user);
           firstEventReceived = true;
         } else {
-          // If no immediate session, wait briefly for the event listener (OAuth redirects)
+          // If no immediate session, wait longer for the event listener (OAuth redirects)
+          // Increased to 3.5s for stability when usage limits are near
           setTimeout(() => {
             if (!firstEventReceived) {
-              console.log('[AuthContext] ⌛ No session found after timeout, clearing loading.');
+              console.log('[AuthContext] ⌛ No session found after timeout, concluding as guest.');
               setLoading(false);
             }
-          }, 2000);
+          }, 3500);
         }
       } catch (e) {
         console.error('[AuthContext] Init error:', e);
@@ -186,21 +185,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const u = curSess?.user;
       console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'}`);
       
-      firstEventReceived = true;
-      
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
         if (u) {
+          firstEventReceived = true;
           await updateState(curSess, u);
+          
+          if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
+            const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+            router.push(returnTo);
+          }
         } else if (event === 'INITIAL_SESSION') {
-          setLoading(false);
-        }
-        
-        // Handle redirect from login page
-        if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
-          const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
-          router.push(returnTo);
+          // Don't stop loading immediately, let the initAuth timeout handle the "no session" finalization
+          // This prevents a race where INITIAL_SESSION:none fires before SIGNED_IN
         }
       } else if (event === "SIGNED_OUT") {
+        firstEventReceived = true;
         await updateState(null, null);
       } else {
         setLoading(false);
