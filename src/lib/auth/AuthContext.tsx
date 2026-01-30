@@ -150,43 +150,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
+    console.log('[AuthContext] 🛡️ [AUTH_VER_V3] Initializing Auth Pipeline...');
+
     // Use a flag to wait for the first real auth event before finalizing "none" state
     let firstEventReceived = false;
 
     const initAuth = async () => {
       try {
-        const { data: { session: s } } = await supabase.auth.getSession();
+        // Step 1: Explicitly fetch session (checks cookies and storage)
+        const { data: { session: s }, error } = await supabase.auth.getSession();
+        
         if (s) {
-          console.log('[AuthContext] 🏠 Found existing session on mount:', s.user?.email);
+          console.log('[AuthContext] 🏠 Session Found:', s.user?.email);
           await updateState(s, s.user);
           firstEventReceived = true;
         } else {
-          // If no immediate session, wait briefly for the event listener to catch up
+          // If no immediate session, wait briefly for the event listener (OAuth redirects)
           setTimeout(() => {
-            if (!firstEventReceived) setLoading(false);
-          }, 1500);
+            if (!firstEventReceived) {
+              console.log('[AuthContext] ⌛ No session found after timeout, clearing loading.');
+              setLoading(false);
+            }
+          }, 2000);
         }
       } catch (e) {
+        console.error('[AuthContext] Init error:', e);
         setLoading(false);
       }
     };
 
     initAuth();
 
+    // Step 2: Set up the subscriber
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
       console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'}`);
+      
       firstEventReceived = true;
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        updateState(curSess, u || null);
+        await updateState(curSess, u || null);
         
-        if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
+        // Handle redirect from login page
+        if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
           const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
           router.push(returnTo);
         }
       } else if (event === "SIGNED_OUT") {
-        updateState(null, null);
+        await updateState(null, null);
       } else if (event === 'INITIAL_SESSION' && !u) {
         setLoading(false);
       }
