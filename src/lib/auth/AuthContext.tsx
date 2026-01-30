@@ -156,21 +156,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 10000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
-      console.log(`[AuthContext] Event: ${event}, Session: ${!!curSess}, EmailConfirmed: ${curSess?.user?.email_confirmed_at}`);
+      const u = curSess?.user;
+      console.log(`[AuthContext] 📢 Event: ${event}`);
+      console.log(`[AuthContext] 👤 User: ${u?.email || 'none'} (${u?.id || 'none'})`);
+      console.log(`[AuthContext] ✅ ConfirmedAt: ${u?.email_confirmed_at || 'NOT CONFIRMED'}`);
+      
       clearTimeout(safetyTimeout);
 
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-        updateState(curSess, curSess?.user || null);
+        updateState(curSess, u || null);
         
-        if (event === 'SIGNED_IN' && curSess) {
-           const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
-           if (guestId) {
-              fetch('/api/auth/claim-ratings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${curSess.access_token}` },
-                    body: JSON.stringify({ guest_id: guestId })
-              }).catch(() => {});
-           }
+        if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
+          console.log('[AuthContext] 🚀 Navigating to home...');
+          
+          // Background task: claim guest ratings
+          const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
+          if (guestId) {
+             fetch('/api/auth/claim-ratings', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${curSess.access_token}` },
+                   body: JSON.stringify({ guest_id: guestId })
+             }).catch(() => {});
+          }
+          
+          router.push('/');
         }
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
