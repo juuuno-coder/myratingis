@@ -32,6 +32,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   userProfile: UserProfile | null;
   isAdmin: boolean;
+  authStatus: string;
+  authError: string | null;
   signOut: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
@@ -42,6 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<string>("Initializing...");
+  const [authError, setAuthError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const initializedRef = useRef(false);
   const router = useRouter();
@@ -150,7 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    console.log('[AuthContext] 🛡️ [AUTH_VER_V3] Initializing Auth Pipeline...');
+    console.log('[AuthContext] 🛡️ [AUTH_VER_V6] Initializing Auth Pipeline...');
+    setAuthStatus("🛡️ [V6] 인증 파이프라인 가동...");
 
     // Use a flag to wait for the first real auth event before finalizing "none" state
     let firstEventReceived = false;
@@ -160,20 +165,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        console.log('[AuthContext] 🛡️ [AUTH_VER_V5] Initializing Auth Pipeline...');
-        console.log('[AuthContext] 🔍 Checking initial storage session...');
+        setAuthStatus("🔍 브라우저 쿠키/세션 확인 중...");
         const { data: { session: s } } = await supabase.auth.getSession();
         
         if (s) {
           console.log('[AuthContext] ✅ Found session in storage:', s.user?.email);
+          setAuthStatus(`✅ 세션 발견: ${s.user?.email}`);
           userRef.current = s.user;
           await updateState(s, s.user);
           firstEventReceived = true;
+          // Even if found, let's wait a tiny bit to ensure everything is stable
+          setTimeout(() => setLoading(false), 500);
         } else {
+          setAuthStatus("⌛ 대기: 수파베이스 인증 신호를 수신하는 중...");
           console.log('[AuthContext] ⏳ No immediate session. Waiting for event bus/OAuth loop...');
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('[AuthContext] Init error:', e);
+        setAuthError(e.message || "인증 초기화 중 오류가 발생했습니다.");
         setLoading(false);
       }
     };
@@ -186,40 +195,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const eventName = event as any;
       userRef.current = u ?? null;
       console.log(`[AuthContext] 📢 AUTH_EVENT: ${eventName} | User: ${u?.email || 'none'}`);
+      setAuthStatus(`📢 인증 신호: ${eventName}...`);
       
       if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
         if (u) {
           firstEventReceived = true;
+          setAuthStatus(`🎉 로그인 성공: ${u.email}`);
           await updateState(curSess, u);
+          setLoading(false);
           
           if (eventName === 'SIGNED_IN' && window.location.pathname === '/login') {
             const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
             router.push(returnTo);
           }
         } else if (eventName === 'INITIAL_SESSION') {
-          // IMPORTANT: If no user on INITIAL_SESSION, wait 3 seconds and then TRY GETSESSION ONCE MORE.
-          console.log('[AuthContext] 🔍 INITIAL_SESSION: none. Holding loading for 3s grace period...');
+          setAuthStatus("🔍 세션 없음. 소셜 로그인 동기화 대기 중...");
+          // If no user on INITIAL_SESSION, we wait up to 4 seconds to be absolutely sure.
           setTimeout(async () => {
             if (!userRef.current) {
-                 console.log('[AuthContext] 🔄 Grace period reached. Performing one last manual session check...');
+                 setAuthStatus("🔄 최종 확인 단계: 서버에 직접 질의 중...");
                  const { data: { session: finalSess } } = await supabase.auth.getSession();
                  if (finalSess) {
-                    console.log('[AuthContext] ✨ Session found on final check! Rescuing state.');
+                    setAuthStatus("✨ 최종 확인으로 세션 복구 성공!");
                     userRef.current = finalSess.user;
                     await updateState(finalSess, finalSess.user);
                     firstEventReceived = true;
+                    setLoading(false);
                  } else {
-                    console.log('[AuthContext] ⏹️ Final check concluded: No user.');
+                    setAuthStatus("⏹️ 확인 완료: 게스트 사용자.");
                     firstEventReceived = true;
                     setLoading(false);
                  }
             } else {
-                console.log('[AuthContext] ✅ User arrived during grace period. Finalizing.');
                 setLoading(false);
             }
-          }, 3000);
+          }, 4000);
         }
       } else if (eventName === "SIGNED_OUT") {
+        setAuthStatus("🚪 로그아웃 처리 중...");
         firstEventReceived = true;
         userRef.current = null;
         await updateState(null, null);
@@ -232,11 +245,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const safetyTimer = setTimeout(() => {
-        if (!firstEventReceived) {
-            console.log('[AuthContext] ⚠️ Safety timeout: Breaking loading state.');
+        if (loading) {
+            console.log('[AuthContext] ⚠️ 장기 대기: 안전 모드로 게스트 전환.');
             setLoading(false);
         }
-    }, 8000); // 8 seconds for safety in bad networks
+    }, 15000); // 15 seconds for extreme cases
 
     return () => {
       subscription.unsubscribe();
@@ -249,8 +262,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.email, userProfile?.role]);
 
   const authValue = React.useMemo(() => ({
-    user, session, loading, isAuthenticated: !!user, userProfile, isAdmin: isAdminUser, signOut, refreshUserProfile
-  }), [user, session, loading, userProfile, isAdminUser, signOut, refreshUserProfile]);
+    user, session, loading, isAuthenticated: !!user, userProfile, isAdmin: isAdminUser, authStatus, authError, signOut, refreshUserProfile
+  }), [user, session, loading, userProfile, isAdminUser, authStatus, authError, signOut, refreshUserProfile]);
 
   return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;
 }
