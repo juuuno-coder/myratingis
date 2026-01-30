@@ -100,20 +100,24 @@ function LoginContent() {
     setGoogleLoading(true);
     try {
       const returnTo = searchParams.get("returnTo") || "/";
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const redirectTo = `${baseUrl.replace(/\/$/, '')}/auth/callback?next=${encodeURIComponent(returnTo)}`;
       
+      console.log('[Auth] Initiating Google Login with redirect:', redirectTo);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
+          redirectTo,
           queryParams: {
-            prompt: 'select_account' // Ensure user can always pick an account
+            prompt: 'select_account'
           }
         },
       });
       if (error) throw error;
     } catch (error: any) {
       console.error("Google Login Error:", error);
-      toast.error("Google 로그인에 실패했습니다.");
+      toast.error("Google 로그인에 실패했습니다.", { description: error.message });
       setGoogleLoading(false);
     }
   };
