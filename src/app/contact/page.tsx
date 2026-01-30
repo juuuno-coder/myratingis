@@ -66,19 +66,19 @@ function ContactForm() {
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">문의하기</CardTitle>
-          <CardDescription className="text-lg mt-2">
+    <Card className="w-full max-w-2xl bg-chef-card border-chef-border text-chef-text shadow-2xl rounded-[2rem] overflow-hidden">
+        <CardHeader className="text-center pt-10 pb-6">
+          <CardTitle className="text-4xl font-black italic uppercase tracking-tighter">문의하기</CardTitle>
+          <CardDescription className="text-chef-text opacity-60 text-lg mt-3 font-medium break-keep">
             궁금한 점이나 제안하고 싶은 내용을 남겨주세요.<br />
             빠른 시일 내에 답변해 드리겠습니다.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="px-8 pb-10">
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">이름 <span className="text-red-500">*</span></label>
+              <div className="space-y-3">
+                <label htmlFor="name" className="text-sm font-bold opacity-80 pl-1">이름 <span className="text-orange-500">*</span></label>
                 <Input
                   id="name"
                   name="name"
@@ -86,10 +86,11 @@ function ContactForm() {
                   required
                   value={formData.name}
                   onChange={handleChange}
+                  className="bg-chef-panel border-chef-border h-14 rounded-2xl focus-visible:ring-orange-500"
                 />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">이메일 <span className="text-red-500">*</span></label>
+              <div className="space-y-3">
+                <label htmlFor="email" className="text-sm font-bold opacity-80 pl-1">이메일 <span className="text-orange-500">*</span></label>
                 <Input
                   id="email"
                   name="email"
@@ -98,54 +99,57 @@ function ContactForm() {
                   required
                   value={formData.email}
                   onChange={handleChange}
+                  className="bg-chef-panel border-chef-border h-14 rounded-2xl focus-visible:ring-orange-500"
                 />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">연락처</label>
+            <div className="space-y-3">
+              <label htmlFor="phone" className="text-sm font-bold opacity-80 pl-1">연락처</label>
               <Input
                 id="phone"
                 name="phone"
                 placeholder="010-1234-5678"
                 value={formData.phone}
                 onChange={handleChange}
+                className="bg-chef-panel border-chef-border h-14 rounded-2xl focus-visible:ring-orange-500"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">제목</label>
+            <div className="space-y-3">
+              <label htmlFor="title" className="text-sm font-bold opacity-80 pl-1">제목</label>
               <Input
                 id="title"
                 name="title"
                 placeholder="문의 제목을 입력해주세요"
                 value={formData.title}
                 onChange={handleChange}
+                className="bg-chef-panel border-chef-border h-14 rounded-2xl font-bold focus-visible:ring-orange-500"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">문의 내용 <span className="text-red-500">*</span></label>
+            <div className="space-y-3">
+              <label htmlFor="message" className="text-sm font-bold opacity-80 pl-1">문의 내용 <span className="text-orange-500">*</span></label>
               <Textarea
                 id="message"
                 name="message"
                 placeholder="문의하실 내용을 자세히 적어주세요."
                 required
-                className="min-h-[150px]"
+                className="min-h-[180px] bg-chef-panel border-chef-border rounded-2xl p-5 focus-visible:ring-orange-500 resize-none"
                 value={formData.message}
                 onChange={handleChange}
               />
             </div>
 
-            <Button type="submit" className="w-full text-lg py-6" disabled={loading}>
+            <Button type="submit" className="w-full text-lg font-black h-16 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl shadow-lg shadow-orange-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-3 h-6 w-6 animate-spin" />
                   전송 중...
                 </>
               ) : (
                 <>
-                  <Send className="mr-2 h-5 w-5" />
+                  <Send className="mr-3 h-5 w-5" />
                   문의하기
                 </>
               )}
@@ -158,8 +162,12 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Suspense fallback={<div className="flex justify-center"><Loader2 className="animate-spin" /> 로딩 중...</div>}>
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+      
+      <Suspense fallback={<div className="flex flex-col items-center gap-4"><Loader2 className="animate-spin text-orange-600 w-10 h-10" /><p className="text-orange-600 font-bold uppercase tracking-widest text-xs">Loading...</p></div>}>
         <ContactForm />
       </Suspense>
     </div>
