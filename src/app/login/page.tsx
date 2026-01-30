@@ -47,47 +47,10 @@ function LoginContent() {
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (signInError) throw signInError;
-
-      if (data.user) {
-        toast.success("로그인 성공!");
-        const returnTo = searchParams.get("returnTo") || "/";
-        router.push(returnTo);
-      }
-    } catch (error: any) {
-      console.error("로그인 오류:", error);
-      const isUnverified = error.message?.includes("Email not confirmed");
-      
-      setError(error.message || "로그인 중 오류가 발생했습니다.");
-      
-      if (isUnverified) {
-          toast.error("이메일 인증이 필요합니다", { 
-              description: "인증 메일을 받지 못하셨나요? 아래 '인증 메일 재전송'을 눌러주세요.",
-              action: {
-                  label: "인증하러 가기",
-                  onClick: () => router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`)
-              }
-          });
-      } else {
-          toast.error("로그인 실패", { description: error.message });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  /* Firebase Migration: Replaced Supabase Logic */
+  const { signInWithGoogle, loading: authLoading, isAuthenticated } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
-
+  
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
@@ -99,27 +62,18 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      const returnTo = searchParams.get("returnTo") || "/";
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-      const redirectTo = `${baseUrl.replace(/\/$/, '')}/auth/callback?next=${encodeURIComponent(returnTo)}`;
-      
-      console.log('[Auth] Initiating Google Login with redirect:', redirectTo);
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: {
-            prompt: 'select_account'
-          }
-        },
-      });
-      if (error) throw error;
+      await signInWithGoogle();
+      // Router push handled in context or here
     } catch (error: any) {
-      console.error("Google Login Error:", error);
-      toast.error("Google 로그인에 실패했습니다.", { description: error.message });
+      toast.error("Google 로그인 실패", { description: error.message });
       setGoogleLoading(false);
     }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.info("현재 이메일 로그인은 점검 중입니다. 구글 로그인을 이용해주세요.");
+    // Firebase implementation for email/password can be added later if needed
   };
 
   return (

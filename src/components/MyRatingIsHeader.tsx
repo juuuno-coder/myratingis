@@ -21,9 +21,17 @@ export function MyRatingIsHeader() {
     setMounted(true);
   }, []);
 
+  // Firebase fallback for profile data
+  const displayName = userProfile?.nickname || user?.displayName || user?.email?.split('@')[0] || "Guest";
+  const displayImage = userProfile?.profile_image_url || user?.photoURL || "/globe.svg";
+
   const handleLogout = async () => {
-    await signOut();
-    router.push("/");
+    try {
+      await signOut();
+      router.push("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
   };
 
   return (
