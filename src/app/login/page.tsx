@@ -89,34 +89,19 @@ function LoginContent() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
-    console.log("[Login] Starting Google OAuth flow...");
     setGoogleLoading(true);
     try {
       const returnTo = searchParams.get("returnTo") || "/";
-      const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`;
-      console.log("[Login] Callback URL:", redirectUrl);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'select_account',
-          },
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
         },
       });
-
-      if (error) {
-        console.error("[Login] OAuth Error Object:", error);
-        throw error;
-      }
-      
-      console.log("[Login] OAuth Redirect triggered successfully", data);
+      if (error) throw error;
     } catch (error: any) {
-      console.error("Google 로그인 오류:", error);
-      setError(error.message || "Google 로그인 중 오류가 발생했습니다.");
-      toast.error("Google 로그인 실패", { description: error.message });
+      console.error("Google Login Error:", error);
+      toast.error("Google 로그인에 실패했습니다.");
       setGoogleLoading(false);
     }
   };
