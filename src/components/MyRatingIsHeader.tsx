@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function MyRatingIsHeader() {
   const router = useRouter();
-  const { user, userProfile, signOut, isAuthenticated } = useAuth();
+  const { user, userProfile, signOut, isAuthenticated, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -27,7 +32,9 @@ export function MyRatingIsHeader() {
         {/* Left: Logo */}
         <div className="flex-shrink-0 flex justify-start">
           <Link href="/" className="flex items-center gap-2 group">
-              {theme === 'dark' ? (
+              {!mounted ? (
+                <div className="h-7 w-24 bg-white/5 animate-pulse rounded" />
+              ) : theme === 'dark' ? (
                 <img src="/logo-white.png" alt="제 평가는요?" className="h-7 w-auto object-contain transition-all duration-300 group-hover:scale-105" />
               ) : (
                 <img src="/myratingis-logo.png" alt="제 평가는요?" className="h-7 w-auto object-contain transition-all duration-300 group-hover:scale-105 brightness-0" />
@@ -63,10 +70,12 @@ export function MyRatingIsHeader() {
             onClick={toggleTheme}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-all text-chef-text active:scale-95"
           >
-            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5 text-gray-600" />}
+            {!mounted ? <div className="w-5 h-5 bg-white/5 rounded-full" /> : theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5 text-gray-600" />}
           </button>
 
-          {isAuthenticated && user ? (
+          {!mounted || loading ? (
+            <div className="w-24 h-10 bg-white/5 animate-pulse rounded-xl" />
+          ) : isAuthenticated && user ? (
             <>
                <Button
                 onClick={() => router.push("/project/upload?mode=audit")}
