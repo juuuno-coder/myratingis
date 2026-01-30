@@ -155,11 +155,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }, 10000);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, curSess) => {
-      console.log(`[AuthContext] Auth Event: ${event}, Session: ${!!curSess}`);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
+      console.log(`[AuthContext] Event: ${event}, Session: ${!!curSess}, EmailConfirmed: ${curSess?.user?.email_confirmed_at}`);
       clearTimeout(safetyTimeout);
-      
-      if (['INITIAL_SESSION', 'SIGNED_IN', 'TOKEN_REFRESHED'].includes(event)) {
+
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
         updateState(curSess, curSess?.user || null);
         
         if (event === 'SIGNED_IN' && curSess) {

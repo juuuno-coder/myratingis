@@ -29,12 +29,16 @@ export async function GET(request: Request) {
       }
     )
     
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    console.log('[Auth Callback] Attempting to exchange code for session...');
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
     if (!error) {
+      console.log('[Auth Callback] Success! Redirecting to:', next);
+      // 구글 등 소셜 로그인의 경우 이 시점에 email_confirmed_at이 자동으로 박혀야 합니다.
       return NextResponse.redirect(`${origin}${next}`)
     }
     
-    console.error('[Auth Callback] Code exchange failed:', error.message)
+    console.error('[Auth Callback] Error:', error.message);
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
   }
 
