@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { supabase } from "@/lib/supabase/client";
+import { db } from "@/lib/firebase/client";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -96,58 +97,36 @@ export function OnboardingModal() {
     }
     setIsSubmitting(true);
     
-    // Timeout for safety
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
     try {
-      const updatePayload: any = {
-        updated_at: new Date().toISOString(),
+      const updatePayload = {
         nickname: formData.nickname,
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
-        expertise: { fields: formData.expertise }, 
+        expertise: { fields: formData.expertise },
+        onboardingCompleted: true,
+        updatedAt: serverTimestamp()
       };
 
-      console.log("Onboarding Payload:", updatePayload);
+      console.log("Onboarding Saving to Firestore:", updatePayload);
 
-      const response = await fetch('/api/user/profile', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatePayload),
-        signal: controller.signal
-      });
+      // Save directly to Firestore
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, updatePayload, { merge: true });
       
-      clearTimeout(timeoutId);
+      console.log("Onboarding Save Success");
 
-      if (!response.ok) {
-          const resData = await response.json();
-          throw new Error(resData.error || resData.details || 'Server update failed');
-      }
-      
-      console.log("Onboarding Success (API)");
-
-      // Mark as completed in local storage immediately
+      // Mark as completed in local storage
       localStorage.setItem(`onboarding_skipped_${user.uid}`, 'true');
 
-      // No need to await refreshUserProfile() since we reload
       toast.success("프로필 설정이 완료되었습니다!");
       
-      // Close immediately and reload
+      // Close immediately and reload to reflect changes
       setOpen(false);
       window.location.reload(); 
     } catch (error: any) {
       console.error("Onboarding Save Error:", error);
-      const errorMsg = error.name === 'AbortError' ? '요청 시간이 초과되었습니다.' : (error.message || "알 수 없는 오류가 발생했습니다.");
-      
-      toast.error(`저장 실패: ${errorMsg}`);
-      
-      if (confirm("저장 중 오류가 발생했습니다. 페이지를 새로고침 하시겠습니까?")) {
-         window.location.reload();
-      }
+      toast.error(`저장 실패: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
