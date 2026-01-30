@@ -43,7 +43,9 @@ export default function ForgotPasswordPage() {
     } catch (err: any) {
       console.error("Password reset error:", err);
       let msg = "오류가 발생했습니다. 다시 시도해주세요.";
-      if (err.code === 'auth/user-not-found') msg = "가입되지 않은 이메일입니다.";
+      if (err.code === 'auth/user-not-found') {
+          msg = "가입되지 않은 이메일입니다. \n이전 사용자는 [회원가입]을 진행해주시면 기존 데이터가 자동으로 연동됩니다!";
+      }
       if (err.code === 'auth/invalid-email') msg = "유효하지 않은 이메일 형식입니다.";
       
       setError(msg);
