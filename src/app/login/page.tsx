@@ -88,14 +88,29 @@ function LoginContent() {
 
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      const returnTo = searchParams.get("returnTo") || "/";
+      router.push(returnTo);
+    }
+  }, [isAuthenticated, router, searchParams]);
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
       const returnTo = searchParams.get("returnTo") || "/";
+      
+      // Clear session strictly before OAuth to avoid stale state
+      await supabase.auth.signOut();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
+          queryParams: {
+            prompt: 'select_account' // Ensure user can always pick an account
+          }
         },
       });
       if (error) throw error;
