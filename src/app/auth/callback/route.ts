@@ -10,34 +10,39 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/'
 
   if (code) {
-    const cookieStore = cookies()
+    // 1. Create a placeholder response for redirect
+    const response = NextResponse.redirect(`${origin}${next}`)
+    
+    // 2. Create the Supabase client that writes directly to the RESPONSE object
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return cookieStore.get(name)?.value
+            return request.cookies.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options })
+            // Write to both cookies store and response
+            response.cookies.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options })
+            response.cookies.set({ name, value: '', ...options })
           },
         },
       }
     )
     
-    // Use the official, simplest exchange method
+    // 3. Exchange the code for a session
+    console.log('[Auth Callback] 🔄 Code exchange for session starting...');
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      // For Next.js App Router, the cookies() set above will be reflected in this redirect
-      // as long as it's within the same domain.
-      return NextResponse.redirect(`${origin}${next}`)
+      console.log('[Auth Callback] ✅ Exchange success! Returning response with set-cookie headers.');
+      return response
     }
     
+    console.error('[Auth Callback] ❌ Exchange error:', error.message)
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
   }
 

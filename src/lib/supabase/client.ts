@@ -19,7 +19,15 @@ export const createClient = () => {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          flowType: 'pkce',
+          storageKey: 'sb-auth-token'
+        },
+        cookieOptions: {
+          name: 'sb-auth-token',
+          path: '/',
+          sameSite: 'lax',
+          secure: true
         }
       }
     );
