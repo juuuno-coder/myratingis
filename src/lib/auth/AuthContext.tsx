@@ -157,28 +157,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
-      console.log(`[AuthContext] 📢 Event: ${event}`);
-      console.log(`[AuthContext] 👤 User: ${u?.email || 'none'} (${u?.id || 'none'})`);
-      console.log(`[AuthContext] ✅ ConfirmedAt: ${u?.email_confirmed_at || 'NOT CONFIRMED'}`);
+      console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'} | Confirmed: ${!!u?.email_confirmed_at}`);
       
       clearTimeout(safetyTimeout);
 
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        // Even if email is not confirmed, if we have a user, let's treat them as authenticated
+        // This is the most robust way to handle social logins and temporary sync issues.
         updateState(curSess, u || null);
         
         if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
-          console.log('[AuthContext] 🚀 Navigating to home...');
-          
-          // Background task: claim guest ratings
-          const guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
-          if (guestId) {
-             fetch('/api/auth/claim-ratings', {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${curSess.access_token}` },
-                   body: JSON.stringify({ guest_id: guestId })
-             }).catch(() => {});
-          }
-          
+          console.log('[AuthContext] 🚀 Success landing from login, heading home.');
           router.push('/');
         }
       } else if (event === "SIGNED_OUT") {
