@@ -46,24 +46,15 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  /* Firebase Migration: Replaced Supabase Logic */
-  const { signInWithGoogle, loading: authLoading, isAuthenticated } = useAuth();
+  /* Firebase Migration Updates */
+  const { signInWithGoogle } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
-  
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      const returnTo = searchParams.get("returnTo") || "/";
-      router.push(returnTo);
-    }
-  }, [isAuthenticated, router, searchParams]);
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
-      // Router push handled in context or here
+      // Router push is handled by the AuthContext or the useEffect above
     } catch (error: any) {
       toast.error("Google 로그인 실패", { description: error.message });
       setGoogleLoading(false);
@@ -73,7 +64,6 @@ function LoginContent() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     toast.info("현재 이메일 로그인은 점검 중입니다. 구글 로그인을 이용해주세요.");
-    // Firebase implementation for email/password can be added later if needed
   };
 
   return (
@@ -110,7 +100,7 @@ function LoginContent() {
               <div className="h-1.5 w-10 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mt-3 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
             </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleEmailLogin}>
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-widest leading-loose">
                    [ Error : {error} ]
