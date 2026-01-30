@@ -56,10 +56,23 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
 
           // Check if current user liked this project
           let isLiked = false;
+          let hasRated = false;
+          
           if (user) {
               try {
+                  // Check Like
                   const likeSnap = await getDoc(doc(db, "projects", docSnap.id, "likes", user.uid));
                   isLiked = likeSnap.exists();
+
+                  // Check Rating (Evaluation)
+                  const evalQ = query(
+                      collection(db, "evaluations"),
+                      where("projectId", "==", docSnap.id),
+                      where("user_uid", "==", user.uid),
+                      limit(1)
+                  );
+                  const evalSnaps = await getDocs(evalQ);
+                  hasRated = !evalSnaps.empty;
               } catch(e) {}
           }
 
@@ -67,6 +80,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
               project_id: docSnap.id,
               ...data,
               is_liked: isLiked,
+              has_rated: hasRated,
               likes_count: data.like_count || 0, // Ensure like_count exists or default to 0
               User: { username: data.author_email?.split('@')[0] || "Unknown" } // Fallback for user info
           });
@@ -391,7 +405,7 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                         </Button>
                       )}
                       
-                      {(showCumulative || p.user_id === user?.id) && (
+                      {(showCumulative || p.user_id === user?.uid) && (
                          <Button 
                            variant="outline" 
                            onClick={() => router.push(`/report/${p.project_id}`)}
