@@ -209,9 +209,11 @@ export default function MyPage() {
               id: doc.id,
               title: data.title || '제목 없음',
               thumbnail_url: data.thumbnail_url || '/placeholder.jpg',
-              likes: data.likes || 0,
-              views: data.views || 0,
-              rating_count: data.rating_count || 0,
+              // Robust count mapping
+              likes: data.likes || data.likes_count || data.like_count || 0,
+              views: data.views || data.views_count || data.view_count || 0,
+              rating_count: data.rating_count || data.evaluations_count || 0,
+              
               created_at: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
               description: data.content_text || data.description || '',
               rendering_type: data.rendering_type || 'image',

@@ -87,7 +87,11 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
               ...data,
               is_liked: isLiked,
               has_rated: hasRated,
-              likes_count: data.like_count || data.likes || 0,
+              // Map counts robustly (handling various migration formats)
+              likes_count: data.likes_count || data.like_count || data.likes || 0,
+              views_count: data.views_count || data.view_count || data.views || 0,
+              rating_count: data.rating_count || data.evaluations_count || 0,
+              
               User: { username: data.author_email?.split('@')[0] || "Unknown" },
               createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.created_at ? new Date(data.created_at) : new Date())
           });
