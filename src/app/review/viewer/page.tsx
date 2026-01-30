@@ -20,7 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase/client';
+import { db } from '@/lib/firebase/client';
+import { doc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { MediaPreview } from '@/components/Review/MediaPreview';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 import { MichelinRating, MichelinRatingRef } from '@/components/MichelinRating';
@@ -83,7 +84,7 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
 type ViewerMode = 'desktop' | 'mobile';
 
 function ViewerContent() {
-  const { session, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const projectId = searchParams.get('projectId') || searchParams.get('projectid');
@@ -139,7 +140,6 @@ function ViewerContent() {
     }
     
     setGuestId(gid);
-    console.log("[Viewer] Current Guest ID:", gid);
 
     if (!projectId) {
       router.push('/');
@@ -149,17 +149,19 @@ function ViewerContent() {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/projects/${projectId}`);
-        const result = await response.json();
-        if (!response.ok || !result.project) throw new Error(result.error || "Loading failed");
+        // Changed to Firestore getDoc
+        const docRef = doc(db, "projects", projectId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) throw new Error("Project not found");
         
-        let parsedCustom = result.project.custom_data;
+        const data = docSnap.data();
+        let parsedCustom = data.custom_data;
         if (typeof parsedCustom === 'string') {
             try { parsedCustom = JSON.parse(parsedCustom); } catch (e) { parsedCustom = {}; }
         }
-        setProject({ ...result.project, custom_data: parsedCustom || {} });
+        setProject({ ...data, custom_data: parsedCustom || {} });
       } catch (e) {
-        if (e instanceof Error && e.name === 'AbortError') return;
         console.error("Failed to load project", e);
       } finally {
         setLoading(false);
@@ -218,30 +220,23 @@ function ViewerContent() {
 
   const handleFinalSubmit = async () => {
     try {
-      const headers = { 
-        'Content-Type': 'application/json',
-        ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
-      };
       const scoreValues = Object.values(michelinScores);
       const avgScore = scoreValues.length > 0 ? Number((scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length).toFixed(1)) : 0;
       
-      const res = await fetch(`/api/projects/${projectId}/rating`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ 
-            ...michelinScores, 
-            score: avgScore, 
-            custom_answers: customAnswers, 
-            guest_id: !session ? guestId : undefined 
-        })
-      });
-      if (!res.ok) throw new Error("Rating failed");
-      
-      if (pollSelection) {
-        await fetch(`/api/projects/${projectId}/vote`, {
-           method: 'POST', headers,
-           body: JSON.stringify({ voteType: pollSelection, guest_id: !session ? guestId : undefined })
-        });
-      }
+      const evaluationData = {
+        projectId,
+        scores: michelinScores,
+        score: avgScore,
+        custom_answers: customAnswers,
+        guest_id: !user ? guestId : null,
+        user_uid: user ? user.uid : null,
+        user_email: user ? user.email : null,
+        vote_type: pollSelection,
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, "evaluations"), evaluationData);
+
       setIsSubmitted(true);
       setCurrentStep(steps.length - 1);
       toast.success("평가가 제출되었습니다! 🎉");
