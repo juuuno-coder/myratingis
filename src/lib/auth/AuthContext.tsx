@@ -164,13 +164,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           firstEventReceived = true;
         } else {
           // If no immediate session, wait longer for the event listener (OAuth redirects)
-          // Increased to 3.5s for stability when usage limits are near
+          // Increased to 5s for maximum stability when usage limits are near
           setTimeout(() => {
             if (!firstEventReceived) {
-              console.log('[AuthContext] ⌛ No session found after timeout, concluding as guest.');
+              console.log('[AuthContext] ⌛ Final timeout reached. Concluding as guest.');
               setLoading(false);
             }
-          }, 3500);
+          }, 5000);
         }
       } catch (e) {
         console.error('[AuthContext] Init error:', e);
@@ -183,26 +183,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Step 2: Set up the subscriber
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
-      console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'}`);
+      const eventName = event as any;
+      console.log(`[AuthContext] 📢 Event: ${eventName} | User: ${u?.email || 'none'}`);
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+      if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
         if (u) {
           firstEventReceived = true;
           await updateState(curSess, u);
           
-          if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
+          if (eventName === 'SIGNED_IN' && window.location.pathname === '/login') {
             const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
             router.push(returnTo);
           }
-        } else if (event === 'INITIAL_SESSION') {
-          // Don't stop loading immediately, let the initAuth timeout handle the "no session" finalization
-          // This prevents a race where INITIAL_SESSION:none fires before SIGNED_IN
+        } else if (eventName === 'INITIAL_SESSION') {
+          // IMPORTANT: Do NOT stop loading yet. Let initAuth's timeout or a SIGNED_IN event handle it.
+          // This prevents premature redirection to login while cookies are still being processed.
+          console.log('[AuthContext] 🔍 INITIAL_SESSION: none. Waiting for potential OAuth follow-up...');
         }
-      } else if (event === "SIGNED_OUT") {
+      } else if (eventName === "SIGNED_OUT") {
         firstEventReceived = true;
         await updateState(null, null);
       } else {
-        setLoading(false);
+        // For other events like USER_UPDATED, etc.
+        if (!firstEventReceived && eventName !== 'INITIAL_SESSION') {
+          setLoading(false);
+        }
       }
     });
 

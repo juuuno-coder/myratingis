@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { Footer } from "@/components/Footer";
 import { Suspense, useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export function RootLayoutContent({ 
   children,
@@ -27,12 +28,30 @@ export function RootLayoutContent({
   
   const isReport = pathname?.startsWith('/report');
   
+  const { loading: authLoading } = useAuth();
+
   // Only hide the global layout for very specific specialized views (review viewer, reports, admin)
   const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isReport;
 
-  // Prevent flash or mismatch during hydration for dynamic parts
+  // Prevent flash or mismatch during hydration
   if (!mounted) {
-    return <div className="min-h-screen flex flex-col relative w-full overflow-x-hidden">{children}</div>;
+    return <div className="min-h-screen flex flex-col relative w-full overflow-x-hidden bg-[#050505]">{children}</div>;
+  }
+
+  // Show a premium loading overlay during the initial 5-second auth check
+  if (authLoading && !hideLayout && pathname === '/') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] selection:bg-orange-500/30">
+        <div className="relative group flex flex-col items-center">
+            {/* Logo placeholder or Spinner */}
+            <div className="w-16 h-16 border-4 border-orange-500/20 border-t-orange-600 rounded-full animate-spin mb-8" />
+            <div className="flex flex-col items-center gap-2">
+                <p className="text-chef-text font-black italic uppercase tracking-[0.3em] text-sm animate-pulse">Initializing Kitchen State...</p>
+                <p className="text-chef-text opacity-30 text-[10px] font-bold uppercase tracking-widest">Checking your professional credentials</p>
+            </div>
+        </div>
+      </div>
+    );
   }
 
   return (

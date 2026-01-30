@@ -11,6 +11,8 @@ export async function GET(request: Request) {
 
   if (code) {
     const cookieStore = cookies()
+    const response = NextResponse.redirect(`${origin}${next}`)
+    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -20,15 +22,11 @@ export async function GET(request: Request) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch {
-              // The `setAll` method was called from a Server Component.
-              // This can be ignored if you have middleware refreshing
-              // user sessions.
-            }
+            // Set on both the server-side cookie store and the client-bound response
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+              response.cookies.set(name, value, options)
+            })
           },
         },
       }
@@ -38,8 +36,8 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      console.log('[Auth Callback] ✅ Session exchanged successfully');
-      return NextResponse.redirect(`${origin}${next}`)
+      console.log('[Auth Callback] ✅ Session exchanged success. Cookies attached to response.');
+      return response
     }
     
     console.error('[Auth Callback] ❌ Exchange error:', error.message)
