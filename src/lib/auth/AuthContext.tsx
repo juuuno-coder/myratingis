@@ -188,17 +188,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       firstEventReceived = true;
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await updateState(curSess, u || null);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        if (u) {
+          await updateState(curSess, u);
+        } else if (event === 'INITIAL_SESSION') {
+          setLoading(false);
+        }
         
         // Handle redirect from login page
-        if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
+        if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
           const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
           router.push(returnTo);
         }
       } else if (event === "SIGNED_OUT") {
         await updateState(null, null);
-      } else if (event === 'INITIAL_SESSION' && !u) {
+      } else {
         setLoading(false);
       }
     });
