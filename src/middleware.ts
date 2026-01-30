@@ -2,15 +2,13 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // The official Supabase SSR middleware pattern for Next.js App Router.
-  // This ensures the user's session is refreshed and cookies are synchronized.
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  // Skip middleware for callback route to avoid session code consumption issues
+  // Skip middleware for callback route to avoid session code consumption issues during exchange
   if (request.nextUrl.pathname.startsWith('/auth/callback')) {
     return response;
   }
@@ -29,6 +27,11 @@ export async function middleware(request: NextRequest) {
             value,
             ...options,
           })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
           response.cookies.set({
             name,
             value,
@@ -41,6 +44,11 @@ export async function middleware(request: NextRequest) {
             value: '',
             ...options,
           })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
           response.cookies.set({
             name,
             value: '',
@@ -51,6 +59,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // This will refresh the session if it's expired
   await supabase.auth.getUser()
 
   return response
@@ -58,6 +67,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
