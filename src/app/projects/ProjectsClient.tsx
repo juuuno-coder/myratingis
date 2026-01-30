@@ -254,6 +254,10 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                         const getSmartThumbnail = () => {
                             // 1. If explicit thumbnail exists and is not a placeholder
                             if (p.thumbnail_url && !p.thumbnail_url.includes('placeholder')) {
+                                // Apply optimization proxy if it's a Supabase URL
+                                if (p.thumbnail_url.includes('supabase.co/storage/v1/object/public')) {
+                                    return `https://wsrv.nl/?url=${encodeURIComponent(p.thumbnail_url)}&w=800&q=80&output=webp`;
+                                }
                                 return p.thumbnail_url;
                             }
                             
@@ -261,7 +265,9 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                             const targetUrl = p.site_url || p.custom_data?.audit_config?.mediaA;
                             if (targetUrl && typeof targetUrl === 'string' && (targetUrl.startsWith('http') || targetUrl.includes('.'))) {
                                 const finalUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
-                                return `https://api.microlink.io/?url=${encodeURIComponent(finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                                const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(finalUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                                // Proxy Microlink too to ensure it's resized
+                                return `https://wsrv.nl/?url=${encodeURIComponent(microlinkUrl)}&w=800&q=80&output=webp`;
                             }
                             
                             // 3. Fallback

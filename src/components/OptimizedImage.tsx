@@ -27,14 +27,27 @@ export function OptimizedImage({
   fallbackSrc = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
   unoptimized = false
 }: OptimizedImageProps) {
-  const [imgSrc, setImgSrc] = useState(src);
+  // Utility to proxy Supabase images for resizing (to save Egress traffic)
+  const getOptimizedUrl = useCallback((originalUrl: string) => {
+    if (!originalUrl) return originalUrl;
+    
+    // Only proxy images from Supabase storage or external high-res sources
+    if (originalUrl.includes('supabase.co/storage/v1/object/public')) {
+        // wsrv.nl is a free, open-source image proxy and resizer
+        // Adjust width to 800px and quality to 80 for optimal balance
+        return `https://wsrv.nl/?url=${encodeURIComponent(originalUrl)}&w=800&q=80&output=webp`;
+    }
+    return originalUrl;
+  }, []);
+
+  const [imgSrc, setImgSrc] = useState(getOptimizedUrl(src));
   const [error, setError] = useState(false);
 
   // Sync state with src prop (fix for infinite scroll/stale images)
   useEffect(() => {
-    setImgSrc(src);
+    setImgSrc(getOptimizedUrl(src));
     setError(false);
-  }, [src]);
+  }, [src, getOptimizedUrl]);
 
   const handleError = () => {
     if (imgSrc !== fallbackSrc) {
