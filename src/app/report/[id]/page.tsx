@@ -139,7 +139,12 @@ export default function ReportPage() {
       };
     });
 
-    const stickerOptions = auditConfig?.poll?.options || [];
+    const stickerOptions = auditConfig?.poll?.options || [
+        { id: 'poll_1', label: '당장 계약하시죠! 탐나는 결과물', color: '#10b981' },
+        { id: 'poll_2', label: '좋긴 한데... 한 끗이 아쉽네요', color: '#f59e0b' },
+        { id: 'poll_3', label: '기획부터 다시! 싹 갈아엎읍시다', color: '#ef4444' },
+    ];
+    
     const polls: Record<string, number> = {};
     ratings.forEach(r => {
       if (r.vote_type) {
@@ -147,11 +152,26 @@ export default function ReportPage() {
       }
     });
 
-    const barData = stickerOptions.map((opt: any) => ({
-      name: opt.label,
-      value: polls[opt.id] || 0,
-      color: opt.color || '#f59e0b'
-    }));
+    const barData = stickerOptions.map((opt: any, index: number) => {
+      let count = polls[opt.id] || 0;
+      
+      // Fallback 1: Match by Label
+      if (count === 0 && polls[opt.label]) {
+          count = polls[opt.label];
+      }
+      
+      // Fallback 2: Match by generic ID (poll_1, poll_2, etc.) based on index
+      if (count === 0) {
+          const genericId = `poll_${index + 1}`;
+          if (polls[genericId]) count = polls[genericId];
+      }
+
+      return {
+        name: opt.label,
+        value: count,
+        color: opt.color || '#f59e0b'
+      };
+    });
 
     // Calculate Overall Average from all radar values
     const totalSum = radarData.reduce((acc: number, curr: any) => acc + curr.value, 0);
