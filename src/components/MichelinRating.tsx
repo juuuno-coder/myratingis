@@ -24,9 +24,11 @@ interface MichelinRatingProps {
 
 const DEFAULT_CATEGORIES = [
   { id: 'score_1', label: '기획력', icon: Lightbulb, color: '#f59e0b', desc: '논리적 구조와 의도', sticker: '/review/s1.png' },
-  { id: 'score_2', label: '완성도', icon: Zap, color: '#3b82f6', desc: '디테일과 마감 수준', sticker: '/review/s2.png' },
-  { id: 'score_3', label: '독창성', icon: Target, color: '#10b981', desc: '작가 고유의 스타일', sticker: '/review/s3.png' },
-  { id: 'score_4', label: '상업성', icon: TrendingUp, color: '#ef4444', desc: '시장 가치와 잠재력', sticker: '/review/s4.png' },
+  { id: 'score_2', label: '독창성', icon: Target, color: '#10b981', desc: '차별화된 컨셉', sticker: '/review/s3.png' }, // Swapped to match hexagonal flow better
+  { id: 'score_3', label: '심미성', icon: Sparkles, color: '#8b5cf6', desc: '시각적 아름다움', sticker: '/review/s2.png' },
+  { id: 'score_4', label: '완성도', icon: Zap, color: '#3b82f6', desc: '구현 품질과 마감', sticker: '/review/s2.png' },
+  { id: 'score_5', label: '상업성', icon: TrendingUp, color: '#ef4444', desc: '시장 경쟁력', sticker: '/review/s4.png' },
+  { id: 'score_6', label: '편의성', icon: Info, color: '#ec4899', desc: '사용자 경험', sticker: '/review/s1.png' },
 ];
 
 const ICON_MAP: Record<string, any> = {
@@ -35,7 +37,7 @@ const ICON_MAP: Record<string, any> = {
 
 export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRatingProps>(
   ({ projectId, ratingId, isDemo = false, activeCategoryIndex, guestId, onChange }, ref) => {
-  const { session } = useAuth();
+  const { user } = useAuth();
   const [projectData, setProjectData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -68,7 +70,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
     if (isDemo) return;
     try {
       const headers: any = {};
-      if (session) headers['Authorization'] = `Bearer ${session.access_token}`;
+      if (user) headers['X-Firebase-UID'] = user.uid;
       
       let url = `/api/projects/${projectId}/rating`;
       if (guestId) url += `?guest_id=${guestId}`;
@@ -154,7 +156,7 @@ export const MichelinRating = React.forwardRef<MichelinRatingRef, MichelinRating
         DEFAULT_CATEGORIES.forEach(c => initial[c.id] = 0);
         setScores(initial);
     }
-  }, [projectId, guestId, session]);
+  }, [projectId, guestId, user]);
 
   const isAllRated = () => {
     return categories.every(cat => (scores[cat.id] || 0) > 0);
