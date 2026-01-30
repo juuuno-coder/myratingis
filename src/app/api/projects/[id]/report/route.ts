@@ -86,7 +86,9 @@ export async function GET(
           catIds.forEach((id: string, idx: number) => {
               // Map score_1...6 columns to category ids by order
               const columnName = `score_${idx + 1}`;
-              sums[id] += (Number(curr[columnName]) || Number(curr[id]) || 0);
+              // Fallback priority: Specific column -> Category ID key -> Global average score -> 0
+              const val = Number(curr[columnName]) || Number(curr[id]) || Number(curr.score) || 0;
+              sums[id] += val;
           });
 
           // Aggregate vote_type from Rating table
