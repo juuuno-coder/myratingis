@@ -157,20 +157,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
+        console.log('[AuthContext] 🔍 Checking initial storage session...');
         const { data: { session: s } } = await supabase.auth.getSession();
+        
         if (s) {
-          console.log('[AuthContext] 🏠 Session Found:', s.user?.email);
+          console.log('[AuthContext] ✅ Found session in storage:', s.user?.email);
           await updateState(s, s.user);
           firstEventReceived = true;
         } else {
-          // If no immediate session, wait longer for the event listener (OAuth redirects)
-          // Increased to 5s for maximum stability when usage limits are near
-          setTimeout(() => {
-            if (!firstEventReceived) {
-              console.log('[AuthContext] ⌛ Final timeout reached. Concluding as guest.');
-              setLoading(false);
-            }
-          }, 5000);
+          console.log('[AuthContext] ⏳ No immediate session. Waiting for event bus/OAuth loop...');
         }
       } catch (e) {
         console.error('[AuthContext] Init error:', e);
@@ -184,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
       const eventName = event as any;
-      console.log(`[AuthContext] 📢 Event: ${eventName} | User: ${u?.email || 'none'}`);
+      console.log(`[AuthContext] 📢 AUTH_EVENT: ${eventName} | User: ${u?.email || 'none'}`);
       
       if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
         if (u) {
@@ -196,23 +191,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             router.push(returnTo);
           }
         } else if (eventName === 'INITIAL_SESSION') {
-          // IMPORTANT: Do NOT stop loading yet. Let initAuth's timeout or a SIGNED_IN event handle it.
-          // This prevents premature redirection to login while cookies are still being processed.
-          console.log('[AuthContext] 🔍 INITIAL_SESSION: none. Waiting for potential OAuth follow-up...');
+          // If no user on INITIAL_SESSION, we can conclude loading unless SIGNED_IN is coming
+          console.log('[AuthContext] ⏹️ INITIAL_SESSION concludes: No user.');
+          firstEventReceived = true;
+          setLoading(false);
         }
       } else if (eventName === "SIGNED_OUT") {
         firstEventReceived = true;
         await updateState(null, null);
+        setLoading(false);
       } else {
-        // For other events like USER_UPDATED, etc.
         if (!firstEventReceived && eventName !== 'INITIAL_SESSION') {
           setLoading(false);
         }
       }
     });
 
+    const safetyTimer = setTimeout(() => {
+        if (!firstEventReceived) {
+            console.log('[AuthContext] ⚠️ Safety timeout: Breaking loading state.');
+            setLoading(false);
+        }
+    }, 6000);
+
     return () => {
       subscription.unsubscribe();
+      clearTimeout(safetyTimer);
     };
   }, [updateState, router]);
 
