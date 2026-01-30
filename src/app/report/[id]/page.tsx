@@ -146,9 +146,22 @@ export default function ReportPage() {
     ];
     
     const polls: Record<string, number> = {};
+    const NORMALIZE_VOTE: Record<string, string> = {
+        'launch': 'poll_1',
+        'invest': 'poll_2',
+        'develop': 'poll_3',
+        'so-good': 'poll_1',
+        'good': 'poll_2',
+        'bad': 'poll_3'
+    };
+
     ratings.forEach(r => {
       if (r.vote_type) {
-        polls[r.vote_type] = (polls[r.vote_type] || 0) + 1;
+        const v = r.vote_type;
+        const normalized = NORMALIZE_VOTE[v] || v;
+        polls[normalized] = (polls[normalized] || 0) + 1;
+        // Also keep raw for label matching just in case
+        if (normalized !== v) polls[v] = (polls[v] || 0) + 1;
       }
     });
 
@@ -215,20 +228,6 @@ export default function ReportPage() {
       <MyRatingIsHeader />
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
-        <div className="bg-red-900/90 p-6 rounded-xl border-2 border-red-500 mb-8 text-sm font-mono text-white overflow-auto">
-          <p className="font-bold text-red-300 mb-2 border-b border-white/20 pb-2">🚨 VOTE DATA INSPECTOR</p>
-          <p>Ratings Loaded: {ratings.length}</p>
-          <div className="mt-4 space-y-2">
-             <p className="font-bold text-yellow-400">Raw Vote Types Found:</p>
-             <div className="bg-black/50 p-4 rounded text-xs break-all">
-               {JSON.stringify(ratings.map(r => r.vote_type), null, 2)}
-             </div>
-          </div>
-          <div className="mt-4">
-              <p className="font-bold text-blue-400">Current Poll Counts:</p>
-              <pre className="text-xs">{JSON.stringify(reportStats?.barData, null, 2)}</pre>
-          </div>
-        </div>
          {/* Hero Title */}
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
