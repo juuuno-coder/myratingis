@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ChevronRight, Check } from "lucide-react";
+import { ChevronRight, Check, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GENRE_CATEGORIES_WITH_ICONS, FIELD_CATEGORIES_WITH_ICONS } from "@/lib/ui-constants";
 
 export function OnboardingModal() {
-  const { user, userProfile, refreshUserProfile, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,7 +32,7 @@ export function OnboardingModal() {
     if (loading || !user) return;
     
     // 1. Check if user already skipped/completed in this browser
-    const skipKey = `onboarding_skipped_${user.id}`;
+    const skipKey = `onboarding_skipped_${user.uid}`;
     if (localStorage.getItem(skipKey) === 'true') return;
 
     // Don't show on specific paths if needed, generally show everywhere if logged in & missing info
@@ -50,7 +50,7 @@ export function OnboardingModal() {
            if (!formData.nickname) {
                setFormData(prev => ({
                    ...prev,
-                   nickname: (userProfile as any).nickname || user.user_metadata?.full_name || ""
+                   nickname: (userProfile as any).nickname || user.displayName || ""
                }));
            }
        } else {
@@ -84,7 +84,7 @@ export function OnboardingModal() {
   const handleClose = (isOpen: boolean) => {
       if (!isOpen && user) {
           // User dismissed the modal (ESC, backdrop click, etc.)
-          localStorage.setItem(`onboarding_skipped_${user.id}`, 'true');
+          localStorage.setItem(`onboarding_skipped_${user.uid}`, 'true');
       }
       setOpen(isOpen);
   };
@@ -131,7 +131,7 @@ export function OnboardingModal() {
       console.log("Onboarding Success (API)");
 
       // Mark as completed in local storage immediately
-      localStorage.setItem(`onboarding_skipped_${user.id}`, 'true');
+      localStorage.setItem(`onboarding_skipped_${user.uid}`, 'true');
 
       // No need to await refreshUserProfile() since we reload
       toast.success("프로필 설정이 완료되었습니다!");
@@ -177,33 +177,28 @@ export function OnboardingModal() {
         </DialogHeader>
 
         <div className="flex flex-col flex-1 h-full overflow-hidden">
-            {/* Top Bar: Progress & Info */}
-            <div className="w-full bg-chef-panel border-b border-chef-border px-6 py-4 flex items-center justify-between shrink-0">
-                <h1 className="font-black text-xl italic tracking-tighter text-chef-text hidden sm:block">
+            {/* Top Bar: Navigation & Info */}
+            <div className="w-full bg-chef-panel border-b border-chef-border px-6 py-4 flex items-center justify-between shrink-0 relative">
+                {/* Back Button (Left) */}
+                <div className="w-12">
+                   {step > 1 && (
+                       <button 
+                         onClick={() => setStep(step - 1)}
+                         className="p-2 rounded-full hover:bg-white/5 text-chef-text transition-colors"
+                         aria-label="이전 단계"
+                       >
+                           <ChevronLeft className="w-6 h-6" />
+                       </button>
+                   )}
+                </div>
+
+                {/* Title (Center) */}
+                <h1 className="font-black text-xl italic tracking-tighter text-chef-text absolute left-1/2 -translate-x-1/2">
                     제 평가는요?
                 </h1>
-                
-                {/* Steps Container - Horizontal Scroll if needed */}
-                <div className="flex items-center gap-3 md:gap-6 overflow-x-auto no-scrollbar mx-auto sm:mx-0">
-                    {[
-                        { step: 1, label: "환영" },
-                        { step: 2, label: "닉네임" },
-                        { step: 3, label: "정보" },
-                        { step: 4, label: "직업" },
-                        { step: 5, label: "분야" },
-                    ].map((s) => (
-                        <div key={s.step} className="flex items-center gap-2 shrink-0">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shadow-sm ${
-                                step >= s.step ? "bg-orange-600 text-white" : "bg-chef-card border border-chef-border text-chef-text opacity-20"
-                            }`}>
-                                {step > s.step ? <Check className="w-3 h-3" /> : s.step}
-                            </div>
-                            <span className={`text-xs md:text-sm font-bold ${step === s.step ? "text-chef-text" : "text-chef-text opacity-20"}`}>
-                                {s.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+
+                {/* Placeholder for balance (Right) */}
+                <div className="w-12"></div>
             </div>
 
             {/* Main Content Area */}
