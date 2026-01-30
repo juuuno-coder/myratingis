@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase/client";
+import { auth } from "@/lib/firebase/client";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -21,15 +22,16 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
+      await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
     } catch (err: any) {
       console.error("Password reset error:", err);
-      setError(err.message || "오류가 발생했습니다. 다시 시도해주세요.");
+      // Friendly error mapping
+      let msg = "오류가 발생했습니다. 다시 시도해주세요.";
+      if (err.code === 'auth/user-not-found') msg = "가입되지 않은 이메일입니다.";
+      if (err.code === 'auth/invalid-email') msg = "유효하지 않은 이메일 형식입니다.";
+      
+      setError(msg);
     } finally {
       setLoading(false);
     }
