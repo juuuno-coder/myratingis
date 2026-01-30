@@ -195,10 +195,10 @@ export default function MyPage() {
         if (activeTab === 'projects' || activeTab === 'audit_requests') {
           // Firebase Firestore Query
           const projectsRef = collection(db, "projects");
+          // Query by email to handle migrated data mismatch (Supabase ID vs Firebase ID)
           const q = query(
             projectsRef, 
-            where("author_uid", "==", userId), 
-            orderBy("createdAt", "desc")
+            where("author_email", "==", authUser?.email || "")
           );
           
           const querySnapshot = await getDocs(q);
@@ -222,6 +222,9 @@ export default function MyPage() {
               site_url: data.site_url,
             };
           });
+
+          // Sort client-side to avoid index issues
+          fetchedProjects.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           if (activeTab === 'audit_requests') {
             fetchedProjects = fetchedProjects.filter((p: any) => p.custom_data?.audit_config || p.audit_deadline);
