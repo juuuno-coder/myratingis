@@ -177,6 +177,20 @@ export default function ReportPage() {
       <MyRatingIsHeader />
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
+        <div className="bg-red-900/50 p-4 rounded-xl border border-red-500 mb-8 text-xs font-mono text-white overflow-auto max-h-60">
+          <p className="font-bold text-red-300 mb-2">🚨 DEBUG PANEL (Will be removed)</p>
+          <p>Project ID: {projectId}</p>
+          <p>Project Loaded: {project ? 'YES' : 'NO'} ({project?.title})</p>
+          <p>Ratings Count: {ratings.length}</p>
+          <p>ReportStats Computed: {reportStats ? 'YES' : 'NO'}</p>
+          <p>Radar Data Len: {reportStats?.radarData?.length || 0}</p>
+          <div className="mt-2 p-2 bg-black/50 rounded">
+             First Rating: {JSON.stringify(ratings[0] || 'None')}
+          </div>
+          <div className="mt-2 p-2 bg-black/50 rounded">
+             Computed Radar: {JSON.stringify(reportStats?.radarData || 'None')}
+          </div>
+        </div>
          {/* Hero Title */}
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
