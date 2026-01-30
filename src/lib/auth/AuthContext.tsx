@@ -164,15 +164,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       try {
         setAuthStatus("🔍 브라우저 쿠키/세션 확인 중...");
-        const { data: { session: s } } = await supabase.auth.getSession();
+        const { data: { session: s }, error: sessionError } = await supabase.auth.getSession();
         
+        if (sessionError) throw sessionError;
+
         if (s) {
           console.log('[AuthContext] ✅ Found session in storage:', s.user?.email);
           setAuthStatus(`✅ 세션 발견: ${s.user?.email}`);
           userRef.current = s.user;
           await updateState(s, s.user);
           firstEventReceived = true;
-          // Even if found, let's wait a tiny bit to ensure everything is stable
           setTimeout(() => setLoading(false), 500);
         } else {
           setAuthStatus("⌛ 대기: 수파베이스 인증 신호를 수신하는 중...");
@@ -180,7 +181,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (e: any) {
         console.error('[AuthContext] Init error:', e);
-        setAuthError(e.message || "인증 초기화 중 오류가 발생했습니다.");
+        const errorMsg = e.message === 'Email not confirmed' 
+            ? "⚠️ 이메일 인증이 완료되지 않았습니다. 수파베이스 설정에서 'Confirm Email'을 꺼주세요."
+            : e.message || "인증 초기화 중 오류가 발생했습니다.";
+        setAuthError(errorMsg);
+        setAuthStatus("❌ 오류 발생");
         setLoading(false);
       }
     };
@@ -189,56 +194,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Step 2: Set up the subscriber
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
-      const u = curSess?.user;
-      const eventName = event as any;
-      userRef.current = u ?? null;
-      console.log(`[AuthContext] 📢 AUTH_EVENT: ${eventName} | User: ${u?.email || 'none'}`);
-      setAuthStatus(`📢 인증 신호: ${eventName}...`);
-      
-      if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
-        if (u) {
-          firstEventReceived = true;
-          setAuthStatus(`🎉 로그인 성공: ${u.email}`);
-          await updateState(curSess, u);
-          setLoading(false);
-          
-          if (eventName === 'SIGNED_IN' && window.location.pathname === '/login') {
-            const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
-            router.push(returnTo);
-          }
-        } else if (eventName === 'INITIAL_SESSION') {
-          setAuthStatus("🔍 세션 없음. 소셜 로그인 동기화 대기 중...");
-          // If no user on INITIAL_SESSION, we wait up to 4 seconds to be absolutely sure.
-          setTimeout(async () => {
-            if (!userRef.current) {
-                 setAuthStatus("🔄 최종 확인 단계: 서버에 직접 질의 중...");
-                 const { data: { session: finalSess } } = await supabase.auth.getSession();
-                 if (finalSess) {
-                    setAuthStatus("✨ 최종 확인으로 세션 복구 성공!");
-                    userRef.current = finalSess.user;
-                    await updateState(finalSess, finalSess.user);
-                    firstEventReceived = true;
-                    setLoading(false);
-                 } else {
-                    setAuthStatus("⏹️ 확인 완료: 게스트 사용자.");
-                    firstEventReceived = true;
-                    setLoading(false);
-                 }
-            } else {
-                setLoading(false);
+      try {
+        const u = curSess?.user;
+        const eventName = event as any;
+        userRef.current = u ?? null;
+        console.log(`[AuthContext] 📢 AUTH_EVENT: ${eventName} | User: ${u?.email || 'none'}`);
+        setAuthStatus(`📢 인증 신호 수신: ${eventName}...`);
+        
+        if (eventName === 'SIGNED_IN' || eventName === 'TOKEN_REFRESHED' || eventName === 'INITIAL_SESSION') {
+          if (u) {
+            // Check if email is confirmed if required
+            if (u.aud === 'authenticated' && !u.email_confirmed_at && eventName === 'SIGNED_IN') {
+                console.warn('[AuthContext] ⚠️ Email not confirmed for user:', u.email);
             }
-          }, 4000);
-        }
-      } else if (eventName === "SIGNED_OUT") {
-        setAuthStatus("🚪 로그아웃 처리 중...");
-        firstEventReceived = true;
-        userRef.current = null;
-        await updateState(null, null);
-        setLoading(false);
-      } else {
-        if (!firstEventReceived && eventName !== 'INITIAL_SESSION') {
+
+            firstEventReceived = true;
+            setAuthStatus(`🎉 로그인 성공: ${u.email}`);
+            await updateState(curSess, u);
+            setLoading(false);
+            
+            if (eventName === 'SIGNED_IN' && window.location.pathname === '/login') {
+              const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+              router.push(returnTo);
+            }
+          } else if (eventName === 'INITIAL_SESSION') {
+            setAuthStatus("🔍 세션 대기 중 (소셜 로그인 동기화)...");
+            setTimeout(async () => {
+              if (!userRef.current) {
+                   setAuthStatus("🔄 최종 확인: 서버 세션 직접 확인 중...");
+                   const { data: { session: finalSess }, error: finalErr } = await supabase.auth.getSession();
+                   
+                   if (finalErr) {
+                       setAuthError(finalErr.message);
+                       setLoading(false);
+                       return;
+                   }
+
+                   if (finalSess) {
+                      setAuthStatus("✨ 세션 복구 성공!");
+                      userRef.current = finalSess.user;
+                      await updateState(finalSess, finalSess.user);
+                      firstEventReceived = true;
+                      setLoading(false);
+                   } else {
+                      setAuthStatus("⏹️ 게스트 모드로 시작합니다.");
+                      firstEventReceived = true;
+                      setLoading(false);
+                   }
+              } else {
+                  setLoading(false);
+              }
+            }, 4000);
+          }
+        } else if (eventName === "SIGNED_OUT") {
+          setAuthStatus("🚪 로그아웃 완료.");
+          firstEventReceived = true;
+          userRef.current = null;
+          await updateState(null, null);
           setLoading(false);
         }
+      } catch (err: any) {
+        console.error('[AuthContext] Event Error:', err);
+        setAuthError(err.message);
+        setLoading(false);
       }
     });
 
