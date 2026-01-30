@@ -1,9 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { auth, googleProvider, db, storage } from "@/lib/firebase/client"; // db added
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore"; // firestore methods
+import { User, signInWithPopup, signOut as firebaseSignOut, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, googleProvider, db } from "@/lib/firebase/client"; 
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -12,17 +12,18 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   authError: string | null;
-  userProfile: any; // Added for compatibility
-  isAdmin: boolean; // Added for compatibility
+  userProfile: any;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null); // Local profile state
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const router = useRouter();
@@ -69,7 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                role: legacyData.role || 'user',
                points: legacyData.points || 0,
                nickname: legacyData.nickname || currentUser.displayName || "",
-               // Merge other legacy fields if needed
                ...legacyData
              };
 
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
              }
 
           } else {
-             // Update existing user (sync latest Google info)
+             // Update existing user (sync latest info)
              await setDoc(userRef, profileData, { merge: true });
              setUserProfile(userSnap.data());
           }
@@ -117,6 +117,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      // Ensure auth is initialized
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/");
+    } catch (error: any) {
+       console.error("Email Login Failed", error);
+       setAuthError(error.message);
+       throw error;
+    } finally {
+       setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
@@ -126,8 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  /* Firebase Migration: Cleaned up context values */
-  const isAdmin = userProfile?.role === 'admin' || user?.email === 'design@designdlab.co.kr'; // Temporary hardcode
+  const isAdmin = userProfile?.role === 'admin' || user?.email === 'design@designdlab.co.kr';
 
   return (
     <AuthContext.Provider value={{ 
@@ -135,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading, 
       isAuthenticated: !!user, 
       signInWithGoogle, 
+      signInWithEmail,
       signOut, 
       authError,
       userProfile,

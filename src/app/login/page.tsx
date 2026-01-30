@@ -47,7 +47,7 @@ function LoginContent() {
   }, [searchParams]);
 
   /* Firebase Migration Updates */
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signInWithEmail } = useAuth(); // Added signInWithEmail
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
@@ -63,7 +63,15 @@ function LoginContent() {
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info("현재 이메일 로그인은 점검 중입니다. 구글 로그인을 이용해주세요.");
+    setLoading(true);
+    try {
+      await signInWithEmail(formData.email, formData.password);
+      // Success handled by AuthContext router push
+    } catch (error: any) {
+      console.error(error);
+      toast.error("로그인 실패", { description: "이메일 또는 비밀번호를 확인해주세요." });
+      setLoading(false);
+    }
   };
 
   return (
