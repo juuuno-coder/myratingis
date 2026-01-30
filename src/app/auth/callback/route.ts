@@ -24,6 +24,8 @@ export async function GET(request: Request) {
 
     if (code) {
       const cookieStore = cookies()
+      const response = NextResponse.redirect(finalUrl) // Create response first to sync cookies
+      
       const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -34,9 +36,11 @@ export async function GET(request: Request) {
             },
             set(name: string, value: string, options: CookieOptions) {
               cookieStore.set({ name, value, ...options })
+              response.cookies.set({ name, value, ...options }) // Manually sync to response
             },
             remove(name: string, options: CookieOptions) {
               cookieStore.delete({ name, ...options })
+              response.cookies.delete({ name, ...options })
             },
           },
         }
@@ -50,11 +54,10 @@ export async function GET(request: Request) {
       }
   
       if (session) {
-        // 성공 시 리다이렉트
         if (type === 'recovery') {
           return NextResponse.redirect(`${origin}/reset-password`)
         }
-        return NextResponse.redirect(finalUrl)
+        return response; // Return the response that now has the cookies
       }
     }
 
