@@ -66,8 +66,21 @@ function LoginContent() {
       }
     } catch (error: any) {
       console.error("로그인 오류:", error);
+      const isUnverified = error.message?.includes("Email not confirmed");
+      
       setError(error.message || "로그인 중 오류가 발생했습니다.");
-      toast.error("로그인 실패", { description: error.message });
+      
+      if (isUnverified) {
+          toast.error("이메일 인증이 필요합니다", { 
+              description: "인증 메일을 받지 못하셨나요? 아래 '인증 메일 재전송'을 눌러주세요.",
+              action: {
+                  label: "인증하러 가기",
+                  onClick: () => router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`)
+              }
+          });
+      } else {
+          toast.error("로그인 실패", { description: error.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -131,6 +144,16 @@ function LoginContent() {
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-widest leading-loose">
                    [ Error : {error} ]
+                   {error.includes("Email not confirmed") && (
+                     <div className="mt-2 pt-2 border-t border-red-500/20">
+                        <Link 
+                          href={`/verify-email?email=${encodeURIComponent(formData.email)}`}
+                          className="text-orange-500 hover:text-orange-400 underline underline-offset-4"
+                        >
+                          인증 메일 재전송하기 →
+                        </Link>
+                     </div>
+                   )}
                 </div>
               )}
 

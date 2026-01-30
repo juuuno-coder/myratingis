@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Mail, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, Clock, CheckCircle2, AlertCircle, ChevronLeft, SendHorizontal } from "lucide-react";
+import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
+import Image from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -18,13 +20,11 @@ export default function VerifyEmailPage() {
   const [resendCount, setResendCount] = useState(0);
 
   useEffect(() => {
-    // URL에서 이메일 파라미터 가져오기
     const emailParam = searchParams.get("email");
     if (emailParam) {
       setEmail(emailParam);
     }
 
-    // 쿨다운 타이머
     if (cooldown > 0) {
       const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
       return () => clearTimeout(timer);
@@ -46,7 +46,6 @@ export default function VerifyEmailPage() {
     setLoading(true);
 
     try {
-      // Supabase의 resend 기능 사용
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: cleanEmail,
@@ -58,7 +57,7 @@ export default function VerifyEmailPage() {
       if (error) throw error;
 
       setResendCount(resendCount + 1);
-      setCooldown(60); // 60초 쿨다운
+      setCooldown(60);
       
       toast.success("인증 이메일이 재전송되었습니다!", {
         description: "이메일을 확인해주세요. 스팸함도 확인해보세요.",
@@ -70,7 +69,7 @@ export default function VerifyEmailPage() {
       
       if (error.message?.includes("Email rate limit exceeded") || error.message?.includes("security purposes")) {
         toast.error("너무 많은 요청을 보냈습니다", {
-          description: "잠시 후 (약 1~2분 뒤) 다시 시도해주세요.",
+          description: "잠시 후 (약 1~2분 뒤) 다시 시도해주세요. 만약 계속 실패한다면 관리자에게 문의바랍니다.",
         });
         setCooldown(60); 
       } else if (error.message?.includes("invalid") || error.code === 'validation_failed') {
@@ -88,124 +87,132 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 via-white to-blue-50">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-        {/* 헤더 */}
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <Mail className="w-8 h-8 text-green-600" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            이메일 인증
-          </h2>
-          <p className="text-sm text-gray-600">
-            가입하신 이메일로 인증 링크를 보내드렸습니다
-          </p>
+    <div className="min-h-screen chef-bg-dark selection:bg-orange-500/30">
+      <MyRatingIsHeader />
+      
+      <div className="flex min-h-screen flex-col items-center justify-center py-24 px-6 relative overflow-hidden">
+        {/* Decorative Ornaments */}
+        <div className="absolute top-0 left-0 p-20 opacity-5 pointer-events-none select-none">
+          <div className="text-[120px] font-black text-white leading-none tracking-tighter uppercase italic">Verify</div>
         </div>
 
-        {/* 안내 사항 */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-900">
-              <p className="font-semibold mb-1">이메일을 확인해주세요</p>
-              <p className="text-blue-700">받은편지함에서 인증 링크를 클릭하면 가입이 완료됩니다.</p>
+        <div className="w-full max-w-lg relative z-10">
+          <div className="rounded-[2.5rem] p-10 chef-black-panel shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border-2 border-white/5 backdrop-blur-3xl">
+            {/* Logo Area */}
+            <div className="flex justify-center mb-10">
+              <Image
+                src="/myratingis-logo.png"
+                alt="MyRatingIs"
+                width={180}
+                height={54}
+                className="h-9 w-auto invert brightness-0"
+              />
+            </div>
+
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-500/10 border-2 border-orange-500/20 mb-6 group">
+                <Mail className="w-10 h-10 text-orange-500 group-hover:scale-110 transition-transform" />
+              </div>
+              <h2 className="text-3xl font-black tracking-tighter text-chef-text uppercase italic">
+                VERIFY EMAIL
+              </h2>
+              <div className="h-1.5 w-10 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mt-3 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
+              <p className="mt-4 text-chef-text/60 font-bold text-sm tracking-tight break-keep">
+                가입하신 이메일 <span className="text-orange-500">{email}</span> 로<br />
+                인증 링크를 보내드렸습니다.
+              </p>
+            </div>
+
+            {/* Instruction Guidelines */}
+            <div className="space-y-4 mb-10">
+              <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 mt-1 shrink-0" />
+                <div>
+                   <p className="text-sm font-black text-chef-text tracking-tight mb-1">받은편지함 확인</p>
+                   <p className="text-xs text-chef-text/40 font-bold leading-relaxed">전송된 링크를 클릭하면 즉시 주방(서비스)으로 입장하실 수 있습니다.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                <AlertCircle className="w-5 h-5 text-orange-500/50 mt-1 shrink-0" />
+                <div>
+                   <p className="text-sm font-black text-chef-text tracking-tight mb-1">메일이 보이지 않는다면?</p>
+                   <p className="text-xs text-chef-text/40 font-bold leading-relaxed">스팸함(특히 네이버/Gmail 프로모션)을 확인해주세요. 전송에 최대 3분이 소요될 수 있습니다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-[11px] font-black text-chef-text opacity-40 uppercase tracking-[0.2em] ml-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="CHEF@MYRATING.IS"
+                    className="w-full h-16 bg-[#1a1a1a] border-2 border-white/5 text-white font-bold px-8 rounded-2xl focus:border-orange-500/50 focus:bg-[#222] outline-none transition-all placeholder:text-white/10 shadow-inner text-lg"
+                    disabled={loading}
+                  />
+               </div>
+
+               <Button
+                  onClick={handleResendEmail}
+                  disabled={loading || cooldown > 0}
+                  className={cn(
+                    "w-full h-18 text-white text-xl font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg border-t border-white/20",
+                    cooldown > 0 ? "bg-white/10 opacity-50" : "bg-gradient-to-br from-orange-500 to-orange-600 hover:to-orange-700 shadow-[0_20px_40px_-10px_rgba(249,115,22,0.4)]"
+                  )}
+               >
+                  {loading ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                      전송 중...
+                    </div>
+                  ) : cooldown > 0 ? (
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5" />
+                      {cooldown}초 후 재시도
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <SendHorizontal className="w-5 h-5" />
+                      인증 메일 재전송하기
+                    </div>
+                  )}
+               </Button>
+
+               {resendCount > 0 && (
+                 <p className="text-center text-[10px] font-black text-orange-500/50 uppercase tracking-widest">
+                   Email Resent {resendCount} times
+                 </p>
+               )}
+            </div>
+
+            <div className="mt-12 pt-8 border-t border-white/5 flex flex-col gap-4">
+               <button 
+                  onClick={() => router.push("/login")}
+                  className="flex items-center justify-center gap-2 text-chef-text/40 hover:text-chef-text transition-colors text-xs font-black uppercase tracking-widest"
+               >
+                  <ChevronLeft className="w-4 h-4" /> Back to Login
+               </button>
+               
+               <p className="text-center text-[10px] font-black text-chef-text opacity-20 uppercase tracking-[0.2em]">
+                  계속 문제가 발생하나요? <Link href="/contact" className="text-orange-500 underline underline-offset-4">헬프데스크 문의</Link>
+               </p>
             </div>
           </div>
-          
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-amber-900">
-              <p className="font-semibold mb-1">이메일이 안 보이나요?</p>
-              <ul className="text-amber-700 space-y-1 list-disc list-inside">
-                <li>스팸함을 확인해보세요</li>
-                <li>이메일 주소가 정확한지 확인하세요</li>
-                <li>몇 분 정도 기다려보세요</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* 이메일 입력 */}
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              이메일 주소
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="h-12 rounded-lg"
-              disabled={loading}
-            />
-          </div>
-
-          {/* 재전송 버튼 */}
-          <Button
-            onClick={handleResendEmail}
-            disabled={loading || cooldown > 0}
-            className="w-full h-12 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold"
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                전송 중...
-              </div>
-            ) : cooldown > 0 ? (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                {cooldown}초 후 재전송 가능
-              </div>
-            ) : (
-              "인증 이메일 재전송"
-            )}
-          </Button>
-
-          {resendCount > 0 && (
-            <p className="text-xs text-center text-gray-500">
-              📧 이메일을 {resendCount}번 재전송했습니다
-            </p>
-          )}
-        </div>
-
-        {/* 구분선 */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-4 text-gray-500">또는</span>
-          </div>
-        </div>
-
-        {/* 하단 링크 */}
-        <div className="space-y-3">
-          <Button
-            onClick={() => router.push("/login")}
-            variant="outline"
-            className="w-full h-11 rounded-lg border-gray-300"
-          >
-            로그인 페이지로 돌아가기
-          </Button>
-
-          <div className="text-center text-sm text-gray-600">
-            이메일이 계속 안 오나요?{" "}
-            <Link href="/signup" className="font-medium text-green-600 hover:text-green-700 hover:underline">
-              다시 가입하기
-            </Link>
-          </div>
-        </div>
-
-        {/* 도움말 */}
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-600">
-            💡 <strong>팁:</strong> Gmail 사용자는 "프로모션" 탭도 확인해보세요
-          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen chef-bg-dark flex items-center justify-center text-white font-black animate-pulse uppercase tracking-[0.5em]">Authenticating...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
