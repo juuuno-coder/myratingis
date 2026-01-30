@@ -86,23 +86,38 @@ function LoginContent() {
     }
   };
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleGoogleLogin = async () => {
+    console.log("[Login] Starting Google OAuth flow...");
+    setGoogleLoading(true);
     try {
       const returnTo = searchParams.get("returnTo") || "/";
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`;
+      console.log("[Login] Callback URL:", redirectUrl);
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
+            prompt: 'select_account',
           },
         },
       });
-      if (error) throw error;
+
+      if (error) {
+        console.error("[Login] OAuth Error Object:", error);
+        throw error;
+      }
+      
+      console.log("[Login] OAuth Redirect triggered successfully", data);
     } catch (error: any) {
       console.error("Google 로그인 오류:", error);
       setError(error.message || "Google 로그인 중 오류가 발생했습니다.");
       toast.error("Google 로그인 실패", { description: error.message });
+      setGoogleLoading(false);
     }
   };
 
@@ -233,11 +248,21 @@ function LoginContent() {
 
             <Button
               onClick={handleGoogleLogin}
+              disabled={googleLoading || loading}
               variant="outline"
               className="w-full h-16 bg-white/5 border-2 border-white/10 text-chef-text hover:bg-white/10 rounded-2xl font-black text-sm tracking-widest uppercase transition-all shadow-xl group"
             >
-              <FcGoogle className="h-7 w-7 mr-4 group-hover:scale-110 transition-transform" />
-              Continue with Google
+              {googleLoading ? (
+                <div className="flex items-center gap-3">
+                   <div className="w-5 h-5 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                   Redirecting...
+                </div>
+              ) : (
+                <>
+                  <FcGoogle className="h-7 w-7 mr-4 group-hover:scale-110 transition-transform" />
+                  Continue with Google
+                </>
+              )}
             </Button>
 
             <div className="mt-12 text-center">
