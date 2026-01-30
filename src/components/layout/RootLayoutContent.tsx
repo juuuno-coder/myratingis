@@ -25,13 +25,10 @@ export function RootLayoutContent({
   // These checks might differ between server and client, so we gate them with 'mounted'
   const isReviewSubdomain = mounted && typeof window !== 'undefined' && (window.location.hostname.includes('review') || window.location.host.includes('review'));
   
-  const isHome = pathname === '/';
   const isReport = pathname?.startsWith('/report');
-  const isLogin = pathname === '/login';
-  const isSignup = pathname === '/signup';
   
-  // Only hide the global layout for very specific specialized views
-  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isHome || isReport || isLogin || isSignup;
+  // Only hide the global layout for very specific specialized views (review viewer, reports, admin)
+  const hideLayout = isAdminPage || isReviewPath || isReviewSubdomain || isReviewServer || isReport;
 
   // Prevent flash or mismatch during hydration for dynamic parts
   if (!mounted) {
@@ -41,7 +38,7 @@ export function RootLayoutContent({
   return (
     <div className="flex min-h-screen flex-col relative w-full overflow-x-hidden">
       {!hideLayout && <MyRatingIsHeader />}
-      <main className={`flex-1 w-full max-w-[1920px] mx-auto ${hideLayout ? "" : "pt-[60px] pb-20"} fade-in`}>
+      <main className={`flex-1 w-full max-w-[1920px] mx-auto ${hideLayout ? "" : "pt-20 pb-20"} fade-in`}>
         <Suspense fallback={null}>
           {children}
         </Suspense>

@@ -13,11 +13,9 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center pt-[60px]">
-      {isAuthenticated && <MyRatingIsHeader />}
+    <div className="relative min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-center">
       {/* Background Texture / Gradient */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('/dark-texture-bg.jpg')] bg-cover bg-center opacity-30 mix-blend-overlay" />
