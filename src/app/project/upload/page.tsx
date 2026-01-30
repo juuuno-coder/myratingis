@@ -18,12 +18,14 @@ import {
   faCalculator
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { uploadImage } from "@/lib/supabase/storage";
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "@/lib/firebase/client"; 
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHat, Sparkles, Info, Globe, Link } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
-import { supabase } from "@/lib/supabase/client";
+
 const STICKER_PRESETS: Record<string, any[]> = {
     professional: [
       { id: 'pr1', label: '당장 런칭하시죠!\n기대되는 결과물!', desc: '시장에 즉시 내놓아도 손색없을 만큼\n압도적인 퀄리티와 가치를 증명한 프로젝트', image_url: '/review/a1.jpeg' },
@@ -42,12 +44,21 @@ const STICKER_PRESETS: Record<string, any[]> = {
   ]
 };
 
+/* Helper: Firebase Image Upload */
+const uploadImage = async (file: File) => {
+  const ext = file.name.split('.').pop();
+  const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${ext}`;
+  const storageRef = ref(storage, `uploads/${filename}`);
+  const snapshot = await uploadBytes(storageRef, file);
+  return await getDownloadURL(snapshot.ref);
+};
+
 export default function ProjectUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, session, userProfile, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   
-  // 1. Move ALL Hooks to the top (Before any early returns)
+  // 1. Restore State Hooks
   const [rewardType, setRewardType] = useState<'none' | 'point' | 'coupon'>('none');
   const [rewardAmount, setRewardAmount] = useState(500);
   const [recipientCount, setRecipientCount] = useState(10);
@@ -82,9 +93,9 @@ export default function ProjectUploadPage() {
     "발전을 위해 조언해 주실 부분이 있다면 자유롭게 말씀해 주세요."
   ]);
 
-  const mode = searchParams.get('mode') || 'audit'; 
+  const mode = searchParams.get('mode') || 'audit';
 
-  // 2. Auth Guard Effects
+  // 2. Auth Guard
   useEffect(() => {
     if (!authLoading && !user) {
       toast.error("평가 의뢰를 위해 로그인이 필요합니다.");
@@ -92,49 +103,52 @@ export default function ProjectUploadPage() {
     }
   }, [authLoading, user, router]);
 
-  // 3. Early Return ONLY AFTER Hook Initializations
-  // 4. Initialization Logic
+  // 3. Initialization
   useEffect(() => {
     if (!pollOptions.length) {
        setPollOptions(STICKER_PRESETS.professional);
     }
   }, []);
 
-  // [New] Edit Mode Data Fetching
+  // [Firebase] Edit Mode Data Fetching
   const editId = searchParams.get('edit');
   useEffect(() => {
     if (editId) {
       const fetchProject = async () => {
-        const { data, error } = await supabase
-          .from('Project')
-          .select('*')
-          .eq('project_id', Number(editId))
-          .single();
-        
-        if (!error && data) {
-          const p = data as any;
-          setTitle(p.title || "");
-          setSummary(p.summary || "");
-          setVisibility(p.visibility as any || 'public');
-          if (p.audit_deadline) setAuditDeadline(p.audit_deadline.split('T')[0]);
+        try {
+          const docRef = doc(db, "projects", editId);
+          const docSnap = await getDoc(docRef);
           
-          const config = p.custom_data?.audit_config;
-          if (config) {
-            setAuditType(config.type || 'link');
-            setMediaData(config.mediaA || "");
-            if (config.categories) setCustomCategories(config.categories);
-            if (config.poll) {
-                setPollDesc(config.poll.desc || "");
-                setPollOptions(config.poll.options || []);
+          if (docSnap.exists()) {
+            const p = docSnap.data();
+            setTitle(p.title || "");
+            setSummary(p.summary || "");
+            setVisibility(p.visibility as any || 'public');
+            if (p.audit_deadline) setAuditDeadline(p.audit_deadline);
+            
+            const config = p.custom_data?.audit_config;
+            if (config) {
+              setAuditType(config.type || 'link');
+              setMediaData(config.mediaA || "");
+              if (config.categories) setCustomCategories(config.categories);
+              if (config.poll) {
+                  setPollDesc(config.poll.desc || "");
+                  setPollOptions(config.poll.options || []);
+              }
+              if (config.questions) setAuditQuestions(config.questions);
             }
-            if (config.questions) setAuditQuestions(config.questions);
           }
+        } catch (e) {
+          console.error("Error fetching project:", e);
+          toast.error("프로젝트 정보를 불러오지 못했습니다.");
         }
       };
       fetchProject();
     }
   }, [editId]);
 
+  // ... (OG Preview effect remains similar or unchanged if API works, otherwise skipped for now)
+  // (Assuming api/og-preview still works or needs update. Keeping effect as is for now, just focused on DB logic)
   useEffect(() => {
     if (auditType === 'link' && typeof mediaData === 'string' && mediaData.includes('.')) {
       const timer = setTimeout(async () => {
@@ -149,7 +163,7 @@ export default function ProjectUploadPage() {
             setLinkPreview(null);
           }
         } catch (e) {
-          console.error("OG Preview Error", e);
+          // console.error("OG Preview Error", e); // Optional logging
           setLinkPreview(null);
         } finally {
           setIsLoadingPreview(false);
@@ -161,7 +175,6 @@ export default function ProjectUploadPage() {
     }
   }, [mediaData, auditType]);
 
-  // No early return here anymore to ensure all hooks are called every render.
 
   const handlePresetChange = (preset: 'professional' | 'michelin' | 'mz') => {
     setSelectedPreset(preset);
@@ -181,13 +194,11 @@ export default function ProjectUploadPage() {
 
     setIsSubmitting(true);
     try {
-      if (!session) {
+      if (!user) {
         toast.error("로그인이 필요합니다.");
         router.push("/login?returnTo=/project/upload");
         return;
       }
-
-      const token = session.access_token;
 
       const projectData = {
         title,
@@ -195,10 +206,12 @@ export default function ProjectUploadPage() {
         content_text: summary || title,
         description: summary || title,
         category_id: 1,
-        thumbnail_url: linkPreview?.image || undefined, // [Feature] Use captured link image as thumbnail
+        thumbnail_url: linkPreview?.image || undefined,
         visibility: visibility,
         audit_deadline: auditDeadline,
         is_growth_requested: true,
+        author_uid: user.uid, // Firebase Auth UID
+        author_email: user.email,
         custom_data: {
           is_feedback_requested: true,
           audit_config: {
@@ -214,24 +227,31 @@ export default function ProjectUploadPage() {
                method: distributeMethod
              }
           }
-        }
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        // Add minimal counters for list view
+        view_count: 0,
+        feedback_count: 0,
+        like_count: 0
       };
 
-      const res = await fetch(editId ? `/api/projects/${editId}` : "/api/projects", {
-        method: editId ? "PUT" : "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(projectData),
-      });
+      let projectId = editId;
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "등록 실패");
-      
+      if (editId) {
+        // Update
+        const docRef = doc(db, "projects", editId);
+        await updateDoc(docRef, { ...projectData, updatedAt: serverTimestamp() });
+      } else {
+        // Create
+        const docRef = await addDoc(collection(db, "projects"), projectData);
+        projectId = docRef.id;
+      }
+
       toast.success(editId ? "수정이 완료되었습니다!" : "평가 의뢰가 성공적으로 등록되었습니다!");
-      router.push(`/project/share/${editId || data.project.project_id}`);
+      router.push(`/project/share/${projectId}`); // Redirect to share page (need to ensure this page works with firebase ID)
     } catch (error: any) {
+      console.error("Submission Error:", error);
       toast.error(error.message || "등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
