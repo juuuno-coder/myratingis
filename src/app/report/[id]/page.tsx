@@ -101,6 +101,7 @@ export default function ReportPage() {
     if (!project) return null;
 
     const auditConfig = project.custom_data?.audit_config;
+    // Default 6 categories fallback
     const categories = auditConfig?.categories || [
       { id: 'score_1', label: '기획력' },
       { id: 'score_2', label: '독창성' },
@@ -110,9 +111,26 @@ export default function ReportPage() {
       { id: 'score_6', label: '편의성' },
     ];
 
-    // Client-side Calculation
-    const radarData = categories.map((cat: any) => {
-      const sum = ratings.reduce((acc, curr) => acc + (curr.scores?.[cat.id] || curr[cat.id] || 0), 0);
+    // Client-side Calculation with Robust Fallback
+    const radarData = categories.map((cat: any, index: number) => {
+      const sum = ratings.reduce((acc, curr) => {
+          let val = 0;
+          // 1. Try exact match (scores.score_1)
+          if (curr.scores?.[cat.id] !== undefined) val = curr.scores[cat.id];
+          // 2. Try root level match (curr.score_1)
+          else if (curr[cat.id] !== undefined) val = curr[cat.id];
+          
+          // 3. Fallback: Try matching by index if scores is an object (for mismatched IDs)
+          if (val === 0 && curr.scores) {
+              const values = Object.values(curr.scores);
+              // Assuming values are numbers, try to grab by index
+              if (values[index] !== undefined && typeof values[index] === 'number') {
+                  val = values[index] as number;
+              }
+          }
+          return acc + val;
+      }, 0);
+
       const avg = ratings.length > 0 ? (sum / ratings.length).toFixed(1) : 0;
       return {
         subject: cat.label,
@@ -177,20 +195,6 @@ export default function ReportPage() {
       <MyRatingIsHeader />
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
-        <div className="bg-red-900/50 p-4 rounded-xl border border-red-500 mb-8 text-xs font-mono text-white overflow-auto max-h-60">
-          <p className="font-bold text-red-300 mb-2">🚨 DEBUG PANEL (Will be removed)</p>
-          <p>Project ID: {projectId}</p>
-          <p>Project Loaded: {project ? 'YES' : 'NO'} ({project?.title})</p>
-          <p>Ratings Count: {ratings.length}</p>
-          <p>ReportStats Computed: {reportStats ? 'YES' : 'NO'}</p>
-          <p>Radar Data Len: {reportStats?.radarData?.length || 0}</p>
-          <div className="mt-2 p-2 bg-black/50 rounded">
-             First Rating: {JSON.stringify(ratings[0] || 'None')}
-          </div>
-          <div className="mt-2 p-2 bg-black/50 rounded">
-             Computed Radar: {JSON.stringify(reportStats?.radarData || 'None')}
-          </div>
-        </div>
          {/* Hero Title */}
          <section className="text-center space-y-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
@@ -209,13 +213,13 @@ export default function ReportPage() {
          {/* Charts Grid */}
          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Michelin Radar */}
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8">
+            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 flex flex-col">
                <h3 className="text-2xl font-black flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-orange-600 rounded-full" /> 평점 평가 분석
                </h3>
-               <div className="h-[400px] w-full">
+               <div className="h-[400px] w-full min-h-[400px] relative">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={reportStats?.radarData}>
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={reportStats?.radarData}>
                       <PolarGrid stroke="#ffffff10" radialLines={false} gridType="polygon" />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: '#ffffff40', fontSize: 12, fontWeight: 'bold' }} />
                       <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
@@ -225,6 +229,10 @@ export default function ReportPage() {
                         stroke="#ea580c"
                         fill="#ea580c"
                         fillOpacity={0.6}
+                      />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
+                        itemStyle={{ color: '#ea580c', fontWeight: 'bold' }}
                       />
                     </RadarChart>
                   </ResponsiveContainer>
@@ -240,11 +248,11 @@ export default function ReportPage() {
             </motion.div>
 
             {/* Sticker Decisions */}
-            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8">
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 flex flex-col">
                <h3 className="text-2xl font-black flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-indigo-600 rounded-full" /> Sticker Decision Status
                </h3>
-               <div className="h-[300px] w-full">
+               <div className="h-[300px] w-full min-h-[300px] relative">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={reportStats?.barData} layout="vertical">
                       <XAxis type="number" hide />
@@ -282,7 +290,7 @@ export default function ReportPage() {
                   <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Participation Insight</div>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="h-[250px] w-full">
+                  <div className="h-[250px] w-full min-h-[250px] relative">
                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={Object.entries(reportStats?.expertiseDistribution || {}).map(([id, count]) => ({
                            name: ALL_LABELS[id] || id,
@@ -291,9 +299,9 @@ export default function ReportPage() {
                            <XAxis dataKey="name" tick={{ fill: '#ffffff40', fontSize: 10 }} axisLine={false} tickLine={false} />
                            <YAxis hide />
                            <Tooltip 
-                              cursor={{ fill: 'transparent' }}
-                              contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '16px' }}
-                              itemStyle={{ color: '#fff' }}
+                               cursor={{ fill: 'transparent' }}
+                               contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '16px' }}
+                               itemStyle={{ color: '#fff' }}
                            />
                            <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]}>
                               {(Object.entries(reportStats?.expertiseDistribution || {})).map((_, index) => (
