@@ -42,17 +42,23 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
       let q = query(
           collection(db, "projects"), 
           where("visibility", "==", "public"),
-          orderBy("createdAt", "desc"),
-          limit(20)
+          limit(50)
       );
 
       const querySnapshot = await getDocs(q);
-      const fetchedProjects: any[] = [];
+      const tempProjects: any[] = [];
 
       for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-          // Skip if audit_config is missing (audit mode logic)
-          if (!data.custom_data?.audit_config) continue;
+          
+          // Debugging log for visibility
+          // console.log("Checking project:", docSnap.id, data.title, data.custom_data?.audit_config);
+
+          // Allow if has audit_config OR audit_deadline (migration compat)
+          // Also allow if explicitly marked as 'audit_request' type if that exists
+          const isAudit = data.custom_data?.audit_config || data.audit_deadline || data.type === 'audit';
+          
+          if (!isAudit) continue;
 
           // Check if current user liked this project
           let isLiked = false;
@@ -76,17 +82,21 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
               } catch(e) {}
           }
 
-          fetchedProjects.push({
+          tempProjects.push({
               project_id: docSnap.id,
               ...data,
               is_liked: isLiked,
               has_rated: hasRated,
-              likes_count: data.like_count || 0, // Ensure like_count exists or default to 0
-              User: { username: data.author_email?.split('@')[0] || "Unknown" } // Fallback for user info
+              likes_count: data.like_count || data.likes || 0,
+              User: { username: data.author_email?.split('@')[0] || "Unknown" },
+              createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.created_at ? new Date(data.created_at) : new Date())
           });
       }
+
+      // Client-side Sort
+      tempProjects.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       
-      setProjects(fetchedProjects);
+      setProjects(tempProjects);
     } catch (e) {
       console.error("Failed to fetch audit projects", e);
       toast.error("프로젝트 목록을 불러오지 못했습니다.");
