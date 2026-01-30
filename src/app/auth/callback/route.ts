@@ -10,36 +10,30 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/'
 
   if (code) {
-    // 1. Create a placeholder response for redirect
-    const response = NextResponse.redirect(`${origin}${next}`)
-    
-    // 2. Create the Supabase client that writes directly to the RESPONSE object
+    const cookieStore = cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return request.cookies.get(name)?.value
+            return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // Write to both cookies store and response
-            response.cookies.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
-            response.cookies.set({ name, value: '', ...options })
+            cookieStore.delete({ name, ...options })
           },
         },
       }
     )
     
-    // 3. Exchange the code for a session
-    console.log('[Auth Callback] 🔄 Code exchange for session starting...');
+    // Official exchange pattern for Next.js App Router
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      console.log('[Auth Callback] ✅ Exchange success! Returning response with set-cookie headers.');
-      return response
+      return NextResponse.redirect(`${origin}${next}`)
     }
     
     console.error('[Auth Callback] ❌ Exchange error:', error.message)
