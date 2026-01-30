@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 10000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, curSess) => {
-      console.log(`[AuthContext] Auth Event: ${event}`);
+      console.log(`[AuthContext] Auth Event: ${event}, Session: ${!!curSess}`);
       clearTimeout(safetyTimeout);
       
       if (['INITIAL_SESSION', 'SIGNED_IN', 'TOKEN_REFRESHED'].includes(event)) {

@@ -3,18 +3,13 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') || '/'
-
-  // 1. Create the response object first
-  const response = NextResponse.redirect(new URL(next, request.url))
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  // if "next" is in search params, use it as the redirect URL
+  const next = searchParams.get('next') ?? '/'
 
   if (code) {
     const cookieStore = cookies()
-    
-    // 2. Create the supabase client with a custom cookie handler
-    // that sets cookies on BOTH the cookieStore (for server) and the response (for browser)
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -24,25 +19,23 @@ export async function GET(request: Request) {
             return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // These options are compatible with Next.js ResponseCookies
             cookieStore.set({ name, value, ...options })
-            response.cookies.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
             cookieStore.delete({ name, ...options })
-            response.cookies.delete({ name, ...options })
           },
         },
       }
     )
-
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (error) {
-      console.error('[Auth Callback] Exchange Error:', error.message)
-      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url))
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
     }
+    
+    console.error('[Auth Callback Error]', error.message)
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
   }
 
-  return response
+  // return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/login?error=no_code_present`)
 }
