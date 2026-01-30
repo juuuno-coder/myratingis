@@ -101,9 +101,6 @@ function LoginContent() {
     try {
       const returnTo = searchParams.get("returnTo") || "/";
       
-      // Clear session strictly before OAuth to avoid stale state
-      await supabase.auth.signOut();
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

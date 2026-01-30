@@ -150,26 +150,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // Safety fallback: if no event fires within 10 seconds, clear loading
-    const safetyTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 10000);
+    const initAuth = async () => {
+      // Step 1: Explicitly check for an existing session on mount
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (s) {
+          console.log('[AuthContext] 🏠 Found existing session on mount:', s.user?.email);
+          await updateState(s, s.user);
+        } else {
+          setLoading(false);
+        }
+      } catch (e) {
+        setLoading(false);
+      }
+    };
 
+    initAuth();
+
+    // Step 2: Listen for subsequent auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
-      console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'} | Confirmed: ${!!u?.email_confirmed_at}`);
+      console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'}`);
       
-      clearTimeout(safetyTimeout);
-
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-        // Even if email is not confirmed, if we have a user, let's treat them as authenticated
-        // This is the most robust way to handle social logins and temporary sync issues.
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         updateState(curSess, u || null);
         
         if (event === 'SIGNED_IN' && curSess && window.location.pathname === '/login') {
-          console.log('[AuthContext] 🚀 Success landing from login, heading home.');
-          router.push('/');
+          const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+          router.push(returnTo);
         }
+      } else if (event === 'INITIAL_SESSION') {
+        // Handled by initAuth
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
       } else {
@@ -179,9 +190,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
-      clearTimeout(safetyTimeout);
     };
-  }, [updateState]); // Removed loading from deps to avoid re-running if timeout hits
+  }, [updateState, router]);
 
   const isAdminUser = React.useMemo(() => {
     return !!(user?.email && ADMIN_EMAILS.includes(user.email)) || userProfile?.role === "admin";
