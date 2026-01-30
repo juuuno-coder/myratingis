@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // The official Supabase SSR middleware pattern for Next.js App Router.
+  // This ensures the user's session is refreshed and cookies are synchronized.
   let response = NextResponse.next({
     request: {
       headers: request.headers,
