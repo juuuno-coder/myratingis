@@ -203,8 +203,19 @@ export default function MyPage() {
           
           const querySnapshot = await getDocs(q);
           
-          let fetchedProjects = querySnapshot.docs.map(doc => {
+          let fetchedProjects = await Promise.all(querySnapshot.docs.map(async (doc) => {
             const data = doc.data();
+            
+            // Fetch Real-time Rating Count
+            let realRatingCount = 0;
+            try {
+                const evalsRef = collection(db, "evaluations");
+                const countSnap = await getCountFromServer(query(evalsRef, where("projectId", "==", doc.id)));
+                realRatingCount = countSnap.data().count;
+            } catch (e) {
+                console.warn("Failed to fetch count for project", doc.id);
+            }
+
             return {
               id: doc.id,
               title: data.title || '제목 없음',
@@ -212,7 +223,7 @@ export default function MyPage() {
               // Robust count mapping
               likes: data.likes || data.likes_count || data.like_count || 0,
               views: data.views || data.views_count || data.view_count || 0,
-              rating_count: data.rating_count || data.evaluations_count || 0,
+              rating_count: realRatingCount, // Uses real-time count
               
               created_at: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
               description: data.content_text || data.description || '',
@@ -223,7 +234,7 @@ export default function MyPage() {
               visibility: data.visibility || 'public',
               site_url: data.site_url,
             };
-          });
+          }));
 
           // Sort client-side to avoid index issues
           fetchedProjects.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

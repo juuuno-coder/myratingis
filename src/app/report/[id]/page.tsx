@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from "@/lib/supabase/client";
+import { db } from "@/lib/firebase/client"; // Firebase
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore"; // Firestore methods
 import { 
   ArrowLeft, 
   Users, 
@@ -40,7 +41,6 @@ export default function ReportPage() {
 
   const [project, setProject] = useState<any>(null);
   const [ratings, setRatings] = useState<any[]>([]);
-  const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,48 +48,47 @@ export default function ReportPage() {
       try {
         setLoading(true);
         
-        // 1. Fetch Project (Public Info)
-        const { data: projectData, error: pError } = await supabase
-          .from('Project')
-          .select('*')
-          .eq('project_id', Number(projectId))
-          .single();
+        // 1. Fetch Project from Firestore
+        const projectRef = doc(db, "projects", projectId);
+        const projectSnap = await getDoc(projectRef);
+
+        if (!projectSnap.exists()) {
+             toast.error("프로젝트를 찾을 수 없습니다.");
+             setLoading(false);
+             return;
+        }
+
+        const projectData = projectSnap.data();
         
-        if (pError) throw pError;
-        
-        // Safe Parse custom_data
-        if (projectData && typeof projectData.custom_data === 'string') {
-            try {
-                projectData.custom_data = JSON.parse(projectData.custom_data);
-            } catch (e) {
-                console.error("Failed to parse custom_data", e);
-                (projectData as any).custom_data = {};
-            }
+        // Safe Parse custom_data (if it's a string, though in Firestore it should be object)
+        if (typeof projectData.custom_data === 'string') {
+            try { projectData.custom_data = JSON.parse(projectData.custom_data); } 
+            catch (e) { console.error("Failed to parse custom_data", e); projectData.custom_data = {}; }
         }
         setProject(projectData);
 
-        // 2. Fetch Secure Report Data (API)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        const res = await fetch(`/api/projects/${projectId}/report`, {
-            headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+        // 2. Fetch Evaluations from Firestore
+        const evalsRef = collection(db, "evaluations");
+        const q = query(evalsRef, where("projectId", "==", projectId));
+        const querySnapshot = await getDocs(q);
+
+        const fetchedRatings = querySnapshot.docs.map(d => {
+            const data = d.data();
+            return {
+                ...data,
+                id: d.id,
+                created_at: data.createdAt?.toDate ? data.createdAt.toDate() : (new Date(data.createdAt) || new Date()), // Handle Timestamp
+                user_id: data.user_uid, // Map for backward compatibility
+                score: data.score
+            };
         });
 
-        if (res.status === 401 || res.status === 403) {
-            toast.error("프로젝트 소유자만 상세 리포트를 볼 수 있습니다.");
-            setRatings([]); 
-            return;
-        }
-
-        const data = await res.json();
-        
-        if (data.success && data.report) {
-             setReportData(data.report);
-             setRatings(data.report.feedbacks || []);
-        }
+        console.log(`[ReportPage] Loaded ${fetchedRatings.length} evaluations.`);
+        setRatings(fetchedRatings);
 
       } catch (err) {
         console.error("Fetch report error:", err);
+        toast.error("데이터 로드 중 오류 발생");
       } finally {
         setLoading(false);
       }
@@ -102,40 +101,18 @@ export default function ReportPage() {
     if (!project) return null;
 
     const auditConfig = project.custom_data?.audit_config;
-    const categories = auditConfig?.categories || [];
+    const categories = auditConfig?.categories || [
+      { id: 'score_1', label: '기획력' },
+      { id: 'score_2', label: '독창성' },
+      { id: 'score_3', label: '심미성' },
+      { id: 'score_4', label: '완성도' },
+      { id: 'score_5', label: '상업성' },
+      { id: 'score_6', label: '편의성' },
+    ];
 
-    // Use API Pre-calculated Data if available
-    if (reportData) {
-        // Radar
-        const radarData = categories.map((cat: any) => ({
-            subject: cat.label,
-            value: reportData.michelin?.averages[cat.id] || 0,
-            fullMark: 5
-        }));
-
-        // Polls
-        const stickerOptions = auditConfig?.poll?.options || [];
-        const polls = reportData.polls || {};
-        const barData = stickerOptions.map((opt: any) => ({
-             name: opt.label,
-             value: polls[opt.id] || 0,
-             color: opt.color || '#f59e0b'
-        }));
-
-        return {
-            radarData,
-            barData,
-            overallAvg: reportData.michelin?.totalAvg || "0.0",
-            participantCount: reportData.totalReviewers,
-            categories,
-            expertiseDistribution: reportData.expertiseDistribution || {},
-            occupationDistribution: reportData.occupationDistribution || {}
-        };
-    }
-
-    // Fallback Client-side Calculation
+    // Client-side Calculation
     const radarData = categories.map((cat: any) => {
-      const sum = ratings.reduce((acc, curr) => acc + (curr[cat.id] || 0), 0);
+      const sum = ratings.reduce((acc, curr) => acc + (curr.scores?.[cat.id] || curr[cat.id] || 0), 0);
       const avg = ratings.length > 0 ? (sum / ratings.length).toFixed(1) : 0;
       return {
         subject: cat.label,
@@ -158,8 +135,22 @@ export default function ReportPage() {
       color: opt.color || '#f59e0b'
     }));
 
+    // Calculate Overall Average from all radar values
     const totalSum = radarData.reduce((acc: number, curr: any) => acc + curr.value, 0);
     const overallAvg = radarData.length > 0 ? (totalSum / radarData.length).toFixed(1) : "0.0";
+
+    // Calculate Distributions
+    const expertiseDistribution: Record<string, number> = {};
+    const occupationDistribution: Record<string, number> = {};
+
+    ratings.forEach(r => {
+        if (r.expertise && Array.isArray(r.expertise)) {
+            r.expertise.forEach((e: string) => { expertiseDistribution[e] = (expertiseDistribution[e] || 0) + 1; });
+        }
+        if (r.occupation) {
+            occupationDistribution[r.occupation] = (occupationDistribution[r.occupation] || 0) + 1;
+        }
+    });
 
     return { 
       radarData, 
@@ -167,10 +158,10 @@ export default function ReportPage() {
       overallAvg, 
       participantCount: ratings.length,
       categories,
-      expertiseDistribution: {},
-      occupationDistribution: {}
+      expertiseDistribution,
+      occupationDistribution
     };
-  }, [project, ratings, reportData]);
+  }, [project, ratings]);
 
   if (loading) {
     return (
