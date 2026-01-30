@@ -27,24 +27,30 @@ export default function ForgotPasswordPage() {
       // 1. Check sign-in methods first
       const methods = await fetchSignInMethodsForEmail(auth, email);
       
-      if (methods.includes('google.com')) {
-          setError("이 이메일은 [구글 소셜 로그인] 계정입니다. 비밀번호 없이 구글 로그인을 이용해주세요.");
-          setLoading(false);
-          return;
-      }
-
+      // DEBUG: Show exact status to user
       if (methods.length === 0) {
-          setError("가입되지 않은 이메일입니다. 회원가입을 진행해주세요.");
+          setError(`[확인 결과] 가입된 정보가 없습니다.\n(Firebase에 '${email}' 계정이 없음)\n회원가입을 새로 해주세요!`);
           setLoading(false);
           return;
       }
 
-      // 2. Send reset email if it's a password account
+      // If registered, show methods and try sending email
+      console.log("Registered methods:", methods);
+      
+      if (methods.includes('google.com')) {
+          setError(`[확인 결과] 구글 소셜 로그인 계정입니다.\n비밀번호가 없으니 구글 로그인을 이용해주세요.`);
+          setLoading(false);
+          return;
+      }
+
+      // Try sending password reset
       await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
+      setError(`[확인 결과] 가입된 계정입니다 (${methods.join(', ')})\n메일이 발송되었습니다.`); // Only visible if setSubmitted is false, but we switch to submitted view.
+      
     } catch (err: any) {
       console.error("Password reset error:", err);
-      let msg = "오류가 발생했습니다. 다시 시도해주세요.";
+      let msg = `오류: ${err.code || err.message}`;
       if (err.code === 'auth/user-not-found') {
           msg = "가입되지 않은 이메일입니다. \n이전 사용자는 [회원가입]을 진행해주시면 기존 데이터가 자동으로 연동됩니다!";
       }
