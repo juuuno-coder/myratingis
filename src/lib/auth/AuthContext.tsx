@@ -150,15 +150,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
+    // Use a flag to wait for the first real auth event before finalizing "none" state
+    let firstEventReceived = false;
+
     const initAuth = async () => {
-      // Step 1: Explicitly check for an existing session on mount
       try {
         const { data: { session: s } } = await supabase.auth.getSession();
         if (s) {
           console.log('[AuthContext] 🏠 Found existing session on mount:', s.user?.email);
           await updateState(s, s.user);
+          firstEventReceived = true;
         } else {
-          setLoading(false);
+          // If no immediate session, wait briefly for the event listener to catch up
+          setTimeout(() => {
+            if (!firstEventReceived) setLoading(false);
+          }, 1500);
         }
       } catch (e) {
         setLoading(false);
@@ -167,10 +173,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
 
-    // Step 2: Listen for subsequent auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, curSess) => {
       const u = curSess?.user;
       console.log(`[AuthContext] 📢 Event: ${event} | User: ${u?.email || 'none'}`);
+      firstEventReceived = true;
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         updateState(curSess, u || null);
@@ -179,11 +185,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
           router.push(returnTo);
         }
-      } else if (event === 'INITIAL_SESSION') {
-        // Handled by initAuth
       } else if (event === "SIGNED_OUT") {
         updateState(null, null);
-      } else {
+      } else if (event === 'INITIAL_SESSION' && !u) {
         setLoading(false);
       }
     });
