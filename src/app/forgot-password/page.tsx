@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { auth } from "@/lib/firebase/client";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
+import { Loader2, Mail, ArrowLeft, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import Image from "next/image";
@@ -22,6 +22,22 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
+      // 1. Check sign-in methods first
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      
+      if (methods.includes('google.com')) {
+          setError("이 이메일은 [구글 소셜 로그인] 계정입니다. 비밀번호 없이 구글 로그인을 이용해주세요.");
+          setLoading(false);
+          return;
+      }
+
+      if (methods.length === 0) {
+          setError("가입되지 않은 이메일입니다. 회원가입을 진행해주세요.");
+          setLoading(false);
+          return;
+      }
+
+      // 2. Send reset email if it's a password account
       await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
     } catch (err: any) {
