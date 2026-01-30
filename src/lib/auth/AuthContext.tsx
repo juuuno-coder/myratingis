@@ -5,6 +5,7 @@ import { User, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth
 import { auth, googleProvider, db, storage } from "@/lib/firebase/client"; // db added
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore"; // firestore methods
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
@@ -47,14 +48,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
 
           if (!userSnap.exists()) {
-             // Create new user record
-             await setDoc(userRef, {
+             // 1. Check for legacy migration data
+             let legacyData: any = {};
+             if (currentUser.email) {
+                try {
+                    const legacySnap = await getDoc(doc(db, "legacy_users", currentUser.email));
+                    if (legacySnap.exists()) {
+                        console.log(`[AuthContext] ♻️ Restore legacy user data found for ${currentUser.email}`);
+                        legacyData = legacySnap.data();
+                    }
+                } catch (err) {
+                    console.warn("[AuthContext] Legacy check failed", err);
+                }
+             }
+
+             // 2. Create new user record with merged data
+             const newUserData = {
                ...profileData,
                createdAt: serverTimestamp(),
-               role: 'user',
-               points: 0
-             });
-             setUserProfile({ ...profileData, role: 'user', points: 0 });
+               role: legacyData.role || 'user',
+               points: legacyData.points || 0,
+               nickname: legacyData.nickname || currentUser.displayName || "",
+               // Merge other legacy fields if needed
+               ...legacyData
+             };
+
+             await setDoc(userRef, newUserData);
+             setUserProfile(newUserData);
+             
+             if (Object.keys(legacyData).length > 0) {
+                 toast("기존 회원 정보를 성공적으로 불러왔습니다! 🎉");
+             }
+
           } else {
              // Update existing user (sync latest Google info)
              await setDoc(userRef, profileData, { merge: true });
