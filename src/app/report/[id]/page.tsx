@@ -72,7 +72,7 @@ export default function ReportPage() {
         const q = query(evalsRef, where("projectId", "==", projectId));
         const querySnapshot = await getDocs(q);
 
-        const fetchedRatings = querySnapshot.docs.map(d => {
+        let fetchedRatings = querySnapshot.docs.map(d => {
             const data = d.data();
             return {
                 ...data,
@@ -82,6 +82,44 @@ export default function ReportPage() {
                 score: data.score
             };
         });
+
+        // 3. Fetch latest user profiles to show up-to-date info (e.g. if job was "Unset" but now "Planner")
+        const uniqueUserIds = [...new Set(fetchedRatings.map((r: any) => r.user_uid).filter(Boolean))];
+        
+        if (uniqueUserIds.length > 0) {
+            try {
+                // Fetch users in parallel
+                const userDocs = await Promise.all(
+                    uniqueUserIds.map(uid => getDoc(doc(db, "users", uid as string)))
+                );
+                
+                const userMap: Record<string, any> = {};
+                userDocs.forEach(snap => {
+                    if (snap.exists()) {
+                        userMap[snap.id] = snap.data();
+                    }
+                });
+
+                // Merge latest info into ratings
+                fetchedRatings = fetchedRatings.map((r: any) => {
+                    const latestUser = r.user_uid ? userMap[r.user_uid] : null;
+                    if (latestUser) {
+                        return {
+                            ...r,
+                            user_nickname: latestUser.nickname || latestUser.displayName || r.user_nickname,
+                            user_job: latestUser.job || r.user_job,
+                            // If needed, sync other fields
+                        };
+                    }
+                    return r;
+                });
+                
+                console.log(`[ReportPage] Synced latest profiles for ${uniqueUserIds.length} users.`);
+            } catch (userErr) {
+                console.warn("Failed to sync latest user profiles", userErr);
+                // Continue with original ratings if sync fails
+            }
+        }
 
         console.log(`[ReportPage] Loaded ${fetchedRatings.length} evaluations.`);
         setRatings(fetchedRatings);
