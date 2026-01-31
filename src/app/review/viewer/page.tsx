@@ -37,7 +37,8 @@ import {
   } from "@/components/ui/dialog";
 
 // --- Review Intro Component ---
-function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }) {
+// --- Review Intro Component ---
+function ReviewIntro({ onStart, project, loading }: { onStart: () => void, project: any, loading: boolean }) {
   return (
     <div className="absolute inset-x-0 bottom-0 top-0 z-50 bg-[#050505] text-white flex flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -59,10 +60,12 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
              <p className="text-[10px] md:text-xs text-white/40 font-medium max-w-[280px] md:max-w-none mx-auto break-keep">냉철하고 객관적인 심미안으로 창작자의 성장을 위해<br />진정성 있는 최고의 평가를 남겨주시겠습니까?</p>
         </motion.div>
         <div className="w-full space-y-6 md:space-y-8 flex flex-col items-center">
-           <motion.div onClick={onStart} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ scale: 1.05 }} className="relative w-72 h-72 md:w-64 md:h-64 cursor-pointer group">
+           <motion.div onClick={!loading ? onStart : undefined} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ scale: 1.05 }} className={cn("relative w-72 h-72 md:w-64 md:h-64 cursor-pointer group", loading && "opacity-50 cursor-wait")}>
              <img src="/review/cloche-cover.png" alt="Start Review" className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110" />
              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">Click to Open</span>
+                <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">
+                    {loading ? "Loading..." : "Click to Open"}
+                </span>
              </div>
            </motion.div>
            {project && (
@@ -72,8 +75,15 @@ function ReviewIntro({ onStart, project }: { onStart: () => void, project: any }
            )}
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="w-full">
-          <Button onClick={onStart} className="w-full h-16 md:h-20 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-2xl font-black rounded-none border-none bevel-cta">
-            <ChefHat className="w-6 h-6 md:w-8 md:h-8" /> 평가 시작
+          <Button onClick={onStart} disabled={loading} className="w-full h-16 md:h-20 bg-orange-600 hover:bg-orange-500 text-white text-lg md:text-2xl font-black rounded-none border-none bevel-cta disabled:opacity-50 disabled:cursor-wait">
+            {loading ? (
+                <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>인증 정보 확인 중...</span>
+                </div>
+            ) : (
+                <><ChefHat className="w-6 h-6 md:w-8 md:h-8 mr-2" /> 평가 시작</>
+            )}
           </Button>
         </motion.div>
       </main>
@@ -252,7 +262,7 @@ function ViewerContent() {
     }
   };
 
-  if (loading || authLoading) return <div className="h-screen bg-background flex flex-col items-center justify-center gap-4"><div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" /><p className="text-orange-600 font-black uppercase text-[10px] animate-pulse">Loading...</p></div>;
+  if (loading) return <div className="h-screen bg-background flex flex-col items-center justify-center gap-4"><div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" /><p className="text-orange-600 font-black uppercase text-[10px] animate-pulse">Loading Project...</p></div>;
   if (!project) return <div className="h-screen bg-background flex flex-col items-center justify-center gap-6"><X size={40} /><h2 className="text-2xl font-black">NOT FOUND</h2><Button onClick={() => router.push('/')}>Go Home</Button></div>;
 
   const auditType = project.custom_data?.audit_config?.type || 'link';
@@ -275,7 +285,7 @@ function ViewerContent() {
     <main className="h-screen w-full bg-background flex flex-col overflow-hidden relative">
       <MyRatingIsHeader />
       <div className="flex-1 flex flex-col md:flex-row mt-16 overflow-hidden relative">
-        <AnimatePresence>{showIntro && <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50"><ReviewIntro onStart={handleStartReview} project={project} /></motion.div>}</AnimatePresence>
+        <AnimatePresence>{showIntro && <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50"><ReviewIntro onStart={handleStartReview} project={project} loading={authLoading} /></motion.div>}</AnimatePresence>
         <div className="hidden md:flex flex-col flex-1 relative min-w-0 h-full bg-[#0f0f0f]">
           <div className="h-16 bg-chef-card border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-4"><button onClick={() => router.back()}><ArrowLeft size={16} /></button><div className="bg-chef-panel px-4 py-1.5 rounded-full text-[10px] truncate w-64 uppercase">{finalDisplayUrl}</div></div>
