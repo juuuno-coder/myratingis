@@ -194,10 +194,25 @@ export default function ReportPage() {
                     if (latestUser) {
                         // Handle expertise (Array or Object)
                         let safeExpertise = latestUser.expertise || latestUser.expertFields || r.expertise || [];
-                        if (safeExpertise && !Array.isArray(safeExpertise) && typeof safeExpertise === 'object') {
-                             // If stored as { 'marketing': true, ... }
-                             safeExpertise = Object.keys(safeExpertise).filter(k => safeExpertise[k]);
+                        
+                        // Check if expertise is wrapped in 'fields' (e.g. { fields: [...] })
+                        if (safeExpertise && safeExpertise.fields && Array.isArray(safeExpertise.fields)) {
+                             safeExpertise = safeExpertise.fields;
                         }
+                        // Check if expertise is integer-indexed object (Firestore array-like object)
+                        else if (safeExpertise && typeof safeExpertise === 'object' && !Array.isArray(safeExpertise)) {
+                             // Check for Object-map style { 'marketing': true } vs Array-like { 0: 'marketing' }
+                             const keys = Object.keys(safeExpertise);
+                             const values = Object.values(safeExpertise);
+                             // If values are boolean, it's a map. If keys are numeric, it's array-like.
+                             if (values.every(v => v === true || v === false)) {
+                                 safeExpertise = keys.filter(k => safeExpertise[k]);
+                             } else {
+                                 // Fallback: try taking values
+                                 safeExpertise = values;
+                             }
+                        }
+
                         if (!Array.isArray(safeExpertise)) safeExpertise = [];
 
                         return {
