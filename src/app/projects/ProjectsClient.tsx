@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
 // Firebase Imports
 import { db } from '@/lib/firebase/client';
-import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, limit, getCountFromServer } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp, limit, getCountFromServer, updateDoc } from "firebase/firestore";
 // Modals
 import { InquiryModal } from '@/components/InquiryModal';
 import { CollectionModal } from '@/components/CollectionModal';
@@ -98,6 +98,19 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                   hasRated = !evalSnaps.empty;
               } catch(e) {}
           }
+
+          // --- View Count Correction Force (Wayo project) ---
+          if (data.title?.includes("와요") && ((data.views || 0) < 135 || (data.views_count || 0) < 135)) {
+                try {
+                    updateDoc(doc(db, "projects", docSnap.id), { 
+                        views: 135, views_count: 135, view_count: 135 
+                    });
+                    data.views = 135;
+                    data.views_count = 135;
+                    data.view_count = 135;
+                } catch(e) {}
+          }
+          // --------------------------------------------------
 
           tempProjects.push({
               project_id: docSnap.id,
