@@ -21,7 +21,11 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore";
+
+// ... (existing code)
+
+
 import { MediaPreview } from '@/components/Review/MediaPreview';
 import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 import { MichelinRating, MichelinRatingRef } from '@/components/MichelinRating';
@@ -170,6 +174,28 @@ function ViewerContent() {
         if (typeof parsedCustom === 'string') {
             try { parsedCustom = JSON.parse(parsedCustom); } catch (e) { parsedCustom = {}; }
         }
+
+        // --- View Count Increment Logic ---
+        const viewKey = `viewed_${projectId}`;
+        const hasViewed = sessionStorage.getItem(viewKey);
+        
+        if (!hasViewed) {
+            try {
+                await updateDoc(docRef, { 
+                    views: increment(1),
+                    view_count: increment(1),
+                    views_count: increment(1) // Cover all bases
+                });
+                sessionStorage.setItem(viewKey, 'true');
+                // Optimistic update
+                data.views = (data.views || 0) + 1;
+                data.view_count = (data.view_count || 0) + 1;
+            } catch (err) {
+                console.warn("Failed to increment view count", err);
+            }
+        }
+        // ----------------------------------
+
         setProject({ ...data, custom_data: parsedCustom || {} });
       } catch (e) {
         console.error("Failed to load project", e);

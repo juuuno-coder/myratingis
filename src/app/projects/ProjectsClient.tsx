@@ -373,7 +373,11 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                         <div className="flex items-center gap-1.5 ml-auto md:ml-0">
                            <Clock className="w-3.5 h-3.5 text-chef-text opacity-20" />
                            <span className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest leading-none">
-                            {p.audit_deadline ? `${new Date(p.audit_deadline).toLocaleDateString()}` : "Ongoing"}
+                            {p.audit_deadline 
+                                ? (p.audit_deadline.toDate 
+                                    ? p.audit_deadline.toDate().toLocaleDateString() 
+                                    : new Date(p.audit_deadline).toLocaleDateString())
+                                : "Ongoing"}
                            </span>
                         </div>
                       </div>
