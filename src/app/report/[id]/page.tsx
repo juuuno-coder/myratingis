@@ -368,7 +368,7 @@ export default function ReportPage() {
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-col items-center gap-6">
                 <p className="text-lg text-white/40 max-w-2xl mx-auto font-medium break-keep">
                    {reportStats?.isPersonalView ? (
-                       <>당신이 남긴 평가 기록입니다.<br/>비공개 프로젝트이므로 본인의 결과만 표시됩니다.</>
+                       <>이 프로젝트는 의뢰자가 평가 결과를 <span className="text-orange-500 font-bold">비공개</span>로 설정하였습니다.<br/>따라서 셰프님께서 작성하신 <span className="text-white font-bold">본인의 평가 기록만 확인</span>하실 수 있습니다.</>
                    ) : (!reportStats?.isResultPublic && reportStats?.isOwner ? (
                        <>비공개로 설정된 리포트입니다.<br/>
                        <span className="text-orange-500 font-bold">프로젝트 소유자 권한</span>으로 전체 결과를 열람하고 있습니다.</>
@@ -433,35 +433,44 @@ export default function ReportPage() {
                <h3 className="text-2xl font-black flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-indigo-600 rounded-full" /> 스티커 투표 현황
                </h3>
-               <div className="h-[300px] w-full min-h-[300px] relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportStats?.barData} layout="vertical">
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 'bold' }} axisLine={false} tickLine={false} width={100} />
-                      <Tooltip 
-                         cursor={{ fill: 'transparent' }}
-                         contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '16px' }}
-                         itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                      />
-                      <Bar dataKey="value" radius={[0, 10, 10, 0]}>
-                         {reportStats?.barData.map((entry: any, index: number) => (
-                           <Cell 
-                               key={`cell-${index}`} 
-                               fill={entry.color} 
-                               stroke={entry.isMyChoice ? '#fff' : undefined}
-                               strokeWidth={entry.isMyChoice ? 2 : 0}
-                           />
-                         ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-               </div>
-               <div className="space-y-3">
+               <div className="grid grid-cols-1 gap-4">
                   {reportStats?.barData.map((d: any, i: number) => (
-                    <div key={i} className="flex items-center gap-4">
-                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                       <span className="text-sm font-bold text-white/60 flex-1">{d.name}</span>
-                       <span className="text-lg font-black">{d.value} 득표</span>
+                    <div key={i} className={cn(
+                        "relative p-5 rounded-2xl border transition-all flex items-center justify-between group overflow-hidden",
+                        d.isMyChoice 
+                            ? "bg-white/10 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.2)]" 
+                            : "bg-white/5 border-white/5 hover:bg-white/[0.08]"
+                    )}>
+                       {d.isMyChoice && (
+                           <div className="absolute top-0 right-0 px-3 py-1 bg-indigo-500 text-white text-[9px] font-black uppercase rounded-bl-xl z-20 shadow-lg">You Voted</div>
+                       )}
+                       
+                       <div className="flex items-center gap-4 z-10 mr-4">
+                           {/* Sticker Circle */}
+                           <div 
+                             className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center font-black text-lg shadow-lg"
+                             style={{ backgroundColor: d.color, color: 'rgba(0,0,0,0.4)', textShadow: '0 1px 0 rgba(255,255,255,0.2)' }}
+                           >
+                              {i+1}
+                           </div>
+                           
+                           <div className="flex flex-col min-w-0">
+                              <span className={cn("text-sm font-bold leading-tight break-keep", d.isMyChoice ? "text-white" : "text-white/60")}>
+                                  {d.name}
+                              </span>
+                           </div>
+                       </div>
+
+                       <div className="flex flex-col items-end z-10 shrink-0">
+                          <span className="text-2xl font-black">{d.value}</span>
+                          <span className="text-[10px] font-bold text-white/30 uppercase">Votes</span>
+                       </div>
+                       
+                       {/* Background Fill for Progress visualization */}
+                       <div 
+                         className="absolute inset-y-0 left-0 bg-white/5 z-0 transition-all duration-1000" 
+                         style={{ width: `${(d.value / (reportStats?.totalParticipantCount || 1)) * 100}%` }} 
+                       />
                     </div>
                   ))}
                </div>
