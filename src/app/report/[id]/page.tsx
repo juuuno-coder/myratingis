@@ -421,7 +421,7 @@ export default function ReportPage() {
             {/* Sticker Decisions */}
             <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 flex flex-col">
                <h3 className="text-2xl font-black flex items-center gap-3">
-                  <div className="w-1.5 h-6 bg-indigo-600 rounded-full" /> Sticker Decision Status
+                  <div className="w-1.5 h-6 bg-indigo-600 rounded-full" /> 스티커 투표 현황
                </h3>
                <div className="h-[300px] w-full min-h-[300px] relative">
                   <ResponsiveContainer width="100%" height="100%">
@@ -461,9 +461,9 @@ export default function ReportPage() {
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 lg:col-span-2">
                <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-black flex items-center gap-3">
-                     <div className="w-1.5 h-6 bg-blue-600 rounded-full" /> Expert Participation by Field
+                     <div className="w-1.5 h-6 bg-blue-600 rounded-full" /> 분야별 전문가 참여 현황
                   </h3>
-                  <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Participation Insight</div>
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">참여 분석</div>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="h-[250px] w-full min-h-[250px] relative">
@@ -491,7 +491,7 @@ export default function ReportPage() {
                      {Object.entries(reportStats?.expertiseDistribution || {}).map(([id, count], i) => (
                         <div key={i} className="px-5 py-3 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4 hover:border-blue-500/50 transition-all">
                            <div className="flex flex-col">
-                              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none mb-1">Field Specialist</span>
+                              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none mb-1">분야 전문가</span>
                               <span className="text-sm font-bold text-white/80">{ALL_LABELS[id] || id}</span>
                            </div>
                            <div className="h-8 w-px bg-white/10 mx-1" />
@@ -530,7 +530,7 @@ export default function ReportPage() {
                 <h3 className="text-3xl font-black flex items-center gap-3">
                    <div className="w-1.5 h-6 bg-emerald-600 rounded-full" /> 평가 기록
                 </h3>
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Sorted by Date (Asc)</span>
+                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">최신순</span>
             </div>
             <div className="overflow-x-auto rounded-[2.5rem] border border-white/5 bg-white/5">
                 <table className="w-full text-left border-collapse">
