@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { db } from "@/lib/firebase/client"; // Firebase
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore"; // Firestore methods
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, increment } from "firebase/firestore"; // Firestore methods
 import { 
   ArrowLeft, 
   Users, 
@@ -104,6 +104,24 @@ export default function ReportPage() {
 
         const projectData = projectSnap.data();
         
+        // --- View Count Increment (Report Page Visit) ---
+        const viewKey = `viewed_${projectId}`;
+        if (typeof window !== 'undefined' && !sessionStorage.getItem(viewKey)) {
+             try {
+                // Async update
+                updateDoc(projectRef, { 
+                    views: increment(1),
+                    views_count: increment(1),
+                    view_count: increment(1)
+                });
+                sessionStorage.setItem(viewKey, 'true');
+                // Optimistic Update
+                projectData.views = (projectData.views || 0) + 1;
+                projectData.views_count = (projectData.views_count || 0) + 1;
+             } catch(e) { console.warn("View increment failed", e); }
+        }
+        // ------------------------------------------------
+
         // --- View Count Correction (Only for '와요' project, Min 135) ---
         if (projectData.title?.includes("와요") && (projectData.views || 0) < 135) {
             try {
