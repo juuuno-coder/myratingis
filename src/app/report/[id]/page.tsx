@@ -271,7 +271,7 @@ export default function ReportPage() {
 
     // --- Access Control Logic ---
     // --- Access Control Logic ---
-    const isOwner = user?.uid === project.user_id;
+    const isOwner = user?.uid && (user.uid === project.user_id || user.uid === project.author_uid || user.uid === project.userId);
     // Check 'result_visibility' in custom_data (Default to public if undefined)
     const resultVisibility = project.custom_data?.result_visibility || 'public';
     const isResultPublic = resultVisibility === 'public';
