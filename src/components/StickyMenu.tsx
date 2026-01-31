@@ -173,7 +173,7 @@ export function StickyMenu({
 
       <div className={`${isScrolled ? "fixed top-[56px] left-0 right-0 shadow-sm" : "relative"} z-40 w-full transition-all duration-300`}>
         {/* 1. 상단 메인 카테고리 바 */}
-        <div className={`w-full bg-white/95 backdrop-blur-sm border-b border-gray-100/50 transition-all duration-300 ${isScrolled ? "h-14" : "h-20 md:h-24"}`}>
+        <div className={`w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-gray-100/50 dark:border-slate-800/50 transition-all duration-300 ${isScrolled ? "h-14" : "h-20 md:h-24"}`}>
           <section className={`flex items-center justify-between px-3 md:px-6 h-full w-full gap-2`}>
             {/* 카테고리 목록 */}
             <div className="flex items-center justify-start md:justify-center gap-1 md:gap-2 overflow-x-auto no-scrollbar h-full flex-1">
@@ -188,7 +188,7 @@ export function StickyMenu({
                   <div
                     key={category.value}
                     className={`group flex items-center gap-1.5 md:gap-2 px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200 whitespace-nowrap ${
-                      isActive ? "bg-green-50" : "hover:bg-slate-50"
+                      isActive ? "bg-green-50 dark:bg-green-900/30" : "hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                     onClick={() => handleCategoryToggle(category.value)}
                     onMouseEnter={() => setHoveredCategory(category.value)}
@@ -206,7 +206,7 @@ export function StickyMenu({
                       )}
                     </div>
                     <span className={`transition-all ${isScrolled ? "text-[13px] font-semibold" : "text-sm md:text-[15px] font-medium"} ${
-                      isActive ? "text-green-700 font-bold" : "text-slate-600 group-hover:text-green-600"
+                      isActive ? "text-green-700 dark:text-green-400 font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-green-600 dark:group-hover:text-green-400"
                     }`}>
                       {category.label}
                     </span>
@@ -229,13 +229,13 @@ export function StickyMenu({
                   </span>
                   <FontAwesomeIcon icon={faChevronDown} className="text-gray-500 w-2.5 h-2.5 ml-0.5" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40 bg-white border border-gray-100 shadow-xl rounded-xl p-1">
+                <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xl rounded-xl p-1">
                   {sortOptions.map((option) => (
                     <DropdownMenuItem
                       key={option.value}
                       onClick={() => handleSortChange(option.value)}
                       className={`flex items-center gap-2 cursor-pointer p-2 rounded-lg my-0.5 ${
-                        selectedSort === option.value ? "bg-green-50 text-green-600 font-semibold" : "text-gray-600 hover:bg-gray-100 hover:text-black"
+                        selectedSort === option.value ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-semibold" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-black dark:hover:text-white"
                       }`}
                     >
                       <FontAwesomeIcon icon={option.icon} className={`w-4 h-4 ${selectedSort === option.value ? "opacity-100" : "opacity-50"}`} />
@@ -269,7 +269,7 @@ export function StickyMenu({
 
         {/* 2. 분야별 확장 패널 - 스크롤 시 축소 적용 */}
         <div 
-          className={`overflow-hidden transition-all duration-300 ease-in-out bg-gray-50/95 backdrop-blur-sm border-b border-gray-100 ${
+          className={`overflow-hidden transition-all duration-300 ease-in-out bg-gray-50/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-slate-800 ${
             isFieldPanelOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
@@ -285,7 +285,7 @@ export function StickyMenu({
                     className={`rounded-full border font-medium transition-all whitespace-nowrap flex items-center gap-2 ${
                       isSelected
                         ? "bg-[#16A34A] border-[#16A34A] text-white"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-600"
+                        : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-600"
                     } ${isScrolled ? "px-3 py-1 text-xs" : "px-4 py-1.5 text-sm"}`}
                   >
                     {field.label}
@@ -309,7 +309,7 @@ export function StickyMenu({
 
           {/* 현재 필터 표시 */}
           {hasActiveFilters && (
-            <div className="px-3 md:px-6 py-2 flex items-center justify-start md:justify-center gap-2 text-sm flex-wrap border-t border-gray-100 bg-white/50">
+            <div className="px-3 md:px-6 py-2 flex items-center justify-start md:justify-center gap-2 text-sm flex-wrap border-t border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
               <span className="text-gray-400 text-xs">선택됨:</span>
               {selectedCategories.map(cat => {
                 const category = categories.find(c => c.value === cat);

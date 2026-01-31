@@ -20,15 +20,15 @@ export function EmptyState({
   icon = "folder"
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200">
-      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-700">
+      <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm mb-6">
         {icon === "search" ? (
           <SearchX className="w-8 h-8 text-slate-400" />
         ) : (
           <FolderOpen className="w-8 h-8 text-slate-400" />
         )}
       </div>
-      <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
+      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
       <p className="text-slate-500 mb-8 max-w-sm mx-auto">{description}</p>
       
       {actionLabel && actionLink && (

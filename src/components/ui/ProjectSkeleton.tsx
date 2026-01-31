@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function ProjectCardSkeleton() {
   return (
     <div className="break-inside-avoid mb-4">
-      <div className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
+      <div className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 hover:shadow-lg transition-shadow">
         {/* 이미지 영역 */}
         <Skeleton className="w-full aspect-square" />
         
