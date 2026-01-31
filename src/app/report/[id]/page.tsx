@@ -494,7 +494,7 @@ export default function ReportPage() {
                       이 프로젝트의 평가 결과는 비공개로 설정되어 있습니다.<br/>
                       프로젝트 소유자이거나, 평가에 참여한 경우에만<br/>본인의 결과를 확인할 수 있습니다.
                   </p>
-                  <Button onClick={() => router.push(`/review/viewer?projectId=${projectId}`)} className="h-14 px-8 rounded-2xl bg-orange-600 hover:bg-orange-700 font-bold text-white uppercase tracking-widest mt-4">
+                  <Button onClick={() => router.push(`/review/viewer?projectId=${projectId}`)} className="h-14 px-8 rounded-lg bg-orange-600 hover:bg-orange-700 font-bold text-white uppercase tracking-widest mt-4">
                       평가 참여하기
                   </Button>
               </div>
@@ -563,7 +563,7 @@ export default function ReportPage() {
          {/* Charts Grid */}
          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Michelin Radar */}
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 flex flex-col">
+            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-2xl space-y-8 flex flex-col">
                <h3 className="text-2xl font-black flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-orange-600 rounded-full" /> 평점 평가 분석
                </h3>
@@ -598,7 +598,7 @@ export default function ReportPage() {
                </div>
                <div className="grid grid-cols-2 gap-4">
                   {reportStats?.radarData.map((d: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5">
                        <span className="text-xs font-bold text-white/40">{d.subject}</span>
                        <span className="text-lg font-black text-orange-500">{d.value}</span>
                     </div>
@@ -607,14 +607,14 @@ export default function ReportPage() {
             </motion.div>
 
             {/* Sticker Decisions */}
-            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 flex flex-col">
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/5 border border-white/5 p-10 rounded-2xl space-y-8 flex flex-col">
                <h3 className="text-2xl font-black flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-indigo-600 rounded-full" /> 스티커 투표 현황
                </h3>
                <div className="grid grid-cols-1 gap-4">
                   {reportStats?.barData.map((d: any, i: number) => (
                     <div key={i} className={cn(
-                        "relative p-5 rounded-2xl border transition-all flex items-center justify-between group overflow-hidden",
+                        "relative p-5 rounded-lg border transition-all flex items-center justify-between group overflow-hidden",
                         d.isMyChoice 
                             ? "bg-white/10 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.2)]" 
                             : "bg-white/5 border-white/5 hover:bg-white/[0.08]"
@@ -655,7 +655,7 @@ export default function ReportPage() {
             </motion.div>
 
             {/* Expert Participation by Field */}
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-8 lg:col-span-2">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="bg-white/5 border border-white/5 p-10 rounded-2xl space-y-8 lg:col-span-2">
                <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-black flex items-center gap-3">
                      <div className="w-1.5 h-6 bg-blue-600 rounded-full" /> 분야별 전문가 참여 현황
@@ -676,7 +676,7 @@ export default function ReportPage() {
                                contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '16px' }}
                                itemStyle={{ color: '#fff' }}
                            />
-                           <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]}>
+                           <Bar dataKey="value" fill="#6366f1" radius={[6, 6, 0, 0]}>
                               {(Object.entries(reportStats?.expertiseDistribution || {})).map((_, index) => (
                                  <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#6366f1' : '#818cf8'} />
                               ))}
@@ -686,7 +686,7 @@ export default function ReportPage() {
                   </div>
                   <div className="flex flex-wrap gap-2 content-center items-center h-full">
                      {Object.entries(reportStats?.expertiseDistribution || {}).map(([id, count], i) => (
-                        <div key={i} className="px-5 py-3 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4 hover:border-blue-500/50 transition-all">
+                        <div key={i} className="px-5 py-3 bg-white/5 rounded-lg border border-white/10 flex items-center gap-4 hover:border-blue-500/50 transition-all">
                            <div className="flex flex-col">
                               <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none mb-1">분야 전문가</span>
                               <span className="text-sm font-bold text-white/80">{ALL_LABELS[id] || id}</span>
@@ -696,7 +696,7 @@ export default function ReportPage() {
                         </div>
                      ))}
                      {Object.keys(reportStats?.expertiseDistribution || {}).length === 0 && (
-                        <div className="w-full p-8 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                        <div className="w-full p-8 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
                            <p className="text-white/20 font-bold italic">참여 전문가의 전문 분야 통계가 아직 집계되지 않았습니다.</p>
                         </div>
                      )}
@@ -713,7 +713,7 @@ export default function ReportPage() {
               { label: '최고 평가 항목', value: reportStats?.radarData ? [...reportStats.radarData].sort((a:any, b:any) => b.value - a.value)[0]?.subject : '-', icon: Trophy, color: 'text-amber-300' },
               { label: '바이럴 점수', value: 'TOP 5%', icon: Rocket, color: 'text-emerald-400' },
             ].map((stat, i) => (
-              <motion.div key={i} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i*0.1 }} className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] hover:bg-white/[0.08] transition-colors group">
+              <motion.div key={i} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i*0.1 }} className="bg-white/5 border border-white/5 p-8 rounded-lg hover:bg-white/[0.08] transition-colors group">
                  <stat.icon className={cn("w-6 h-6 mb-4", stat.color)} />
                  <p className="text-white/30 text-[10px] font-black mb-1 uppercase tracking-widest">{stat.label}</p>
                  <h3 className="text-3xl font-black">{stat.value}</h3>
@@ -729,7 +729,7 @@ export default function ReportPage() {
                 </h3>
                 <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">최신순</span>
             </div>
-            <div className="overflow-x-auto rounded-[2.5rem] border border-white/5 bg-white/5">
+            <div className="overflow-x-auto rounded-lg border border-white/5 bg-white/5">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-white/10">
@@ -848,7 +848,7 @@ export default function ReportPage() {
                         initial={{ y: 20, opacity: 0 }} 
                         whileInView={{ y: 0, opacity: 1 }} 
                         viewport={{ once: true }}
-                        className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all flex flex-col gap-8 h-full break-inside-avoid"
+                        className="p-8 rounded-lg bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all flex flex-col gap-8 h-full break-inside-avoid"
                       >
                          {/* ... (keep existing card content same as before, just copying structure for context match if needed, but since we are replacing the block container, we need to provide full content or use precise targeting) */}
                          <div className="flex items-center justify-between shrink-0">
@@ -887,7 +887,7 @@ export default function ReportPage() {
                                           <div className="h-px flex-1 bg-white/5" />
                                        </div>
                                        <p className="text-xs font-bold text-white/60 leading-relaxed italic group-hover/q:text-white/80 transition-colors">"{q}"</p>
-                                       <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                                       <div className="bg-white/5 border border-white/5 p-5 rounded-lg">
                                           <p className="text-sm font-medium text-white/90 leading-relaxed">{a as string}</p>
                                        </div>
                                     </div>
@@ -906,7 +906,7 @@ export default function ReportPage() {
                                       <span className="text-[10px] font-black text-blue-400/60 uppercase tracking-widest px-2 py-0.5 bg-blue-400/5 rounded border border-blue-400/10">종합 평가 의견</span>
                                       <div className="h-px flex-1 bg-white/5" />
                                    </div>
-                                   <div className="bg-gradient-to-br from-white/5 to-white/[0.02] p-6 rounded-[2rem] text-sm font-medium leading-relaxed italic text-orange-100 border border-white/10 shadow-inner">
+                                   <div className="bg-gradient-to-br from-white/5 to-white/[0.02] p-6 rounded-xl text-sm font-medium leading-relaxed italic text-orange-100 border border-white/10 shadow-inner">
                                      "{r.proposal}"
                                    </div>
                                 </div>
