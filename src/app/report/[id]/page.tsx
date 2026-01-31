@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { db } from "@/lib/firebase/client"; // Firebase
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, increment } from "firebase/firestore"; // Firestore methods
 import { 
@@ -60,6 +60,16 @@ export default function ReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const searchParams = useSearchParams();
+  const viewMode = searchParams.get('view');
+  const [myRating, setMyRating] = useState<any>(null);
+
+  useEffect(() => {
+    if (ratings.length > 0 && user) {
+        setMyRating(ratings.find((r: any) => r.user_uid === user.uid));
+    }
+  }, [ratings, user]);
 
   const handleDownloadCSV = () => {
     if (!ratings || ratings.length === 0) return toast.error("다운로드할 데이터가 없습니다.");
@@ -507,6 +517,92 @@ export default function ReportPage() {
       <MyRatingIsHeader />
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
+         {/* My Evaluation Section (Only in 'mine' view) */}
+         {viewMode === 'mine' && (
+            <motion.section 
+                initial={{ y: -20, opacity: 0 }} 
+                animate={{ y: 0, opacity: 1 }}
+                className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 p-8 rounded-[2rem] border border-indigo-500/30 mb-12 relative overflow-hidden ring-1 ring-inset ring-white/10"
+            >
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                 
+                 <div className="relative z-10">
+                     <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                             <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400 ring-1 ring-inset ring-indigo-500/40">
+                                 <Users size={24} />
+                             </div>
+                             <div>
+                                 <h2 className="text-2xl font-black text-white">나의 평가 리포트</h2>
+                                 <p className="text-sm font-bold text-indigo-300 opacity-60">MY EVALUATION LOG</p>
+                             </div>
+                        </div>
+                        <Button onClick={() => router.push(`/report/${projectId}`)} variant="ghost" className="text-white/40 hover:text-white hover:bg-white/10 rounded-full h-10 px-4 text-xs font-bold uppercase tracking-widest">
+                            <ArrowLeft className="w-4 h-4 mr-2" /> 전체 통계로 돌아가기
+                        </Button>
+                     </div>
+                     
+                     {myRating ? (
+                         <div className="space-y-8">
+                             {/* Score & Sticker */}
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                 <div className="bg-black/40 p-8 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center backdrop-blur-sm">
+                                     <div className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">My Score</div>
+                                     <div className="text-6xl font-black text-white tracking-tighter">{myRating.score?.toFixed(1) || "0.0"}</div>
+                                 </div>
+                                 <div className="bg-black/40 p-8 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center col-span-2 backdrop-blur-sm relative overflow-hidden group">
+                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                                     <div className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">My Vote</div>
+                                     <div className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight break-keep">
+                                        "{VOTE_LABEL_MAP[myRating.vote_type] || myRating.vote_type || "투표 없음"}"
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             {/* Proposal */}
+                             <div className="bg-black/40 p-8 rounded-2xl border border-white/5 backdrop-blur-sm">
+                                 <div className="flex items-center gap-2 mb-4">
+                                    <MessageSquare className="w-4 h-4 text-indigo-400" />
+                                    <span className="text-xs font-black text-white/40 uppercase tracking-widest">한줄 코멘트 / 제안</span>
+                                 </div>
+                                 <p className="text-xl md:text-2xl text-white font-bold leading-relaxed whitespace-pre-wrap">
+                                    {myRating.proposal || "남긴 코멘트가 없습니다."}
+                                 </p>
+                             </div>
+
+                             {/* Custom Answers */}
+                             {myRating.custom_answers && Object.keys(myRating.custom_answers).length > 0 && (
+                                 <div className="bg-black/40 p-8 rounded-2xl border border-white/5 backdrop-blur-sm">
+                                     <div className="flex items-center gap-2 mb-6">
+                                        <FileText className="w-4 h-4 text-indigo-400" />
+                                        <span className="text-xs font-black text-white/40 uppercase tracking-widest">상세 답변</span>
+                                     </div>
+                                     <div className="grid gap-6">
+                                         {Object.entries(myRating.custom_answers).map(([q, a], idx) => (
+                                             <div key={idx} className="space-y-2">
+                                                 <p className="text-indigo-300 font-bold text-sm">Q. {q}</p>
+                                                 <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-white/80 font-medium">
+                                                    {String(a)}
+                                                 </div>
+                                             </div>
+                                         ))}
+                                     </div>
+                                 </div>
+                             )}
+                         </div>
+                     ) : (
+                         <div className="py-20 text-center">
+                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Users className="w-8 h-8 text-white/20" />
+                             </div>
+                             <h3 className="text-xl font-bold text-white mb-2">내 평가 기록이 없습니다</h3>
+                             <p className="text-white/40 text-sm">이 프로젝트에 참여한 기록을 찾을 수 없습니다.</p>
+                         </div>
+                     )}
+                </div>
+            </motion.section>
+         )}
+
          {/* Hero Title */}
          <section className="text-center space-y-6 relative">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
