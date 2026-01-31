@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase/client";
-import { doc, getDoc, collection, query, where, getCountFromServer, getDocs, orderBy } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getCountFromServer, getDocs, orderBy, collectionGroup } from "firebase/firestore";
 
 import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -246,20 +246,44 @@ export default function MyPage() {
           setProjects(fetchedProjects);
           
         } else if (activeTab === 'likes') {
-          const { data } = await supabase
-            .from('Like')
-            .select('*, Project(*)')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false }) as any;
-          
-          setProjects((data || []).filter((i: any) => i.Project).map((i: any) => ({
-            id: String(i.Project.project_id),
-            title: i.Project.title,
-            urls: { full: i.Project.thumbnail_url || '/placeholder.jpg', regular: i.Project.thumbnail_url || '/placeholder.jpg' },
-            user: { username: 'Creator', profile_image: { small: '/globe.svg', large: '/globe.svg' } },
-            likes: i.Project.likes_count || 0,
-            views: i.Project.views_count || 0,
-          })));
+          // Firebase Collection Group Query for 'likes'
+          try {
+             // Note: Requires index on 'likes' collection group for user_id ASC/DESC if sorting
+             // If index missing, orderBy might fail. Try simple query first without orderBy if needed, but let's try with orderBy created_at desc
+             const likesQuery = query(collectionGroup(db, "likes"), where("user_id", "==", userId), orderBy("created_at", "desc"));
+             const likesSnap = await getDocs(likesQuery);
+             
+             const projectIds = likesSnap.docs.map(d => d.ref.parent.parent?.id).filter(Boolean) as string[];
+             const uniqueProjectIds = Array.from(new Set(projectIds));
+
+             if (uniqueProjectIds.length > 0) {
+                 const projectPromises = uniqueProjectIds.map(pid => getDoc(doc(db, "projects", pid)));
+                 const projectSnaps = await Promise.all(projectPromises);
+                 
+                 const likedProjects = projectSnaps
+                    .filter(p => p.exists())
+                    .map(p => {
+                        const data = p.data();
+                        return { 
+                            id: p.id,
+                            title: data?.title || 'No Title',
+                            thumbnail_url: data?.thumbnail_url || '/placeholder.jpg',
+                            likes: data?.likes || 0,
+                            views: data?.views || 0,
+                            created_at: data?.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+                            description: data?.content_text || '',
+                            rendering_type: data?.rendering_type || 'image',
+                        };
+                    });
+                 
+                 setProjects(likedProjects);
+             } else {
+                 setProjects([]);
+             }
+          } catch (error) {
+             console.error("Error fetching likes:", error);
+             setProjects([]);
+          }
           
         } else if (activeTab === 'collections') {
           // 컬렉션 목록 로드
@@ -325,13 +349,51 @@ export default function MyPage() {
           })) || []);
           
         } else if (activeTab === 'comments') {
-          const { data } = await supabase
-            .from('Comment')
-            .select('*, Project(project_id, title, thumbnail_url)')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false }) as any;
-          
-          setProjects(data || []);
+          // 'Participated Audits' (Evaluations) fetched from Firebase
+          try {
+              const evalQuery = query(collection(db, "evaluations"), where("user_uid", "==", userId), orderBy("createdAt", "desc"));
+              const evalSnap = await getDocs(evalQuery);
+              const evaluations = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+              if (evaluations.length > 0) {
+                  // Get Unique Project IDs
+                  const uniqueProjectIds = Array.from(new Set(evaluations.map((e: any) => e.projectId)));
+                  
+                  // Fetch Projects (Parallel)
+                  const projectPromises = uniqueProjectIds.map(pid => getDoc(doc(db, "projects", pid as string)));
+                  const projectSnaps = await Promise.all(projectPromises);
+                  
+                  const projectsMap: Record<string, any> = {};
+                  projectSnaps.forEach(p => { if(p.exists()) projectsMap[p.id] = { id: p.id, ...p.data() }; });
+
+                  // Map evaluations to display list
+                  const participatedList = evaluations.map((ev: any) => {
+                      const proj = projectsMap[ev.projectId];
+                      if (!proj) return null;
+                      
+                      // Map to display format (similar to projects tab)
+                      return {
+                          id: proj.id,
+                          title: proj.title || '제목 없음',
+                          thumbnail_url: proj.thumbnail_url || '/placeholder.jpg',
+                          likes: proj.likes || proj.likes_count || 0,
+                          views: proj.views || proj.views_count || 0,
+                          rating_count: 0, // Placeholder
+                          created_at: proj.createdAt?.toDate ? proj.createdAt.toDate().toISOString() : new Date().toISOString(),
+                          description: proj.content_text || proj.description || '',
+                          custom_data: proj.custom_data,
+                          _evaluation: ev // Pass evaluation detailed info (score, etc)
+                      };
+                  }).filter(Boolean);
+                  
+                  setProjects(participatedList);
+              } else {
+                  setProjects([]);
+              }
+          } catch (error) {
+              console.error("Error fetching evaluations:", error);
+              setProjects([]);
+          }
         }
       } catch (err) {
         console.error('데이터 로드 실패:', err);
@@ -588,8 +650,8 @@ export default function MyPage() {
           </div>
         ) : (
           <>
-            {/* 내 프로젝트 / 평가 의뢰 탭 */}
-            {(activeTab === 'projects' || activeTab === 'audit_requests') && (
+            {/* 내 프로젝트 / 평가 의뢰 / 참여한 평가 탭 */}
+            {(activeTab === 'projects' || activeTab === 'audit_requests' || activeTab === 'comments') && (
               <div className="space-y-6">
                 {/* [New] Project Sub-filters */}
                 {activeTab === 'projects' && (
@@ -676,6 +738,18 @@ export default function MyPage() {
                             <p className="text-[11px] text-chef-text opacity-40 font-bold line-clamp-2 mb-6 leading-relaxed">
                                 {project.description || project.summary || "작성된 설명이 없습니다."}
                             </p>
+                            
+                            {/* Evaluation Info for Comments Tab */}
+                            {activeTab === 'comments' && project._evaluation && (
+                                <div className="mb-4 bg-orange-500/5 border border-orange-500/20 p-3 rounded-xl flex items-center gap-4">
+                                    <div className="px-2 py-1 bg-orange-500/10 rounded-md text-orange-600 text-xs font-black">
+                                       MY SCORE: {project._evaluation.score?.toFixed(1) || "0.0"}
+                                    </div>
+                                    <div className="text-xs font-bold text-chef-text opacity-60 truncate">
+                                       {project._evaluation.vote_type ? `스티커: ${project._evaluation.vote_type}` : "투표 완료"}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-auto">
                                 <div className="flex items-center gap-1.5">
@@ -708,27 +782,29 @@ export default function MyPage() {
                                 결과 리포트 보기
                              </Button>
 
-                             <div className="flex gap-2">
-                                 <Button 
-                                    onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} 
-                                    className="flex-1 h-12 rounded-xl bg-chef-panel border border-chef-border text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
-                                 >
-                                    <Edit className="w-3.5 h-3.5 mr-2" /> 수정
-                                 </Button>
-                                 <Button 
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }} 
-                                    className="w-12 h-12 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 transition-all flex items-center justify-center p-0"
-                                 >
-                                    <Trash2 className="w-4 h-4" />
-                                 </Button>
-                                 <Button 
-                                    onClick={(e) => { e.stopPropagation(); setSharingProject(project); setShareModalOpen(true); }} 
-                                    className="w-12 h-12 rounded-xl bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white border border-orange-500/20 transition-all flex items-center justify-center p-0"
-                                    title="공유하기"
-                                 >
-                                    <Share2 className="w-4 h-4" />
-                                 </Button>
-                              </div>
+                             {activeTab !== 'comments' && (
+                               <div className="flex gap-2">
+                                   <Button 
+                                      onClick={(e) => { e.stopPropagation(); router.push(`/project/upload?mode=${project.custom_data?.audit_config ? 'audit' : ''}&edit=${project.id}`); }} 
+                                      className="flex-1 h-12 rounded-xl bg-chef-panel border border-chef-border text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
+                                   >
+                                      <Edit className="w-3.5 h-3.5 mr-2" /> 수정
+                                   </Button>
+                                   <Button 
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }} 
+                                      className="w-12 h-12 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 transition-all flex items-center justify-center p-0"
+                                   >
+                                      <Trash2 className="w-4 h-4" />
+                                   </Button>
+                                   <Button 
+                                      onClick={(e) => { e.stopPropagation(); setSharingProject(project); setShareModalOpen(true); }} 
+                                      className="w-12 h-12 rounded-xl bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white border border-orange-500/20 transition-all flex items-center justify-center p-0"
+                                      title="공유하기"
+                                   >
+                                      <Share2 className="w-4 h-4" />
+                                   </Button>
+                                </div>
+                             )}
 
                              {project.visibility === 'private' && (
                                 <p className="text-[9px] text-center font-bold text-chef-text opacity-20 uppercase tracking-tighter mt-1 leading-none">
@@ -742,8 +818,12 @@ export default function MyPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-24 bg-chef-card rounded-[2.5rem] border border-dashed border-chef-border">
                     <ChefHat className="w-16 h-16 text-chef-text opacity-10 mb-4" />
-                    <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">{activeTab === 'audit_requests' ? '진행 중인 의뢰가 없습니다' : '등록된 프로젝트가 없습니다'}</h3>
-                    <Button onClick={() => router.push('/project/upload')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-6 font-black uppercase tracking-widest text-xs">의뢰하러 가기</Button>
+                    <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">
+                        {activeTab === 'comments' ? '참여한 평가가 없습니다' : (activeTab === 'audit_requests' ? '진행 중인 의뢰가 없습니다' : '등록된 프로젝트가 없습니다')}
+                    </h3>
+                    <Button onClick={() => router.push(activeTab === 'projects' ? '/project/upload' : '/projects')} className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-8 h-14 mt-6 font-black uppercase tracking-widest text-xs">
+                        {activeTab === 'projects' ? '의뢰하러 가기' : '평가하러 가기'}
+                    </Button>
                   </div>
                 )}
               </div>
@@ -783,35 +863,7 @@ export default function MyPage() {
             )}
 
             {/* 내 댓글 탭 */}
-            {activeTab === 'comments' && (
-              projects.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 pb-12">
-                  {projects.map((item) => (
-                    <CommentCard 
-                      key={item.comment_id} 
-                      comment={item}
-                      onClick={() => {
-                        if (item.Project) {
-                          setSelectedProject({
-                            id: String(item.Project.project_id),
-                            title: item.Project.title,
-                            urls: { full: item.Project.thumbnail_url || '/placeholder.jpg', regular: item.Project.thumbnail_url || '/placeholder.jpg' },
-                            user: { username: userProfile?.username || 'Unknown', profile_image: { small: '/globe.svg', large: '/globe.svg' } },
-                            likes: 0, views: 0,
-                          });
-                          setModalOpen(true);
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 bg-chef-card rounded-[2rem] border border-chef-border border-dashed">
-                  <MessageCircle className="w-16 h-16 text-chef-text opacity-10 mb-4" />
-                  <h3 className="text-xl font-black text-chef-text uppercase tracking-widest">남긴 평가가 없습니다</h3>
-                </div>
-              )
-            )}
+
 
             {/* AI 도구 탭 */}
 {activeTab === 'ai_tools' && (
