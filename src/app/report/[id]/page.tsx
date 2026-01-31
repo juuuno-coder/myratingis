@@ -709,8 +709,16 @@ export default function ReportPage() {
                                   </td>
                                   <td className="px-8 py-6">
                                       <div className="flex flex-wrap gap-1">
-                                          {r.user_job ? (
-                                               <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                          {r.expertise && r.expertise.length > 0 ? (
+                                               <div className="flex flex-wrap gap-1">
+                                                   {r.expertise.map((exp: string, idx: number) => (
+                                                       <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                                           {exp}
+                                                       </span>
+                                                   ))}
+                                               </div>
+                                          ) : r.user_job ? (
+                                               <span className="px-1.5 py-0.5 bg-white/5 text-white/40 text-[8px] font-black rounded border border-white/10 opacity-50">
                                                    {ALL_LABELS[r.user_job] || r.user_job}
                                                </span>
                                           ) : (
