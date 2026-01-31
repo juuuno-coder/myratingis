@@ -309,11 +309,11 @@ export default function ProjectUploadPage() {
             />
           </div>
           <div className="chef-black-panel p-1 rounded-sm border border-chef-border/30 hover:border-orange-500/50 transition-colors shadow-sm">
-            <input 
-              placeholder="한 줄 설명 (예: 바쁜 직원을 위한 가장 빠른 커피 배달)" 
+            <textarea 
+              placeholder="프로젝트 소개&#13;&#10;예)&#13;&#10;모바일 초대장 - 와요&#13;&#10;사람들이 쉽게 모바일로 초대장을 만들 수 있는 앱입니다.&#13;&#10;냉정한 평가와 많은 관심 부탁드려요." 
               value={summary} 
               onChange={e => setSummary(e.target.value)} 
-              className="w-full h-14 bg-chef-panel border-none text-sm font-bold text-chef-text opacity-70 px-10 placeholder:text-chef-text/20 outline-none chef-input-high-v rounded-sm"
+              className="w-full min-h-[160px] bg-chef-panel border-none text-sm font-medium text-chef-text px-6 py-6 placeholder:text-chef-text/20 outline-none chef-input-high-v rounded-sm resize-none leading-relaxed"
             />
           </div>
         </div>

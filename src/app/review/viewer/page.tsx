@@ -70,7 +70,7 @@ function ReviewIntro({ onStart, project, loading }: { onStart: () => void, proje
            </motion.div>
            {project && (
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="space-y-2">
-                <h4 className="text-lg md:text-xl font-black text-white italic tracking-tighter uppercase max-w-2xl mx-auto px-4">{project.summary || project.description || "당신을 위해 준비된 미지의 과제"}</h4>
+                <h4 className="text-lg md:text-xl font-black text-white italic tracking-tighter uppercase max-w-2xl mx-auto px-4">{project.title || "평가 의뢰"}</h4>
              </motion.div>
            )}
         </div>
@@ -122,7 +122,7 @@ function ViewerContent() {
       isOpen: false, title: "", description: "", onConfirm: () => {}
   });
 
-  const steps = ['rating', 'voting', 'subjective', 'summary'];
+  const steps = ['guide', 'rating', 'voting', 'subjective', 'summary'];
 
   useEffect(() => {
     // Robust Guest ID generation
@@ -208,15 +208,22 @@ function ViewerContent() {
   }, [isResizing]);
 
   const handleNextStep = () => {
+    // 0: Guide
     if (currentStep === 0) {
-        if (!michelinRef.current?.isValid()) { toast.error("모든 항목을 평가해주세요."); return; }
         setCurrentStep(1); return;
     }
+    // 1: Rating
     if (currentStep === 1) {
-        if (!pollRef.current?.isValid()) { toast.error("스티커를 선택해주세요."); return; }
+        if (!michelinRef.current?.isValid()) { toast.error("모든 항목을 평가해주세요."); return; }
         setCurrentStep(2); return;
     }
+    // 2: Voting
     if (currentStep === 2) {
+        if (!pollRef.current?.isValid()) { toast.error("스티커를 선택해주세요."); return; }
+        setCurrentStep(3); return;
+    }
+    // 3: Subjective
+    if (currentStep === 3) {
         const qs = project?.custom_data?.audit_config?.questions || [];
         if (qs.some((q: string) => !customAnswers[q]?.trim()) && qs.length > 0) {
             toast.error("아직 작성하지 않은 의견이 있습니다."); return;
@@ -252,7 +259,7 @@ function ViewerContent() {
       await addDoc(collection(db, "evaluations"), evaluationData);
 
       setIsSubmitted(true);
-      setCurrentStep(steps.length - 1);
+      setCurrentStep(steps.length - 1); // Move to summary
       toast.success("평가가 제출되었습니다! 🎉");
     } catch (e: any) {
       console.error("[Viewer] Final Submit Error:", e);
@@ -271,6 +278,40 @@ function ViewerContent() {
 
   const renderCurrentStep = () => {
     const st = steps[currentStep];
+
+    if (st === 'guide') return (
+       <div className="flex flex-col h-full overflow-y-auto pb-10 space-y-8 px-2">
+          <div className="space-y-3">
+             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-chef-border rounded-full mb-2">
+                <span className="text-[10px] font-black uppercase text-chef-text/50">PROJECT OVERVIEW</span>
+             </div>
+             <h3 className="text-3xl font-black heading-font text-chef-text leading-tight break-keep">{project.title}</h3>
+          </div>
+          <div className="bg-chef-panel p-6 rounded-2xl border border-chef-border">
+             <p className="text-sm font-medium text-chef-text leading-relaxed whitespace-pre-wrap break-keep opacity-80">
+                {project.summary || project.description || "프로젝트 소개가 없습니다."}
+             </p>
+          </div>
+          <div className="space-y-5 pt-6 border-t border-chef-border">
+             <h4 className="text-xs font-black uppercase text-chef-text/40 tracking-widest">EVALUATION PROCESS</h4>
+             <ul className="space-y-4">
+                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
+                   <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-black">1</div>
+                   <span>평점 평가 <span className="text-xs font-normal opacity-50 ml-1">(5개 항목)</span></span>
+                </li>
+                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
+                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-black">2</div>
+                   <span>판정 투표 <span className="text-xs font-normal opacity-50 ml-1">(스티커)</span></span>
+                </li>
+                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
+                   <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-black">3</div>
+                   <span>종합 의견 작성</span>
+                </li>
+             </ul>
+          </div>
+       </div>
+    );
+
     if (st === 'rating') return <div className="flex flex-col h-full"><div className="text-center space-y-3 mb-8 shrink-0"><div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-600/10 rounded-full"><span className="text-[10px] font-black text-orange-600">STAGE 01. STAR RATING</span></div><h3 className="text-2xl font-black">평점 평가</h3></div><div className="flex-1 overflow-y-auto pb-10"><MichelinRating ref={michelinRef} projectId={projectId!} guestId={guestId || undefined} onChange={setMichelinScores} /></div></div>;
     if (st === 'voting') return <div className="flex flex-col h-full"><div className="text-center space-y-3 mb-8 shrink-0"><div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-600/10 rounded-full"><span className="text-[10px] font-black text-indigo-600">STAGE 02. STICKER</span></div><h3 className="text-xl font-black">판정 투표</h3></div><div className="flex-1 overflow-y-auto pb-10"><FeedbackPoll ref={pollRef} projectId={projectId!} guestId={guestId || undefined} onChange={setPollSelection} /></div></div>;
     if (st === 'subjective') {
@@ -299,13 +340,13 @@ function ViewerContent() {
           <div onMouseDown={() => setIsResizing(true)} className="hidden md:block absolute top-0 -left-1 bottom-0 w-2 cursor-col-resize z-30" />
           <div className="p-6 border-b">
               <h3 className="text-xl font-black uppercase italic flex items-center gap-2"><ChefHat className="text-orange-500" /> 제 평가는요?</h3>
-              {currentStep < steps.length - 1 && <div className="mt-4 h-1 w-full bg-chef-panel rounded-full overflow-hidden"><div className="h-full bg-orange-600 transition-all" style={{ width: `${((currentStep+1)/3)*100}%` }} /></div>}
+              {currentStep < steps.length - 1 && <div className="mt-4 h-1 w-full bg-chef-panel rounded-full overflow-hidden"><div className="h-full bg-orange-600 transition-all" style={{ width: `${((currentStep+1)/(steps.length-1))*100}%` }} /></div>}
           </div>
           <div className="flex-1 overflow-hidden p-6 relative">{renderCurrentStep()}</div>
           {currentStep < steps.length - 1 && (
             <div className="p-6 border-t flex gap-4">
               {currentStep > 0 && <Button variant="outline" onClick={() => setCurrentStep(p => p - 1)}><ChevronLeft /></Button>}
-              <Button onClick={handleNextStep} className="flex-1 bg-orange-600 text-white font-black">{currentStep < steps.length - 2 ? "다음 단계로" : "제출하기"}</Button>
+              <Button onClick={handleNextStep} className="flex-1 bg-orange-600 text-white font-black">{currentStep < steps.length - 2 ? (currentStep === 0 ? "평가 시작하기" : "다음 단계로") : "제출하기"}</Button>
             </div>
           )}
         </div>
