@@ -381,6 +381,7 @@ export default function ReportPage() {
     return { 
       radarData, 
       barData, 
+      stickerOptions, 
       overallAvg, 
       participantCount: targetRatings.length,
       totalParticipantCount: ratings.length,
@@ -653,9 +654,9 @@ export default function ReportPage() {
                         <tr className="border-b border-white/10">
                             <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest w-20">No.</th>
                             <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">참여자 정보</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">일시</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-center">평점 평가</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">평가 결과</th>
                             <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">전문분야</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-right text-xs">일시</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -703,9 +704,17 @@ export default function ReportPage() {
                                           </div>
                                       </div>
                                   </td>
-                                  <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleDateString()}</td>
-                                  <td className="px-8 py-6 text-center">
-                                      <span className={cn("font-black text-lg", isMyReview ? "text-indigo-400" : "text-orange-500")}>{r.score ? r.score.toFixed(1) : '-'}</span>
+                                  <td className="px-8 py-6">
+                                      <div className="flex flex-col gap-1">
+                                           <span className={cn("font-black text-lg leading-none", isMyReview ? "text-indigo-400" : "text-orange-500")}>
+                                               {r.score ? r.score.toFixed(1) : '-'}
+                                           </span>
+                                           {r.vote_type && (
+                                               <span className="text-[10px] font-bold text-white/40 line-clamp-1 max-w-[150px]">
+                                                   {reportStats.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || r.vote_type}
+                                               </span>
+                                           )}
+                                      </div>
                                   </td>
                                   <td className="px-8 py-6">
                                       <div className="flex flex-wrap gap-1">
@@ -725,6 +734,9 @@ export default function ReportPage() {
                                               <span className="text-white/20 text-[10px]">-</span>
                                           )}
                                       </div>
+                                  </td>
+                                  <td className="px-8 py-6 text-xs text-white/20 font-medium text-right font-mono">
+                                      {new Date(r.created_at).toLocaleDateString()}
                                   </td>
                               </tr>
                             );
