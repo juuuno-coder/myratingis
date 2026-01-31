@@ -188,11 +188,13 @@ export default function ReportPage() {
                         return {
                             ...r,
                             user_nickname: latestUser.nickname || latestUser.displayName || r.user_nickname,
-                            user_job: latestUser.job || latestUser.occupation || (latestUser.expertise && latestUser.expertise.length > 0 ? latestUser.expertise[0] : r.user_job),
-                            expertise: latestUser.expertise || r.expertise || [],
+                            user_job: latestUser.job || latestUser.occupation || (Array.isArray(latestUser.expertise) && latestUser.expertise.length > 0 ? latestUser.expertise[0] : (r.user_job || r.occupation)),
+                            // Ensure expertise is array
+                            expertise: Array.isArray(latestUser.expertise) ? latestUser.expertise : (Array.isArray(r.expertise) ? r.expertise : []),
                             occupation: latestUser.occupation || r.occupation,
                             age_group: latestUser.age_group || r.age_group,
                             gender: latestUser.gender || r.gender,
+                            _synced: true
                         };
                     }
                     return r;
@@ -200,8 +202,7 @@ export default function ReportPage() {
                 
                 console.log(`[ReportPage] Synced latest profiles for ${uniqueUserIds.length} users.`);
             } catch (userErr) {
-                console.warn("Failed to sync latest user profiles", userErr);
-                // Continue with original ratings if sync fails
+                console.error("[ReportPage] Failed to sync latest user profiles (Permission?):", userErr);
             }
         }
 
