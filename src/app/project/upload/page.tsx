@@ -23,7 +23,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase/client"; 
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Sparkles, Info, Globe, Link, X } from "lucide-react";
+import { ChefHat, Sparkles, Info, Globe, Link, X, Lock } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
@@ -72,7 +72,7 @@ export default function ProjectUploadPage() {
   const [summary, setSummary] = useState("");
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [linkPreview, setLinkPreview] = useState<any>(null);
-  const [visibility, setVisibility] = useState<'public' | 'unlisted'>('public');
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -329,22 +329,22 @@ export default function ProjectUploadPage() {
                 <Globe size={20} />
                 <div className="flex flex-col items-center">
                    <span className="text-xs font-black uppercase tracking-widest">전체 공개</span>
-                   <span className="text-[9px] font-bold opacity-70">누구나 검색하고 평가 가능</span>
+                   <span className="text-[9px] font-bold opacity-70">모든 결과 공개 & 검색 허용</span>
                 </div>
              </button>
              <button 
-               onClick={() => setVisibility('unlisted')}
+               onClick={() => setVisibility('private')}
                className={cn(
                   "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
-                  visibility === 'unlisted' 
-                     ? "bg-indigo-500/10 border-indigo-500 text-indigo-500" 
+                  visibility === 'private' 
+                     ? "bg-red-500/10 border-red-500 text-red-500" 
                      : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
                )}
              >
-                <Link size={20} />
+                <Lock size={20} />
                 <div className="flex flex-col items-center">
-                   <span className="text-xs font-black uppercase tracking-widest">링크 일부 공개</span>
-                   <span className="text-[9px] font-bold opacity-70">링크를 가진 사람만 평가 가능</span>
+                   <span className="text-xs font-black uppercase tracking-widest">비공개 (프라이빗)</span>
+                   <span className="text-[9px] font-bold opacity-70">결과 비공개 & 링크로만 참여</span>
                 </div>
              </button>
         </div>

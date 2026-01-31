@@ -190,14 +190,12 @@ export default function ReportPage() {
 
     // Client-side Calculation with Robust Fallback
     const radarData = categories.map((cat: any, index: number) => {
+      // 1. Calculate Average
       const sum = targetRatings.reduce((acc, curr) => {
           let val = 0;
-          // 1. Try exact match (scores.score_1)
           if (curr.scores?.[cat.id] !== undefined) val = curr.scores[cat.id];
-          // 2. Try root level match (curr.score_1)
           else if (curr[cat.id] !== undefined) val = curr[cat.id];
           
-          // 3. Fallback: Try matching by index if scores is an object (for mismatched IDs)
           if (val === 0 && curr.scores) {
               const values = Object.values(curr.scores);
               // Assuming values are numbers, try to grab by index
@@ -209,9 +207,24 @@ export default function ReportPage() {
       }, 0);
 
       const avg = targetRatings.length > 0 ? (sum / targetRatings.length).toFixed(1) : 0;
+      
+      // 2. Calculate My Score (if exists)
+      let myVal = 0;
+      if (myRating) {
+          if (myRating.scores?.[cat.id] !== undefined) myVal = myRating.scores[cat.id];
+          else if (myRating[cat.id] !== undefined) myVal = myRating[cat.id];
+          if (myVal === 0 && myRating.scores) {
+               const values = Object.values(myRating.scores);
+               if (values[index] !== undefined && typeof values[index] === 'number') {
+                   myVal = values[index] as number;
+               }
+          }
+      }
+
       return {
         subject: cat.label,
         value: Number(avg),
+        myValue: Number(myVal),
         fullMark: 5
       };
     });
@@ -237,29 +250,32 @@ export default function ReportPage() {
         const v = r.vote_type;
         const normalized = NORMALIZE_VOTE[v] || v;
         polls[normalized] = (polls[normalized] || 0) + 1;
-        // Also keep raw for label matching just in case
         if (normalized !== v) polls[v] = (polls[v] || 0) + 1;
       }
     });
 
+    // Determine My Vote
+    let myVoteId: string | null = null;
+    if (myRating && myRating.vote_type) {
+        myVoteId = NORMALIZE_VOTE[myRating.vote_type] || myRating.vote_type;
+    }
+
     const barData = stickerOptions.map((opt: any, index: number) => {
       let count = polls[opt.id] || 0;
-      
-      // Fallback 1: Match by Label
-      if (count === 0 && polls[opt.label]) {
-          count = polls[opt.label];
-      }
-      
-      // Fallback 2: Match by generic ID (poll_1, poll_2, etc.) based on index
+      if (count === 0 && polls[opt.label]) count = polls[opt.label];
       if (count === 0) {
           const genericId = `poll_${index + 1}`;
           if (polls[genericId]) count = polls[genericId];
       }
+      
+      // Check if this option matches my vote logic (simple ID or label match)
+      const isMyChoice = (myVoteId === opt.id) || (myVoteId === opt.label) || (myVoteId === `poll_${index + 1}`);
 
       return {
         name: opt.label,
         value: count,
-        color: opt.color || '#f59e0b'
+        color: opt.color || '#f59e0b',
+        isMyChoice
       };
     });
 
@@ -267,18 +283,24 @@ export default function ReportPage() {
     const totalSum = radarData.reduce((acc: number, curr: any) => acc + curr.value, 0);
     const overallAvg = radarData.length > 0 ? (totalSum / radarData.length).toFixed(1) : "0.0";
 
-    // Calculate Distributions (Updated to use user_job)
+    // Calculate Distributions
     const expertiseDistribution: Record<string, number> = {};
     const occupationDistribution: Record<string, number> = {};
 
     targetRatings.forEach(r => {
         const job = r.user_job || r.occupation || '미설정';
         expertiseDistribution[job] = (expertiseDistribution[job] || 0) + 1;
-        
-        if (r.user_job) {
-             occupationDistribution[r.user_job] = (occupationDistribution[r.user_job] || 0) + 1;
-        }
+        if (r.user_job) occupationDistribution[r.user_job] = (occupationDistribution[r.user_job] || 0) + 1;
     });
+
+    // Sort Ratings: My Rating Top
+    const sortedRatings = [...targetRatings].sort((a, b) => {
+        if (myRating && a.id === myRating.id) return -1;
+        if (myRating && b.id === myRating.id) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    const isComparisonAvailable = isPublic && !!myRating && targetRatings.length > 1;
 
     return { 
       radarData, 
@@ -290,7 +312,9 @@ export default function ReportPage() {
       expertiseDistribution,
       occupationDistribution,
       accessDenied,
-      isPersonalView
+      isPersonalView,
+      sortedRatings,
+      isComparisonAvailable
     };
   }, [project, ratings, user]);
 
@@ -362,15 +386,24 @@ export default function ReportPage() {
                       <PolarAngleAxis dataKey="subject" tick={{ fill: '#ffffff40', fontSize: 12, fontWeight: 'bold' }} />
                       <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
                       <Radar
-                        name="Avg Score"
+                        name="전체 평균"
                         dataKey="value"
                         stroke="#ea580c"
                         fill="#ea580c"
-                        fillOpacity={0.6}
+                        fillOpacity={0.4}
                       />
+                      {reportStats?.isComparisonAvailable && (
+                        <Radar
+                          name="내 점수"
+                          dataKey="myValue"
+                          stroke="#818cf8"
+                          fill="#818cf8"
+                          fillOpacity={0.4}
+                        />
+                      )}
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#0f0f0f', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
-                        itemStyle={{ color: '#ea580c', fontWeight: 'bold' }}
+                        itemStyle={{ fontWeight: 'bold' }}
                       />
                     </RadarChart>
                   </ResponsiveContainer>
@@ -402,7 +435,12 @@ export default function ReportPage() {
                       />
                       <Bar dataKey="value" radius={[0, 10, 10, 0]}>
                          {reportStats?.barData.map((entry: any, index: number) => (
-                           <Cell key={`cell-${index}`} fill={entry.color} />
+                           <Cell 
+                               key={`cell-${index}`} 
+                               fill={entry.color} 
+                               stroke={entry.isMyChoice ? '#fff' : undefined}
+                               strokeWidth={entry.isMyChoice ? 2 : 0}
+                           />
                          ))}
                       </Bar>
                     </BarChart>
@@ -506,61 +544,68 @@ export default function ReportPage() {
                         </tr>
                     </thead>
                     <tbody>
-                         {ratings.length > 0 ? (
-                          [...ratings].sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((r, i) => (
-                            <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                                <td className="px-8 py-6 text-sm font-black text-white/20">{(i+1).toString().padStart(2, '0')}</td>
-                                <td className="px-8 py-6">
-                                    <div className="flex flex-col gap-1.5">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border uppercase tracking-tighter",
-                                                r.user_id 
-                                                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" 
-                                                  : "bg-white/5 text-white/40 border-white/10"
-                                            )}>
-                                                {r.user_id ? "Pro" : "G"}
-                                            </div>
-                                            <span className="text-sm font-bold text-white/90">
-                                                {r.user_nickname || r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트')}
-                                            </span>
-                                            {r.age_group && (
-                                                <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
-                                                    {r.age_group}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5 pl-11">
-                                             {r.user_job || r.occupation ? (
-                                                <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
-                                                    {r.user_job || r.occupation}
-                                                </span>
-                                             ) : (
-                                                <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
-                                                    -
-                                                </span>
-                                             )}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleDateString()}</td>
-                                <td className="px-8 py-6 text-center">
-                                    <span className="text-orange-500 font-black text-lg">{r.score ? r.score.toFixed(1) : '-'}</span>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="flex flex-wrap gap-1">
-                                        {/* Use user_job for expertise column as well for consistency */}
-                                        {r.user_job ? (
-                                             <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
-                                                 {ALL_LABELS[r.user_job] || r.user_job}
-                                             </span>
-                                        ) : (
-                                            <span className="text-white/20 text-[10px]">-</span>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                          ))
+                         {reportStats?.sortedRatings && reportStats.sortedRatings.length > 0 ? (
+                          reportStats.sortedRatings.map((r, i) => {
+                            const isMyReview = r.user_uid === user?.uid;
+                            return (
+                              <tr key={i} className={cn(
+                                  "border-b border-white/5 transition-colors", 
+                                  isMyReview ? "bg-indigo-500/10 hover:bg-indigo-500/20" : "hover:bg-white/[0.02]"
+                              )}>
+                                  <td className={cn("px-8 py-6 text-sm font-black", isMyReview ? "text-indigo-400" : "text-white/20")}>
+                                      {isMyReview ? "ME" : (i+1).toString().padStart(2, '0')}
+                                  </td>
+                                  <td className="px-8 py-6">
+                                      <div className="flex flex-col gap-1.5">
+                                          <div className="flex items-center gap-3">
+                                              <div className={cn(
+                                                  "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border uppercase tracking-tighter",
+                                                  r.user_id 
+                                                    ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" 
+                                                    : "bg-white/5 text-white/40 border-white/10"
+                                              )}>
+                                                  {isMyReview ? "ME" : (r.user_id ? "Pro" : "G")}
+                                              </div>
+                                              <span className={cn("text-sm font-bold", isMyReview ? "text-indigo-300" : "text-white/90")}>
+                                                  {isMyReview ? (r.user_nickname || "나의 평가") : (r.user_nickname || r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트'))}
+                                              </span>
+                                              {r.age_group && (
+                                                  <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
+                                                      {r.age_group}
+                                                  </span>
+                                              )}
+                                          </div>
+                                          <div className="flex flex-wrap gap-1.5 pl-11">
+                                               {r.user_job || r.occupation ? (
+                                                  <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
+                                                      {r.user_job || r.occupation}
+                                                  </span>
+                                               ) : (
+                                                  <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
+                                                      -
+                                                  </span>
+                                               )}
+                                          </div>
+                                      </div>
+                                  </td>
+                                  <td className="px-8 py-6 text-sm text-white/40 font-medium">{new Date(r.created_at).toLocaleDateString()}</td>
+                                  <td className="px-8 py-6 text-center">
+                                      <span className={cn("font-black text-lg", isMyReview ? "text-indigo-400" : "text-orange-500")}>{r.score ? r.score.toFixed(1) : '-'}</span>
+                                  </td>
+                                  <td className="px-8 py-6">
+                                      <div className="flex flex-wrap gap-1">
+                                          {r.user_job ? (
+                                               <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                                   {ALL_LABELS[r.user_job] || r.user_job}
+                                               </span>
+                                          ) : (
+                                              <span className="text-white/20 text-[10px]">-</span>
+                                          )}
+                                      </div>
+                                  </td>
+                              </tr>
+                            );
+                          })
                         ) : (
                           <tr>
                             <td colSpan={5} className="px-8 py-20 text-center text-white/20 font-bold uppercase tracking-widest">접수된 내역이 없습니다.</td>
