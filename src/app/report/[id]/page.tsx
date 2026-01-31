@@ -186,7 +186,9 @@ export default function ReportPage() {
                             user_nickname: latestUser.nickname || latestUser.displayName || r.user_nickname,
                             user_job: latestUser.job || latestUser.occupation || (latestUser.expertise && latestUser.expertise.length > 0 ? latestUser.expertise[0] : r.user_job),
                             expertise: latestUser.expertise || r.expertise || [],
-                            occupation: latestUser.occupation || r.occupation
+                            occupation: latestUser.occupation || r.occupation,
+                            age_group: latestUser.age_group || r.age_group,
+                            gender: latestUser.gender || r.gender,
                         };
                     }
                     return r;
@@ -689,9 +691,9 @@ export default function ReportPage() {
                                               )}
                                           </div>
                                           <div className="flex flex-wrap gap-1.5 pl-11">
-                                               {r.user_job || r.occupation ? (
+                                               {(r.age_group || r.gender || r.user_job || r.occupation) ? (
                                                   <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
-                                                      {r.user_job || r.occupation}
+                                                      {[r.age_group, r.gender, (r.occupation || r.user_job)].filter(Boolean).join(' ')}
                                                   </span>
                                                ) : (
                                                   <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
