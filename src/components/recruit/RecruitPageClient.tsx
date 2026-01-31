@@ -576,7 +576,7 @@ export default function RecruitPage() {
   const events = processedItems.filter((item) => item.type === "event");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       {/* 배너 섹션 */}
       <section className="w-full">
         <MainBanner />
@@ -586,10 +586,10 @@ export default function RecruitPage() {
         {/* 헤더 */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               연결 - 채용 · 공모전 · 이벤트
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               크리에이터들을 위한 채용 정보, 공모전, 이벤트를 확인하세요
             </p>
           </div>
@@ -1096,7 +1096,7 @@ export default function RecruitPage() {
               <div className="flex items-center gap-2">
                 <ListFilter size={16} className="text-slate-300" />
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-[120px] h-10 rounded-xl border-slate-100 bg-slate-50 text-[11px] font-black uppercase tracking-wider focus:ring-[#16A34A]/20">
+                  <SelectTrigger className="w-[120px] h-10 rounded-xl border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black uppercase tracking-wider focus:ring-[#16A34A]/20">
                     <SelectValue placeholder="분야별" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-100">
@@ -1112,7 +1112,7 @@ export default function RecruitPage() {
               <div className="flex items-center gap-2">
                 <ArrowUpDown size={16} className="text-slate-300" />
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[120px] h-10 rounded-xl border-slate-100 bg-slate-50 text-[11px] font-black uppercase tracking-wider focus:ring-[#16A34A]/20">
+                  <SelectTrigger className="w-[120px] h-10 rounded-xl border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-black uppercase tracking-wider focus:ring-[#16A34A]/20">
                     <SelectValue placeholder="정렬" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-100">
@@ -1134,7 +1134,7 @@ export default function RecruitPage() {
                  <section>
                     <div className="flex items-center gap-2 mb-6">
                       <Clock className="text-red-500" size={20} />
-                      <h2 className="text-xl font-bold text-slate-900">마감 임박! 놓치지 마세요</h2>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">마감 임박! 놓치지 마세요</h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-6">
                       {processedItems.slice(0, 4).map((item) => (
@@ -1302,7 +1302,7 @@ function ItemCard({
   const isExpired = dday === '마감';
 
   return (
-    <Card className={`group border-none shadow-sm hover:shadow-xl transition-all duration-500 rounded-[24px] overflow-hidden bg-white flex flex-col h-full ${isExpired ? 'opacity-60' : ''}`}>
+    <Card className={`group border-none shadow-sm hover:shadow-xl transition-all duration-500 rounded-[24px] overflow-hidden bg-white dark:bg-slate-900 flex flex-col h-full ${isExpired ? 'opacity-60' : ''}`}>
       {/* Thumbnail Area - Aspect Ratio (3:4) with Full Bleed Image (No Zoom) */}
       <div 
         className="relative aspect-[3/4] overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer group/image"

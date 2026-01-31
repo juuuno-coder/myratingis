@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -47,10 +48,13 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="pt-2 md:pt-4"
         >
-          <img 
+          <Image 
             src="/myratingis-logo.png" 
             alt="제 평가는요?" 
+            width={200}
+            height={80}
             className="h-12 md:h-16 lg:h-20 w-auto object-contain brightness-0 invert"
+            priority
           />
         </motion.div>
 
@@ -72,10 +76,13 @@ export default function Home() {
           transition={{ duration: 1, delay: 0.3, type: "spring" }}
           className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80"
         >
-          <img 
+          <Image 
             src="/review/cloche-cover.png" 
             alt="Cloche" 
+            width={320}
+            height={320}
             className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)]"
+            priority
           />
         </motion.div>
 

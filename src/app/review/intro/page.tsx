@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
 import { ChefHat, Star, Sparkles, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 function IntroContent() {
   const searchParams = useSearchParams();
@@ -120,10 +121,13 @@ function IntroContent() {
               onClick={isDataLoaded ? handleStartReview : undefined}
             >
               <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity" />
-              <img 
+              <Image 
                 src="/review/cloche-cover.png" 
-                alt="Cloche" 
+                alt="Cloche"
+                width={384}
+                height={384}
                 className="w-64 h-64 md:w-96 md:h-96 object-contain filter drop-shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative z-10 transition-transform group-hover:-translate-y-4 duration-500"
+                priority
               />
               
               {/* Floating Helper Text */}
@@ -161,13 +165,19 @@ function IntroContent() {
             className="fixed inset-0 z-50 bg-[#050505] flex items-center justify-center overflow-hidden"
           >
             {/* Cloche Lifting Animation */}
-            <motion.img 
-              src="/review/cloche-cover.png"
+            <motion.div
               initial={{ y: 0, scale: 1 }}
               animate={{ y: -800, scale: 2, opacity: 0, rotate: -5 }}
               transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1] }}
-              className="w-96 h-96 object-contain"
-            />
+            >
+              <Image 
+                src="/review/cloche-cover.png"
+                alt="Cloche Animation"
+                width={384}
+                height={384}
+                className="w-96 h-96 object-contain"
+              />
+            </motion.div>
             {/* Shockwave / Glow effect */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}

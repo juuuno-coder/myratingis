@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Monitor, 
   Smartphone, 
@@ -57,7 +58,7 @@ function ReviewIntro({ onStart, project, loading }: { onStart: () => void, proje
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">Professional Evaluation Stage</span>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <img src="/logo-white.png" alt="제 평가는요?" className="h-10 md:h-20 w-auto object-contain" />
+          <Image src="/logo-white.png" alt="제 평가는요?" width={200} height={80} className="h-10 md:h-20 w-auto object-contain" priority />
         </motion.div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
              <p className="text-sm md:text-xl text-white font-bold break-keep">당신은 오늘, 이 창작물의 운명을 결정할<br />전문 심사위원으로 초대되었습니다.</p>
@@ -65,7 +66,7 @@ function ReviewIntro({ onStart, project, loading }: { onStart: () => void, proje
         </motion.div>
         <div className="w-full space-y-6 md:space-y-8 flex flex-col items-center">
            <motion.div onClick={!loading ? onStart : undefined} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} whileHover={{ scale: 1.05 }} className={cn("relative w-72 h-72 md:w-64 md:h-64 cursor-pointer group", loading && "opacity-50 cursor-wait")}>
-             <img src="/review/cloche-cover.png" alt="Start Review" className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110" />
+             <Image src="/review/cloche-cover.png" alt="Start Review" width={256} height={256} className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(255,165,0,0.3)] transition-all duration-500 group-hover:brightness-110" priority />
              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="bg-black/50 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20">
                     {loading ? "Loading..." : "Click to Open"}
