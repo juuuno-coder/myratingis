@@ -184,8 +184,9 @@ export default function ReportPage() {
                         return {
                             ...r,
                             user_nickname: latestUser.nickname || latestUser.displayName || r.user_nickname,
-                            user_job: latestUser.job || r.user_job,
-                            // If needed, sync other fields
+                            user_job: latestUser.job || latestUser.occupation || (latestUser.expertise && latestUser.expertise.length > 0 ? latestUser.expertise[0] : r.user_job),
+                            expertise: latestUser.expertise || r.expertise || [],
+                            occupation: latestUser.occupation || r.occupation
                         };
                     }
                     return r;
@@ -361,7 +362,7 @@ export default function ReportPage() {
     const occupationDistribution: Record<string, number> = {};
 
     targetRatings.forEach(r => {
-        const job = r.user_job || r.occupation || '미설정';
+        const job = r.user_job || r.occupation || (r.expertise && r.expertise.length > 0 ? r.expertise[0] : null) || '미설정';
         expertiseDistribution[job] = (expertiseDistribution[job] || 0) + 1;
         if (r.user_job) occupationDistribution[r.user_job] = (occupationDistribution[r.user_job] || 0) + 1;
     });
