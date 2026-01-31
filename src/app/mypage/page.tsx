@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase/client";
 import { doc, getDoc, collection, query, where, getCountFromServer, getDocs, orderBy, collectionGroup } from "firebase/firestore";
 
-import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode } from "lucide-react";
+import { Heart, Folder, Upload, Settings, Grid, Send, MessageCircle, Eye, EyeOff, Lock, Trash2, Camera, UserMinus, AlertTriangle, Loader2, Plus, Edit, Rocket, Sparkles, Wand2, Lightbulb, Zap, UserCircle, Search, Clock, BarChart, ChefHat, Share2, Copy, QrCode, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
@@ -789,12 +789,23 @@ export default function MyPage() {
 
                          {/* Right: Actions Section */}
                          <div className="flex flex-col justify-center gap-3 shrink-0 pt-6 md:pt-0 md:border-l md:border-chef-border md:pl-8 md:w-56">
-                             <Button 
-                                onClick={() => router.push(`/report/${project.id}`)}
-                                className="h-14 rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
-                             >
-                                결과 리포트 보기
-                             </Button>
+                             <div className="flex flex-col gap-3 w-full">
+                                <Button 
+                                    onClick={() => router.push(`/report/${project.id}`)}
+                                    className="h-12 w-full rounded-2xl bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10 flex items-center justify-center gap-2"
+                                >
+                                    <BarChart className="w-4 h-4" />
+                                    종합 평가 결과
+                                </Button>
+
+                                <Button 
+                                    onClick={() => router.push(`/report/${project.id}?view=mine`)}
+                                    className="h-12 w-full rounded-2xl bg-chef-panel border border-chef-border text-chef-text hover:bg-chef-card hover:text-orange-600 font-bold text-xs uppercase tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all"
+                                >
+                                    <ClipboardList className="w-4 h-4" />
+                                    내 평가 결과
+                                </Button>
+                             </div>
 
                              {activeTab !== 'comments' && (
                                <div className="flex gap-2">

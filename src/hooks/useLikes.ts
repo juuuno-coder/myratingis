@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/lib/firebase/client";
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
 
@@ -35,15 +35,25 @@ export function useLikes(projectId?: string, initialLikes: number = 0) {
       if (!projectId || !userId) throw new Error("로그인이 필요하거나 잘못된 프로젝트입니다.");
       
       const likeRef = doc(db, "projects", projectId, "likes", userId);
+      const projectRef = doc(db, "projects", projectId);
 
       if (currentIsLiked) {
         // Unlike
         await deleteDoc(likeRef);
+        await updateDoc(projectRef, { 
+            likes: increment(-1),
+            // like_count field for compatibility if needed
+            like_count: increment(-1) 
+        });
       } else {
         // Like
         await setDoc(likeRef, {
             user_id: userId,
             created_at: serverTimestamp()
+        });
+        await updateDoc(projectRef, { 
+            likes: increment(1),
+            like_count: increment(1) 
         });
 
         // (Optional) 여기에 알림 로직 추가 가능 notification logic here
