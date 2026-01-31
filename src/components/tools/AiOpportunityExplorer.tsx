@@ -127,7 +127,7 @@ export function AiOpportunityExplorer({
   const currentCategory = CATEGORIES.find(c => c.id === activeTab);
 
   return (
-    <div className={`w-full ${embedded ? 'h-full flex flex-col' : 'min-h-screen bg-slate-50 py-12 px-4'}`}>
+    <div className={`w-full ${embedded ? 'h-full flex flex-col' : 'min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4'}`}>
       <div className={`${embedded ? 'w-full' : 'max-w-4xl mx-auto'}`}>
         
         {/* Header Section (Hide if embedded, or show simplified) */}
@@ -164,7 +164,7 @@ export function AiOpportunityExplorer({
                     className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
                         activeTab === cat.id 
                         ? 'bg-gray-900 text-white shadow-lg transform scale-105' 
-                        : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
+                        : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 hover:border-gray-300'
                     }`}
                     >
                     {cat.label}
@@ -213,7 +213,7 @@ export function AiOpportunityExplorer({
                             // Auto search is better UX.
                             handleSearchWithKeyword(h.keyword, h.category);
                         }}
-                        className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-500 hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-colors flex items-center gap-1"
+                        className="px-3 py-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-full text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 transition-colors flex items-center gap-1"
                     >
                         <span className="opacity-50 text-[10px]">{CATEGORIES.find(c => c.id === h.category)?.label.split(' ')[0]}</span>
                         {h.keyword}
@@ -223,7 +223,7 @@ export function AiOpportunityExplorer({
         )}
 
         {/* Search Bar */}
-        <Card className={`mb-8 shadow-sm border-gray-100 bg-white ${embedded ? 'shadow-md border-purple-50' : ''}`}>
+        <Card className={`mb-8 shadow-sm border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 ${embedded ? 'shadow-md border-purple-50 dark:border-purple-900' : ''}`}>
           <CardContent className="p-4">
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
@@ -276,7 +276,7 @@ export function AiOpportunityExplorer({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <div className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-shadow group">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-5 hover:shadow-md transition-shadow group">
                     <div className="flex items-start justify-between mb-2">
                         <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
                             {item.title}

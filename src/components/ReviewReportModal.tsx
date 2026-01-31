@@ -96,7 +96,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[3rem] border-none shadow-2xl p-0 bg-slate-50">
         
         {/* Header - Fixed-ish */}
-        <div className="sticky top-0 z-20 bg-white border-b border-slate-100 p-8 flex justify-between items-center">
+        <div className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 p-8 flex justify-between items-center">
             <div className="flex items-center gap-4">
                <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white shadow-lg">
                   <BarChart3 size={24} />
@@ -130,7 +130,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                        className="bg-white p-6 rounded-[2rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                        className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-white dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
                     >
                         <p className="text-xs font-black text-slate-400 uppercase mb-2">Total Reviewers</p>
                         <h3 className="text-4xl font-black text-slate-900">{data.totalReviewers}<span className="text-lg font-bold ml-1 text-slate-400">명</span></h3>
@@ -167,7 +167,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
                 {/* 2. Visual Analysis Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Radar Chart Section */}
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm">
                         <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                             <Target size={16} className="text-orange-500" /> 다면적 가치 분석 (Audit)
                         </h4>
@@ -187,7 +187,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
                     </div>
 
                     {/* Poll Result Chart */}
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm">
                         <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                             <PieChart size={16} className="text-indigo-500" /> 유저 반응 분포 (Sentiment)
                         </h4>
@@ -235,7 +235,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-100 transition-all shadow-sm group"
+                                    className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 hover:border-indigo-100 dark:hover:border-indigo-900 transition-all shadow-sm group"
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
@@ -260,7 +260,7 @@ export function ReviewReportModal({ open, onOpenChange, projectId, projectTitle 
                         </AnimatePresence>
                         
                         {data.secretReviews.length === 0 && (
-                            <div className="col-span-full py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-slate-300">
+                            <div className="col-span-full py-20 bg-white dark:bg-slate-800 rounded-3xl border-2 border-dashed border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-slate-300 dark:text-slate-500">
                                 <MessageSquare size={40} className="mb-4 opacity-50" />
                                 <p className="font-bold">아직 접수된 시크릿 평가 의견이 없습니다.</p>
                             </div>

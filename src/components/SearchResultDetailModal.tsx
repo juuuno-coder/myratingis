@@ -23,7 +23,7 @@ export function SearchResultDetailModal({ open, onOpenChange, category, item }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 p-0 overflow-hidden">
         <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <div className="flex items-center gap-2 mb-1">
             <span className={`px-2 py-0.5 text-xs font-bold rounded-md uppercase tracking-wider ${
@@ -72,7 +72,7 @@ export function SearchResultDetailModal({ open, onOpenChange, category, item }: 
                             variant="ghost" 
                             size="sm" 
                             onClick={() => handleCopy(item.snippet)}
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-gray-200"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600"
                         >
                             <Copy className="w-3.5 h-3.5" />
                         </Button>

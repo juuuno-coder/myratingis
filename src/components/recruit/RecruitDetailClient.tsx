@@ -82,9 +82,9 @@ export default function RecruitDetailClient({ item }: { item: Item }) {
   const isExpired = dday === '마감';
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pb-24">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-slate-950 pb-24">
       {/* Top Navigation */}
-      <div className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100">
+      <div className="sticky top-0 z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Button 
             variant="ghost" 
@@ -106,7 +106,7 @@ export default function RecruitDetailClient({ item }: { item: Item }) {
           
           {/* Left: Image & Main Info */}
           <div className="lg:col-span-8 space-y-8">
-            <div className="relative aspect-video w-full rounded-[48px] overflow-hidden shadow-2xl bg-white group border border-slate-100">
+            <div className="relative aspect-video w-full rounded-[48px] overflow-hidden shadow-2xl bg-white dark:bg-slate-800 group border border-slate-100 dark:border-slate-700">
               {displayImage ? (
                 <Image 
                   src={displayImage} 
@@ -150,7 +150,7 @@ export default function RecruitDetailClient({ item }: { item: Item }) {
                 </h1>
               </div>
 
-              <div className="p-8 rounded-[40px] bg-white shadow-sm border border-slate-100 space-y-6">
+              <div className="p-8 rounded-[40px] bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 space-y-6">
                 <h3 className="text-lg font-bold text-slate-900">상세 정보</h3>
                 <p className="text-slate-600 leading-relaxed whitespace-pre-wrap font-medium text-base">
                   {item.description}
@@ -249,7 +249,7 @@ export default function RecruitDetailClient({ item }: { item: Item }) {
           {/* Right: CTA Section */}
           <div className="lg:col-span-4">
             <div className="sticky top-28 space-y-6">
-              <div className="p-8 md:p-8 rounded-[40px] bg-white text-slate-900 shadow-xl shadow-slate-100 border border-slate-100 space-y-6 relative overflow-hidden">
+              <div className="p-8 md:p-8 rounded-[40px] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xl shadow-slate-100 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-800 space-y-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 blur-3xl rounded-full -mr-16 -mt-16" />
                 
                 <div className="space-y-1.5 relative z-10">
@@ -322,7 +322,7 @@ export default function RecruitDetailClient({ item }: { item: Item }) {
               </div>
 
               {/* Tips Section */}
-              <div className="p-8 rounded-[40px] bg-white border border-slate-100 shadow-sm space-y-4">
+              <div className="p-8 rounded-[40px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
                 <p className="text-slate-900 font-black flex items-center gap-2">
                   <Award className="text-[#16A34A]" size={18} />
                   에디터의 팁

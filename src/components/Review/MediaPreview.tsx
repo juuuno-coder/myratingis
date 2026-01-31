@@ -121,7 +121,7 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
     const viewerUrl = (isPdf) ? docUrl : `https://docs.google.com/viewer?url=${encodeURIComponent(docUrl)}&embedded=true`;
 
     return (
-      <div className="w-full h-full bg-white flex flex-col">
+      <div className="w-full h-full bg-white dark:bg-slate-900 flex flex-col">
         <iframe 
           src={viewerUrl} 
           className="flex-1 w-full border-none h-full" 
@@ -142,7 +142,7 @@ function RenderSingleMedia({ type, data }: { type: string, data: any }) {
   const finalUrl = ensureProtocol(data);
 
   return (
-    <div className="w-full h-full bg-white relative overflow-hidden">
+    <div className="w-full h-full bg-white dark:bg-slate-900 relative overflow-hidden">
       {data ? (
         <iframe 
           src={finalUrl} 
