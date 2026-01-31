@@ -709,11 +709,11 @@ export default function ReportPage() {
                             <th onClick={() => handleSort('info')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
                                 <div className="flex items-center">참여자 정보{sortConfig?.key === 'info' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
                             </th>
-                            <th onClick={() => handleSort('score')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
-                                <div className="flex items-center">평가 결과{sortConfig?.key === 'score' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
-                            </th>
                             <th onClick={() => handleSort('specialty')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
                                 <div className="flex items-center">전문분야{sortConfig?.key === 'specialty' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
+                            <th onClick={() => handleSort('score')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center">평가 결과{sortConfig?.key === 'score' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
                             </th>
                             <th onClick={() => handleSort('date')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-right text-xs cursor-pointer hover:text-white/60 transition-colors select-none group">
                                 <div className="flex items-center justify-end">일시{sortConfig?.key === 'date' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
@@ -725,6 +725,7 @@ export default function ReportPage() {
                           currentTableData.map((r, i) => {
                             const isMyReview = r.user_uid === user?.uid;
                             const displayNo = (currentPage - 1) * itemsPerPage + i + 1;
+                            const demographics = [r.age_group, r.gender, (r.occupation || r.user_job)].filter(Boolean).join(' · ');
 
                             return (
                               <tr key={i} className={cn(
@@ -735,10 +736,10 @@ export default function ReportPage() {
                                       {isMyReview ? "ME" : displayNo.toString().padStart(2, '0')}
                                   </td>
                                   <td className="px-8 py-6">
-                                      <div className="flex flex-col gap-1.5">
+                                      <div className="flex flex-col gap-1">
                                           <div className="flex items-center gap-3">
                                               <div className={cn(
-                                                  "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border uppercase tracking-tighter",
+                                                  "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border uppercase tracking-tighter shrink-0",
                                                   r.user_id 
                                                     ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" 
                                                     : "bg-white/5 text-white/40 border-white/10"
@@ -748,54 +749,37 @@ export default function ReportPage() {
                                               <span className={cn("text-sm font-bold", isMyReview ? "text-indigo-300" : "text-white/90")}>
                                                   {isMyReview ? (r.user_nickname || "나의 평가") : (r.user_nickname || r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트'))}
                                               </span>
-                                              {r.age_group && (
-                                                  <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
-                                                      {r.age_group}
-                                                  </span>
-                                              )}
                                           </div>
-                                          <div className="flex flex-wrap gap-1.5 pl-11">
-                                               {(r.age_group || r.gender || r.user_job || r.occupation) ? (
-                                                  <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
-                                                      {[r.age_group, r.gender, (r.occupation || r.user_job)].filter(Boolean).join(' ')}
-                                                  </span>
-                                               ) : (
-                                                  <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
-                                                      -
-                                                  </span>
-                                               )}
-                                          </div>
+                                          {demographics && (
+                                              <div className="pl-11 text-[11px] font-medium text-white/40">
+                                                  {demographics}
+                                              </div>
+                                          )}
                                       </div>
                                   </td>
                                   <td className="px-8 py-6">
-                                      <div className="flex flex-col gap-1">
+                                      {r.expertise && r.expertise.length > 0 ? (
+                                           <div className="flex flex-wrap gap-1">
+                                               {r.expertise.map((exp: string, idx: number) => (
+                                                   <span key={idx} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded border border-blue-500/20">
+                                                       {exp}
+                                                   </span>
+                                               ))}
+                                           </div>
+                                      ) : (
+                                          <span className="text-white/20 text-[10px]">-</span>
+                                      )}
+                                  </td>
+                                  <td className="px-8 py-6">
+                                      <div className="flex items-center gap-3">
                                            <span className={cn("font-black text-lg leading-none", isMyReview ? "text-indigo-400" : "text-orange-500")}>
                                                {r.score ? r.score.toFixed(1) : '-'}
                                            </span>
                                            {r.vote_type && (
-                                               <span className="text-[10px] font-bold text-white/40 line-clamp-1 max-w-[150px]">
+                                               <span className="text-[11px] font-bold text-white/50 pl-3 border-l border-white/10 line-clamp-1">
                                                    {reportStats?.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || r.vote_type}
                                                </span>
                                            )}
-                                      </div>
-                                  </td>
-                                  <td className="px-8 py-6">
-                                      <div className="flex flex-wrap gap-1">
-                                          {r.expertise && r.expertise.length > 0 ? (
-                                               <div className="flex flex-wrap gap-1">
-                                                   {r.expertise.map((exp: string, idx: number) => (
-                                                       <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
-                                                           {exp}
-                                                       </span>
-                                                   ))}
-                                               </div>
-                                          ) : r.user_job ? (
-                                               <span className="px-1.5 py-0.5 bg-white/5 text-white/40 text-[8px] font-black rounded border border-white/10 opacity-50">
-                                                   {ALL_LABELS[r.user_job] || r.user_job}
-                                               </span>
-                                          ) : (
-                                              <span className="text-white/20 text-[10px]">-</span>
-                                          )}
                                       </div>
                                   </td>
                                   <td className="px-8 py-6 text-xs text-white/20 font-medium text-right font-mono">
