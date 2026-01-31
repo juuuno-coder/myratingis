@@ -306,34 +306,56 @@ function ViewerContent() {
     const st = steps[currentStep];
 
     if (st === 'guide') return (
-       <div className="flex flex-col h-full overflow-y-auto pb-10 space-y-8 px-2">
-          <div className="space-y-3">
-             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-chef-border rounded-full mb-2">
-                <span className="text-[10px] font-black uppercase text-chef-text/50">PROJECT OVERVIEW</span>
+       <div className="flex flex-col h-full overflow-y-auto pb-10 space-y-8 px-2 scrollbar-hide">
+          <div className="space-y-4">
+             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full mb-1">
+                <span className="text-[11px] font-black uppercase text-orange-500 tracking-wider">PROJECT OVERVIEW</span>
              </div>
-             <h3 className="text-3xl font-black heading-font text-chef-text leading-tight break-keep">{project.title}</h3>
+             <h3 className="text-3xl md:text-4xl font-black heading-font text-chef-text leading-tight break-keep tracking-tight">{project.title}</h3>
           </div>
-          <div className="bg-chef-panel p-6 rounded-2xl border border-chef-border">
-             <p className="text-sm font-medium text-chef-text leading-relaxed whitespace-pre-wrap break-keep opacity-80">
+          
+          <div className="bg-chef-panel/50 p-6 rounded-3xl border border-chef-border/50 shadow-inner">
+             <p className="text-base font-medium text-chef-text leading-relaxed whitespace-pre-wrap break-keep opacity-90">
                 {project.summary || project.description || "프로젝트 소개가 없습니다."}
              </p>
           </div>
-          <div className="space-y-5 pt-6 border-t border-chef-border">
-             <h4 className="text-xs font-black uppercase text-chef-text/40 tracking-widest">EVALUATION PROCESS</h4>
-             <ul className="space-y-4">
-                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
-                   <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-black">1</div>
-                   <span>평점 평가 <span className="text-xs font-normal opacity-50 ml-1">(5개 항목)</span></span>
+
+          <div className="space-y-6 pt-8 border-t border-chef-border/30">
+             <h4 className="text-xs font-black uppercase text-chef-text opacity-50 tracking-[0.2em]">Evaluation Process</h4>
+             
+             <ul className="space-y-6">
+                <li className="flex gap-5">
+                   <div className="w-10 h-10 shrink-0 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-sm font-black shadow-sm">1</div>
+                   <div className="space-y-1">
+                      <p className="text-sm font-bold text-chef-text">평점 평가 <span className="text-xs font-medium opacity-40 ml-1">Rating</span></p>
+                      <p className="text-xs font-medium text-chef-text opacity-60 leading-relaxed">
+                        첫 번째로 <span className="text-orange-500 font-bold">기획력, 심미성, 상업성</span> 등에 대한<br className="hidden md:block"/>냉철한 평점을 평가해주세요.
+                      </p>
+                   </div>
                 </li>
-                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
-                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-black">2</div>
-                   <span>판정 투표 <span className="text-xs font-normal opacity-50 ml-1">(스티커)</span></span>
+                <li className="flex gap-5">
+                   <div className="w-10 h-10 shrink-0 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-sm font-black shadow-sm">2</div>
+                   <div className="space-y-1">
+                      <p className="text-sm font-bold text-chef-text">판정 투표 <span className="text-xs font-medium opacity-40 ml-1">Voting</span></p>
+                      <p className="text-xs font-medium text-chef-text opacity-60 leading-relaxed">
+                        두 번째로 <span className="text-indigo-500 font-bold">합격 / 보류 / 불합격</span>에 대한<br className="hidden md:block"/>판정 투표를 진행해주세요.
+                      </p>
+                   </div>
                 </li>
-                <li className="flex items-center gap-4 text-sm font-bold text-chef-text opacity-80">
-                   <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-black">3</div>
-                   <span>종합 의견 작성</span>
+                <li className="flex gap-5">
+                   <div className="w-10 h-10 shrink-0 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm font-black shadow-sm">3</div>
+                   <div className="space-y-1">
+                      <p className="text-sm font-bold text-chef-text">종합 의견 <span className="text-xs font-medium opacity-40 ml-1">Feedback</span></p>
+                      <p className="text-xs font-medium text-chef-text opacity-60 leading-relaxed">
+                        마지막으로 의뢰자가 남긴 질문에 대해<br className="hidden md:block"/>여러분의 <span className="text-emerald-500 font-bold">진심 어린 평가 의견</span>을 작성해주세요.
+                      </p>
+                   </div>
                 </li>
              </ul>
+
+             <div className="bg-chef-panel/30 p-4 rounded-xl text-center mt-4">
+                <p className="text-xs text-chef-text opacity-50 font-medium">여러분의 평가는 창작자의 성장에 큰 도움이 됩니다.</p>
+             </div>
           </div>
        </div>
     );
@@ -372,7 +394,7 @@ function ViewerContent() {
           {currentStep < steps.length - 1 && (
             <div className="p-6 border-t flex gap-4">
               {currentStep > 0 && <Button variant="outline" onClick={() => setCurrentStep(p => p - 1)}><ChevronLeft /></Button>}
-              <Button onClick={handleNextStep} className="flex-1 bg-orange-600 text-white font-black">{currentStep < steps.length - 2 ? (currentStep === 0 ? "평가 시작하기" : "다음 단계로") : "제출하기"}</Button>
+              <Button onClick={handleNextStep} className="flex-1 bg-orange-600 text-white font-black">{currentStep < steps.length - 2 ? (currentStep === 0 ? "네, 확인했어요. 평가 시작하기" : "다음 단계로") : "제출하기"}</Button>
             </div>
           )}
         </div>
