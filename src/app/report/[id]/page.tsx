@@ -104,15 +104,15 @@ export default function ReportPage() {
 
         const projectData = projectSnap.data();
         
-        // --- View Count Correction (Min 135) ---
-        if ((projectData.views || 0) < 135) {
+        // --- View Count Correction (Only for '와요' project, Min 135) ---
+        if (projectData.title?.includes("와요") && (projectData.views || 0) < 135) {
             try {
-                // Async update, don't await to block render significantly
+                // Async update
                 updateDoc(projectRef, { views: 135 });
                 projectData.views = 135; 
             } catch(e) { console.warn("Failed to update view count", e); }
         }
-        // ---------------------------------------
+        // ----------------------------------------------------------------
         
         // Safe Parse custom_data
         if (typeof projectData.custom_data === 'string') {
