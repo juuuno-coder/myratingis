@@ -315,7 +315,9 @@ export default function ReportPage() {
       accessDenied,
       isPersonalView,
       sortedRatings,
-      isComparisonAvailable
+      isComparisonAvailable,
+      isOwner,
+      isResultPublic
     };
   }, [project, ratings, user]);
 
@@ -353,7 +355,11 @@ export default function ReportPage() {
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
                <div className="px-4 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                    <ChefHat size={14} /> 
-                   {reportStats?.isPersonalView ? "Personal Evaluation Report" : "Evaluation Final Report"}
+                   {reportStats?.isPersonalView 
+                      ? "Personal Evaluation Report" 
+                      : (!reportStats?.isResultPublic && reportStats?.isOwner 
+                          ? "🔒 Private Report (Owner Access)" 
+                          : "Evaluation Final Report")}
                </div>
             </motion.div>
             <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-4xl md:text-7xl font-black tracking-tighter">
@@ -363,9 +369,12 @@ export default function ReportPage() {
                 <p className="text-lg text-white/40 max-w-2xl mx-auto font-medium break-keep">
                    {reportStats?.isPersonalView ? (
                        <>당신이 남긴 평가 기록입니다.<br/>비공개 프로젝트이므로 본인의 결과만 표시됩니다.</>
+                   ) : (!reportStats?.isResultPublic && reportStats?.isOwner ? (
+                       <>비공개로 설정된 리포트입니다.<br/>
+                       <span className="text-orange-500 font-bold">프로젝트 소유자 권한</span>으로 전체 결과를 열람하고 있습니다.</>
                    ) : (
                        <>누적 {reportStats?.totalParticipantCount}명의 전문가 시선으로 분석된<br/>미슐랭 5성 프로젝트 리포트입니다.</>
-                   )}
+                   ))}
                 </p>
                 <Button onClick={handleShare} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6">
                     <Share2 size={14} /> 리포트 공유하기
