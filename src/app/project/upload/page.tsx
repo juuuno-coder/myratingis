@@ -23,7 +23,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase/client"; 
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Sparkles, Info, Globe, Link, X, Lock } from "lucide-react";
+import { ChefHat, Sparkles, Info, Globe, Link, X, Lock, Eye, EyeOff } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
@@ -73,6 +73,7 @@ export default function ProjectUploadPage() {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [linkPreview, setLinkPreview] = useState<any>(null);
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [resultVisibility, setResultVisibility] = useState<'public' | 'private'>('public');
   const [auditDeadline, setAuditDeadline] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -231,6 +232,7 @@ export default function ProjectUploadPage() {
         author_uid: user.uid,
         author_email: user.email,
         custom_data: {
+          result_visibility: resultVisibility,
           is_feedback_requested: true,
           audit_config: {
              type: auditType,
@@ -316,37 +318,80 @@ export default function ProjectUploadPage() {
           </div>
         </div>
         
-        <div className="flex gap-4">
-             <button 
-               onClick={() => setVisibility('public')}
-               className={cn(
-                  "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
-                  visibility === 'public' 
-                     ? "bg-orange-500/10 border-orange-500 text-orange-500" 
-                     : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
-               )}
-             >
-                <Globe size={20} />
-                <div className="flex flex-col items-center">
-                   <span className="text-xs font-black uppercase tracking-widest">전체 공개</span>
-                   <span className="text-[9px] font-bold opacity-70">모든 결과 공개 & 검색 허용</span>
+        <div className="space-y-8">
+            {/* 1. Project Visibility */}
+            <div className="space-y-3">
+                <Label className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest ml-1">1. 프로젝트 공개 설정 (참여 권한)</Label>
+                <div className="flex gap-4">
+                     <button 
+                       onClick={() => setVisibility('public')}
+                       className={cn(
+                          "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                          visibility === 'public' 
+                             ? "bg-orange-500/10 border-orange-500 text-orange-500" 
+                             : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+                       )}
+                     >
+                        <Globe size={18} />
+                        <div className="flex flex-col items-center">
+                           <span className="text-xs font-black uppercase tracking-widest">전체 공개</span>
+                           <span className="text-[9px] font-bold opacity-70">검색 노출 & 누구나 참여</span>
+                        </div>
+                     </button>
+                     <button 
+                       onClick={() => setVisibility('private')}
+                       className={cn(
+                          "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                          visibility === 'private' 
+                             ? "bg-indigo-500/10 border-indigo-500 text-indigo-500" 
+                             : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+                       )}
+                     >
+                        <Link size={18} />
+                        <div className="flex flex-col items-center">
+                           <span className="text-xs font-black uppercase tracking-widest">일부 공개 (링크)</span>
+                           <span className="text-[9px] font-bold opacity-70">링크를 가진 사람만 참여</span>
+                        </div>
+                     </button>
                 </div>
-             </button>
-             <button 
-               onClick={() => setVisibility('private')}
-               className={cn(
-                  "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
-                  visibility === 'private' 
-                     ? "bg-red-500/10 border-red-500 text-red-500" 
-                     : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
-               )}
-             >
-                <Lock size={20} />
-                <div className="flex flex-col items-center">
-                   <span className="text-xs font-black uppercase tracking-widest">비공개 (프라이빗)</span>
-                   <span className="text-[9px] font-bold opacity-70">결과 비공개 & 링크로만 참여</span>
+            </div>
+
+            {/* 2. Result Visibility */}
+            <div className="space-y-3">
+                <Label className="text-[10px] font-black text-chef-text opacity-40 uppercase tracking-widest ml-1">2. 결과 리포트 공개 설정 (열람 권한)</Label>
+                <div className="flex gap-4">
+                     <button 
+                       onClick={() => setResultVisibility('public')}
+                       className={cn(
+                          "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                          resultVisibility === 'public' 
+                             ? "bg-emerald-500/10 border-emerald-500 text-emerald-500" 
+                             : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+                       )}
+                     >
+                        <Eye size={18} />
+                        <div className="flex flex-col items-center">
+                           <span className="text-xs font-black uppercase tracking-widest">결과 전체 공개</span>
+                           <span className="text-[9px] font-bold opacity-70">참여자 누구나 결과 리포트 확인</span>
+                        </div>
+                     </button>
+                     <button 
+                       onClick={() => setResultVisibility('private')}
+                       className={cn(
+                          "flex-1 h-16 rounded-sm bevel-cta border transition-all flex flex-col items-center justify-center gap-2",
+                          resultVisibility === 'private' 
+                             ? "bg-red-500/10 border-red-500 text-red-500" 
+                             : "bg-chef-panel border-chef-border text-chef-text opacity-40 hover:opacity-100"
+                       )}
+                     >
+                        <Lock size={18} />
+                        <div className="flex flex-col items-center">
+                           <span className="text-xs font-black uppercase tracking-widest">의뢰자만 보기</span>
+                           <span className="text-[9px] font-bold opacity-70">참여자는 본인 결과만 확인 가능</span>
+                        </div>
+                     </button>
                 </div>
-             </button>
+            </div>
         </div>
       </section>
 

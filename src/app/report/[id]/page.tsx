@@ -151,26 +151,27 @@ export default function ReportPage() {
     if (!project) return null;
 
     // --- Access Control Logic ---
+    // --- Access Control Logic ---
     const isOwner = user?.uid === project.user_id;
-    const isPublic = project.visibility === 'public';
+    // Check 'result_visibility' in custom_data (Default to public if undefined)
+    const resultVisibility = project.custom_data?.result_visibility || 'public';
+    const isResultPublic = resultVisibility === 'public';
+
     // Check if current user has participated
-    // Note: Guest users might have 'guest_id' in localStorage but here we mainly check user_uid for now or implicit guest access?
-    // For strict control:
     const myRating = ratings.find(r => r.user_uid === user?.uid); 
-    // If guest logic is needed needed, we'd need to check localstorage guest_id too, but let's assume auth for now or basic access.
     
     // Determine which ratings to show
     let targetRatings = ratings;
     let accessDenied = false;
     let isPersonalView = false;
 
-    if (!isPublic && !isOwner) {
+    if (!isResultPublic && !isOwner) {
         if (myRating) {
-            // Evaluator viewing Private Project -> Show ONLY their rating
+            // Evaluator viewing Private Report -> Show ONLY their rating (Personal View)
             targetRatings = [myRating];
             isPersonalView = true;
         } else {
-            // Unauthorized (Private, Not Owner, Not Evaluated)
+            // Unauthorized (Private Report, Not Owner, Not Evaluated)
             accessDenied = true;
         }
     }
@@ -300,7 +301,7 @@ export default function ReportPage() {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-    const isComparisonAvailable = isPublic && !!myRating && targetRatings.length > 1;
+    const isComparisonAvailable = isResultPublic && !!myRating && targetRatings.length > 1;
 
     return { 
       radarData, 
