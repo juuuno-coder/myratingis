@@ -16,7 +16,10 @@ import {
   Download,
   ChevronRight,
   Printer,
-  FileText
+  FileText,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
@@ -49,6 +52,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
   const handleDownloadCSV = () => {
     if (!ratings || ratings.length === 0) return toast.error("다운로드할 데이터가 없습니다.");
@@ -396,6 +400,53 @@ export default function ReportPage() {
       isResultPublic
     };
   }, [project, ratings, user]);
+  
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedTableRatings = useMemo(() => {
+    if (!reportStats?.sortedRatings) return [];
+    const data = [...reportStats.sortedRatings];
+    if (sortConfig) {
+      data.sort((a, b) => {
+        let aValue: any = '', bValue: any = '';
+        switch (sortConfig.key) {
+           case 'no': // Sort by Date as a proxy for sequential ID
+             aValue = new Date(a.created_at).getTime();
+             bValue = new Date(b.created_at).getTime();
+             break; 
+           case 'info':
+             aValue = a.user_nickname || 'Z'; 
+             bValue = b.user_nickname || 'Z';
+             break;
+           case 'score':
+             aValue = a.score || 0;
+             bValue = b.score || 0;
+             break;
+           case 'specialty':
+             const getExp = (r: any) => (r.expertise && r.expertise.length > 0 ? r.expertise.join('') : (r.user_job || ''));
+             aValue = getExp(a);
+             bValue = getExp(b);
+             break;
+           case 'date':
+             aValue = new Date(a.created_at).getTime();
+             bValue = new Date(b.created_at).getTime();
+             break;
+        }
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return data;
+  }, [reportStats, sortConfig]);
+
+  const currentTableData = sortedTableRatings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (loading) return <div className="h-screen bg-[#050505] flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-white rounded-full animate-spin" /></div>;
   if (!project) return null;
@@ -652,24 +703,36 @@ export default function ReportPage() {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-white/10">
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest w-20">No.</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">참여자 정보</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">평가 결과</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest">전문분야</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-right text-xs">일시</th>
+                            <th onClick={() => handleSort('no')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest w-20 cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center">No.{sortConfig?.key === 'no' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
+                            <th onClick={() => handleSort('info')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center">참여자 정보{sortConfig?.key === 'info' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
+                            <th onClick={() => handleSort('score')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center">평가 결과{sortConfig?.key === 'score' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
+                            <th onClick={() => handleSort('specialty')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center">전문분야{sortConfig?.key === 'specialty' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
+                            <th onClick={() => handleSort('date')} className="px-8 py-6 text-[10px] font-black text-white/40 uppercase tracking-widest text-right text-xs cursor-pointer hover:text-white/60 transition-colors select-none group">
+                                <div className="flex items-center justify-end">일시{sortConfig?.key === 'date' ? (sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1 text-orange-500"/> : <ChevronDown className="w-3 h-3 ml-1 text-orange-500"/>) : <ChevronsUpDown className="w-3 h-3 ml-1 opacity-20 group-hover:opacity-50"/>}</div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                         {reportStats?.sortedRatings && reportStats.sortedRatings.length > 0 ? (
-                          reportStats.sortedRatings.map((r, i) => {
+                         {currentTableData && currentTableData.length > 0 ? (
+                          currentTableData.map((r, i) => {
                             const isMyReview = r.user_uid === user?.uid;
+                            const displayNo = (currentPage - 1) * itemsPerPage + i + 1;
+
                             return (
                               <tr key={i} className={cn(
                                   "border-b border-white/5 transition-colors", 
                                   isMyReview ? "bg-indigo-500/10 hover:bg-indigo-500/20" : "hover:bg-white/[0.02]"
                               )}>
                                   <td className={cn("px-8 py-6 text-sm font-black", isMyReview ? "text-indigo-400" : "text-white/20")}>
-                                      {isMyReview ? "ME" : (i+1).toString().padStart(2, '0')}
+                                      {isMyReview ? "ME" : displayNo.toString().padStart(2, '0')}
                                   </td>
                                   <td className="px-8 py-6">
                                       <div className="flex flex-col gap-1.5">
