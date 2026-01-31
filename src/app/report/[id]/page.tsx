@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { db } from "@/lib/firebase/client"; // Firebase
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore"; // Firestore methods
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore"; // Firestore methods
 import { 
   ArrowLeft, 
   Users, 
@@ -14,7 +14,9 @@ import {
   Trophy,
   Rocket,
   Download,
-  ChevronRight
+  ChevronRight,
+  Printer,
+  FileText
 } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
@@ -45,6 +47,43 @@ export default function ReportPage() {
   const [project, setProject] = useState<any>(null);
   const [ratings, setRatings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const handleDownloadCSV = () => {
+    if (!ratings || ratings.length === 0) return toast.error("다운로드할 데이터가 없습니다.");
+
+    // CSV Header
+    const headers = ["User", "Job", "Score", "Date", "Review Details"];
+    
+    // CSV Rows
+    const rows = ratings.map(r => {
+       const name = r.user_nickname || r.username || "Anonymous";
+       const job = r.user_job || r.expertise?.[0] || "";
+       const score = r.score || 0;
+       const date = new Date(r.created_at).toLocaleDateString();
+       const proposal = (r.proposal || "").replace(/"/g, '""'); // Escape quotes
+       const answers = Object.entries(r.custom_answers || {})
+           .map(([q, a]) => `${q}: ${a}`)
+           .join(" | ")
+           .replace(/"/g, '""');
+
+       return `"${name}","${job}","${score}","${date}","Proposal: ${proposal} / Answers: ${answers}"`;
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${project?.title || 'project'}_evaluation_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+      window.print();
+  };
 
   // ... (useEffect fetchData same as before) ...
 
@@ -64,6 +103,16 @@ export default function ReportPage() {
         }
 
         const projectData = projectSnap.data();
+        
+        // --- View Count Correction (Min 135) ---
+        if ((projectData.views || 0) < 135) {
+            try {
+                // Async update, don't await to block render significantly
+                updateDoc(projectRef, { views: 135 });
+                projectData.views = 135; 
+            } catch(e) { console.warn("Failed to update view count", e); }
+        }
+        // ---------------------------------------
         
         // Safe Parse custom_data
         if (typeof projectData.custom_data === 'string') {
@@ -376,9 +425,30 @@ export default function ReportPage() {
                        <>누적 {reportStats?.totalParticipantCount}명의 전문가 시선으로 분석된<br/>미슐랭 5성 프로젝트 리포트입니다.</>
                    ))}
                 </p>
-                <Button onClick={handleShare} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6">
-                    <Share2 size={14} /> 리포트 공유하기
-                </Button>
+                <style>{`
+                    @media print {
+                        @page { margin: 1cm; }
+                        body { background: white !important; color: black !important; }
+                        .no-print, header, footer, button { display: none !important; }
+                        .print-break-inside { break-inside: avoid; }
+                    }
+                `}</style>
+                <div className="flex flex-wrap justify-center gap-3">
+                    <Button onClick={handleShare} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6 no-print">
+                        <Share2 size={14} /> 리포트 공유하기
+                    </Button>
+                    
+                    {reportStats?.isOwner && (
+                        <>
+                            <Button onClick={handleDownloadCSV} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6 no-print">
+                                <FileText size={14} /> CSV 저장
+                            </Button>
+                            <Button onClick={handlePrint} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6 no-print">
+                                <Printer size={14} /> PDF 저장
+                            </Button>
+                        </>
+                    )}
+                </div>
             </motion.div>
          </section>
 
@@ -640,9 +710,11 @@ export default function ReportPage() {
             <h3 className="text-3xl font-black flex items-center gap-3">
                <MessageSquare className="text-orange-600" /> 상세 평가 의견 리포트
             </h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print-break-inside">
                 {reportStats?.sortedRatings && reportStats.sortedRatings.length > 0 ? (
-                  reportStats.sortedRatings.map((r, i) => {
+                  reportStats.sortedRatings
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((r, i) => {
                     const hasCustomAnswers = r.custom_answers && Object.keys(r.custom_answers).length > 0;
                     const hasProposal = !!r.proposal;
                     const hasAnyFeedback = hasCustomAnswers || hasProposal;
@@ -653,8 +725,9 @@ export default function ReportPage() {
                         initial={{ y: 20, opacity: 0 }} 
                         whileInView={{ y: 0, opacity: 1 }} 
                         viewport={{ once: true }}
-                        className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all flex flex-col gap-8 h-full"
+                        className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-all flex flex-col gap-8 h-full break-inside-avoid"
                       >
+                         {/* ... (keep existing card content same as before, just copying structure for context match if needed, but since we are replacing the block container, we need to provide full content or use precise targeting) */}
                          <div className="flex items-center justify-between shrink-0">
                              <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter shadow-sm">
@@ -668,7 +741,6 @@ export default function ReportPage() {
                                                 {r.user_job}
                                             </span>
                                         )}
-                                        {/* Legacy support */}
                                         {!r.user_job && (r.expertise || []).map((exp: string, idx: number) => (
                                             <span key={idx} className="px-2 py-0.5 bg-white/5 text-[9px] font-bold text-white/40 rounded border border-white/10">
                                                 #{ALL_LABELS[exp] || exp}
@@ -718,7 +790,6 @@ export default function ReportPage() {
                             )}
                          </div>
 
-                         {/* Result Badge or Stats if any */}
                          <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[10px] uppercase font-black tracking-widest text-white/20">
                             <span>전문가 검증 레벨 A+</span>
                             <span>{new Date(r.created_at).toLocaleDateString()}</span>
@@ -733,6 +804,44 @@ export default function ReportPage() {
                   </div>
                 )}
              </div>
+             
+             {/* Pagination Controls */}
+             {reportStats?.sortedRatings && reportStats.sortedRatings.length > itemsPerPage && (
+                <div className="flex justify-center gap-2 mt-12 no-print">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        className="rounded-full w-10 h-10 bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                    >
+                        <ArrowLeft size={16} />
+                    </Button>
+                    {Array.from({ length: Math.ceil(reportStats.sortedRatings.length / itemsPerPage) }, (_, i) => i + 1).map(p => (
+                        <button 
+                            key={p} 
+                            onClick={() => setCurrentPage(p)}
+                            className={cn(
+                                "w-10 h-10 rounded-full font-bold text-sm transition-all",
+                                currentPage === p 
+                                    ? "bg-orange-600 text-white shadow-lg shadow-orange-600/20" 
+                                    : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                            )}
+                        >
+                            {p}
+                        </button>
+                    ))}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={currentPage === Math.ceil(reportStats.sortedRatings.length / itemsPerPage)}
+                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(reportStats.sortedRatings.length / itemsPerPage), p + 1))}
+                        className="rounded-full w-10 h-10 bg-white/5 hover:bg-white/10 text-white disabled:opacity-30"
+                    >
+                        <ChevronRight size={16} />
+                    </Button>
+                </div>
+             )}
          </section>
       </main>
 
