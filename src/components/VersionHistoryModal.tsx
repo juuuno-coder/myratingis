@@ -38,7 +38,7 @@ export function VersionHistoryModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] bg-white text-black max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[700px] bg-white dark:bg-slate-900 text-black dark:text-white max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between mr-8">
              {selectedVersion ? (
@@ -102,7 +102,7 @@ export function VersionHistoryModal({
                        <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${idx === 0 ? 'bg-green-500' : 'bg-gray-300 group-hover:bg-blue-400 transition-colors'}`} />
                        
                        <div 
-                          className="bg-white border border-gray-100 rounded-lg p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group-hover:border-blue-100"
+                          className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group-hover:border-blue-100 dark:group-hover:border-blue-900"
                           onClick={() => setSelectedVersion(version)}
                        >
                           <div className="flex items-center justify-between mb-2">

@@ -15,7 +15,7 @@ export function ProjectTimeline({ versions }: ProjectTimelineProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-6">
         <History className="w-5 h-5 text-green-600" />
         <h3 className="font-bold text-lg text-gray-900">업데이트 히스토리</h3>

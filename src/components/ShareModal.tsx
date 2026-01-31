@@ -196,7 +196,7 @@ export function ShareModal({
               <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-2 text-gray-500">또는</span>
+              <span className="bg-white dark:bg-slate-950 px-2 text-gray-500 dark:text-gray-400">또는</span>
             </div>
           </div>
 
