@@ -23,8 +23,11 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase/client"; 
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Sparkles, Info, Globe, Link } from "lucide-react";
+import { ChefHat, Sparkles, Info, Globe, Link, X } from "lucide-react";
 import { MyRatingIsHeader } from "@/components/MyRatingIsHeader";
+import { 
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
+} from 'recharts';
 
 const STICKER_PRESETS: Record<string, any[]> = {
     professional: [
@@ -93,7 +96,24 @@ export default function ProjectUploadPage() {
     "발전을 위해 조언해 주실 부분이 있다면 자유롭게 말씀해 주세요."
   ]);
 
+  // New States for Demo Modal
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [demoShapeN, setDemoShapeN] = useState(6);
+
   const mode = searchParams.get('mode') || 'audit';
+
+  // Helper for Demo Data
+  const getDemoData = (n: number) => {
+    const shapes = [
+      { subject: '항목 A', A: 4, fullMark: 5 },
+      { subject: '항목 B', A: 3, fullMark: 5 },
+      { subject: '항목 C', A: 5, fullMark: 5 },
+      { subject: '항목 D', A: 2, fullMark: 5 },
+      { subject: '항목 E', A: 4, fullMark: 5 },
+      { subject: '항목 F', A: 3, fullMark: 5 },
+    ];
+    return shapes.slice(0, n);
+  };
 
   // 2. Auth Guard
   useEffect(() => {
@@ -147,8 +167,7 @@ export default function ProjectUploadPage() {
     }
   }, [editId]);
 
-  // ... (OG Preview effect remains similar or unchanged if API works, otherwise skipped for now)
-  // (Assuming api/og-preview still works or needs update. Keeping effect as is for now, just focused on DB logic)
+  // OG Preview effect
   useEffect(() => {
     if (auditType === 'link' && typeof mediaData === 'string' && mediaData.includes('.')) {
       const timer = setTimeout(async () => {
@@ -163,7 +182,6 @@ export default function ProjectUploadPage() {
             setLinkPreview(null);
           }
         } catch (e) {
-          // console.error("OG Preview Error", e); // Optional logging
           setLinkPreview(null);
         } finally {
           setIsLoadingPreview(false);
@@ -210,7 +228,7 @@ export default function ProjectUploadPage() {
         visibility: visibility,
         audit_deadline: auditDeadline,
         is_growth_requested: true,
-        author_uid: user.uid, // Firebase Auth UID
+        author_uid: user.uid,
         author_email: user.email,
         custom_data: {
           is_feedback_requested: true,
@@ -230,7 +248,6 @@ export default function ProjectUploadPage() {
         },
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        // Add minimal counters for list view
         view_count: 0,
         feedback_count: 0,
         like_count: 0
@@ -239,17 +256,15 @@ export default function ProjectUploadPage() {
       let projectId = editId;
 
       if (editId) {
-        // Update
         const docRef = doc(db, "projects", editId);
         await updateDoc(docRef, { ...projectData, updatedAt: serverTimestamp() });
       } else {
-        // Create
         const docRef = await addDoc(collection(db, "projects"), projectData);
         projectId = docRef.id;
       }
 
       toast.success(editId ? "수정이 완료되었습니다!" : "평가 의뢰가 성공적으로 등록되었습니다!");
-      router.push(`/project/share/${projectId}`); // Redirect to share page (need to ensure this page works with firebase ID)
+      router.push(`/project/share/${projectId}`);
     } catch (error: any) {
       console.error("Submission Error:", error);
       toast.error(error.message || "등록 중 오류가 발생했습니다.");
@@ -265,7 +280,6 @@ export default function ProjectUploadPage() {
           <h3 className="text-3xl font-black text-chef-text tracking-tighter uppercase italic">평가 의뢰 정보</h3>
         </div>
 
-        {/* Informational Banner for Creators */}
         <div className="bg-orange-500/5 border border-orange-500/10 p-10 rounded-sm space-y-6 bevel-sm relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform duration-1000 -mr-4 -mt-4">
               <Sparkles size={120} />
@@ -475,7 +489,7 @@ export default function ProjectUploadPage() {
           </div>
         </div>
 
-        {/* [New] Polygonal UI Gallery (Demo Section) */}
+        {/* [New] Polygonal UI Gallery (Demo Section) with Modal Trigger */}
         <div className="bg-chef-card/50 border border-chef-border rounded-xl p-8 space-y-6">
            <div className="flex items-center gap-3">
               <Info className="w-5 h-5 text-orange-500" />
@@ -483,14 +497,17 @@ export default function ProjectUploadPage() {
            </div>
            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { n: 3, shape: '삼각형', id: 6, icon: '🔺' },
-                { n: 4, shape: '사각형', id: 7, icon: '⬜' },
-                { n: 5, shape: '오각형', id: 8, icon: '⬟' },
-                { n: 6, shape: '육각형', id: 9, icon: '⬢' }
+                { n: 3, shape: '삼각형', icon: '🔺' },
+                { n: 4, shape: '사각형', icon: '⬜' },
+                { n: 5, shape: '오각형', icon: '⬟' },
+                { n: 6, shape: '육각형', icon: '⬢' }
               ].map((demo) => (
                 <button 
                   key={demo.n}
-                  onClick={() => window.open(`/review/viewer?projectId=${demo.id}`, '_blank')}
+                  onClick={() => {
+                      setDemoShapeN(demo.n);
+                      setDemoModalOpen(true);
+                  }}
                   className="flex flex-col items-center gap-2 p-4 bg-chef-panel border border-chef-border hover:border-orange-500/50 rounded-xl transition-all group"
                 >
                    <span className="text-2xl group-hover:scale-125 transition-transform">{demo.icon}</span>
@@ -577,7 +594,6 @@ export default function ProjectUploadPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pollOptions.map((opt, idx) => (
               <div key={idx} className="chef-menu-card group">
-                {/* 상단 이미지 영역 */}
                 <div className="relative group/img">
                   <label 
                     htmlFor={`sticker-upload-${idx}`}
@@ -608,7 +624,6 @@ export default function ProjectUploadPage() {
                           setPollOptions(next);
                           toast.success("업로드 완료!", { id: toastId });
                         } catch (err: any) {
-                          console.error("Sticker upload error:", err);
                           toast.error("업로드 실패: " + (err.message || "알 수 없는 오류"), { id: toastId });
                         }
                       }
@@ -616,7 +631,6 @@ export default function ProjectUploadPage() {
                   />
                 </div>
 
-                {/* 하단 90% 블랙 불투명 영역 */}
                 <div className="chef-menu-bottom min-h-[160px] py-6 px-4">
                   <textarea 
                     value={opt.label} 
@@ -643,7 +657,6 @@ export default function ProjectUploadPage() {
                   />
                 </div>
 
-                {/* 삭제 버튼 */}
                 {pollOptions.length > 2 && (
                   <button onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center border border-white/10">
                     <FontAwesomeIcon icon={faTrash} />
@@ -796,58 +809,90 @@ export default function ProjectUploadPage() {
               </div>
            </div>
         </div>
-      </section>
 
-      <div className="flex justify-between items-center pt-10 border-t border-chef-border">
-        <Button variant="ghost" onClick={() => setAuditStep(4)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs transition-opacity">이전 단계</Button>
-        <Button onClick={handleSubmit} disabled={isSubmitting} className="h-20 px-16 bevel-cta bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_10px_40px_rgba(234,88,12,0.4)]">
-          {isSubmitting ? "의뢰 게시 중..." : <><ChefHat className="w-6 h-6" /> 보약 담아 의뢰 게시하기</>}
-        </Button>
-      </div>
+        <div className="flex justify-between items-center pt-8 border-t border-chef-border">
+             <Button variant="ghost" onClick={() => setAuditStep(4)} className="h-14 px-8 font-black text-chef-text opacity-80 hover:opacity-100 uppercase tracking-widest text-xs">이전 단계</Button>
+             <Button onClick={handleSubmit} disabled={isSubmitting} className="h-20 px-16 bevel-cta bg-orange-600 hover:bg-orange-700 text-white text-xl font-black flex items-center gap-5 transition-all hover:scale-105 shadow-[0_10px_40px_rgba(234,88,12,0.4)]">
+               {isSubmitting ? "게시 중..." : <><ChefHat className="w-6 h-6" /> 게시 완료</>}
+             </Button>
+        </div>
+      </section>
     </motion.div>
   );
 
   return (
-    <div className="min-h-screen chef-bg-page selection:bg-orange-500/30">
-      {authLoading ? (
-        <div className="min-h-screen flex items-center justify-center px-6">
-            <div className="flex flex-col items-center gap-6">
-               <div className="animate-spin w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)]" />
-               <p className="text-sm font-black text-chef-text opacity-30 uppercase tracking-[0.3em] animate-pulse">Initializing Lab...</p>
-            </div>
-        </div>
-      ) : (
-        <>
-          {/* Dynamic Stepper Header */}
-          <div className="fixed top-16 left-0 right-0 z-40 chef-header-dark border-b border-chef-border">
-             <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                   <span className="text-[10px] font-black text-chef-text opacity-30 uppercase tracking-[0.4em]">평가 의뢰 연구소</span>
-                </div>
-                <div className="flex items-center gap-3">
-                   {[1, 2, 3, 4, ...(isAdmin ? [5] : [])].map(s => (
-                     <div key={s} className="flex items-center gap-2">
-                        <div className={cn(
-                          "w-8 h-1 transition-all duration-500 bevel-cta", 
-                          auditStep >= s ? "bg-orange-500 shadow-[0_0_10px_#f97316]" : "bg-chef-text opacity-10"
-                        )} />
-                        {s < (isAdmin ? 5 : 4) && <div className="text-[6px] text-chef-text opacity-5 font-black">/</div>}
-                     </div>
-                   ))}
-                </div>
-             </div>
-          </div>
+    <div className="min-h-screen bg-chef-bg font-pretendard pb-20">
+      <MyRatingIsHeader />
+      
+      <main className="max-w-4xl mx-auto px-6 pt-32">
+        <AnimatePresence mode="wait">
+          {auditStep === 1 && renderStep1()}
+          {auditStep === 2 && renderStep2()}
+          {auditStep === 3 && renderStep3()}
+          {auditStep === 4 && renderStep4()}
+          {auditStep === 5 && renderStep5()}
+        </AnimatePresence>
+      </main>
 
-          <div className="pt-40 pb-32">
-            <main className="max-w-4xl mx-auto px-6">
-              <AnimatePresence mode="wait">
-                {auditStep === 1 ? renderStep1() : auditStep === 2 ? renderStep2() : auditStep === 3 ? renderStep3() : auditStep === 4 ? renderStep4() : renderStep5()}
-              </AnimatePresence>
-            </main>
-          </div>
-        </>
-      )}
+      {/* Demo Preview Modal */}
+      <AnimatePresence>
+        {demoModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setDemoModalOpen(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              className="bg-[#0a0a0a] border border-white/10 w-full max-w-md rounded-[2rem] p-8 relative shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+               <button 
+                 onClick={() => setDemoModalOpen(false)}
+                 className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+               >
+                 <X size={24} />
+               </button>
+               
+               <div className="text-center space-y-2 mb-8">
+                  <h3 className="text-2xl font-black text-white italic">
+                    {demoShapeN === 3 && "Triangle Logic"}
+                    {demoShapeN === 4 && "Square Logic"}
+                    {demoShapeN === 5 && "Pentagon Logic"}
+                    {demoShapeN === 6 && "Hexagon Logic"}
+                  </h3>
+                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{demoShapeN}개의 평가 지표 예시</p>
+               </div>
+
+               <div className="h-[300px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={getDemoData(demoShapeN)}>
+                      <PolarGrid stroke="#ffffff20" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#ffffff60', fontSize: 12, fontWeight: 'bold' }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
+                      <Radar
+                        name="Demo"
+                        dataKey="A"
+                        stroke="#ea580c"
+                        strokeWidth={3}
+                        fill="#ea580c"
+                        fillOpacity={0.5}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+               </div>
+
+               <div className="text-center mt-6">
+                  <p className="text-[10px] text-white/20">Evaluation Preview Mode</p>
+               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
