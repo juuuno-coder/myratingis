@@ -632,8 +632,8 @@ export default function ReportPage() {
                <MessageSquare className="text-orange-600" /> 상세 평가 의견 리포트
             </h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {ratings.length > 0 ? (
-                  ratings.map((r, i) => {
+                {reportStats?.sortedRatings && reportStats.sortedRatings.length > 0 ? (
+                  reportStats.sortedRatings.map((r, i) => {
                     const hasCustomAnswers = r.custom_answers && Object.keys(r.custom_answers).length > 0;
                     const hasProposal = !!r.proposal;
                     const hasAnyFeedback = hasCustomAnswers || hasProposal;
