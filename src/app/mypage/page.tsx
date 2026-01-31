@@ -239,7 +239,10 @@ export default function MyPage() {
           // Sort client-side to avoid index issues
           // Remove unwanted test data
           fetchedProjects = fetchedProjects.filter((p: any) => 
-              !p.title?.includes('육각 진단') && !p.title?.includes('오각 진단')
+              !p.title?.includes('육각 진단') && 
+              !p.title?.includes('오각 진단') &&
+              !p.title?.includes('사각 진단') &&
+              !p.title?.includes('삼각 진단')
           );
 
           fetchedProjects.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
