@@ -774,7 +774,7 @@ export default function ReportPage() {
                                            </span>
                                            {r.vote_type && (
                                                <span className="text-[10px] font-bold text-white/40 line-clamp-1 max-w-[150px]">
-                                                   {reportStats.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || r.vote_type}
+                                                   {reportStats?.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || r.vote_type}
                                                </span>
                                            )}
                                       </div>

@@ -46,7 +46,7 @@
     --input: 220 13% 91%;
     --ring: 24.6 95% 53.1%;
 
-    --radius: 0.85rem; /* Soft, premium rounding */
+    --radius: 0.4rem; /* Reduced rounding as requested */
 
     /* Custom Design Tokens */
     --vibe-orange: 24.6 95% 53.1%;
@@ -122,7 +122,7 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     height: auto;
-    border-radius: 0.75rem; /* rounded-xl */
+    border-radius: 0.375rem; /* rounded-md */
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
   }
@@ -141,7 +141,7 @@
   .behance-card {
     background: var(--chef-card-bg);
     border: 1px solid var(--chef-border);
-    border-radius: 12px;
+    border-radius: 6px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     overflow: hidden;
     will-change: transform, box-shadow; /* GPU 가속 힌트 */
@@ -669,7 +669,7 @@
   }
 
   .bevel-section {
-    @apply rounded-[1.5rem] shadow-xl border border-white/5;
+    @apply rounded-xl shadow-xl border border-white/5;
   }
 }
 
