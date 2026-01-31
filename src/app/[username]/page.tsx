@@ -69,7 +69,7 @@ export default async function PublicProfilePage({ params }: Props) {
   if (profile.is_public === false && !isOwner) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center max-w-md w-full">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 text-center max-w-md w-full">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lock className="w-10 h-10 text-gray-400" />
             </div>
@@ -110,7 +110,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const socialLinks = profile.social_links as Record<string, string> || {};
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 pb-20">
       {/* 커버 이미지 */}
       <div className="h-60 md:h-80 w-full relative bg-gray-200">
         {profile.cover_image_url ? (
@@ -130,7 +130,7 @@ export default async function PublicProfilePage({ params }: Props) {
         <div className="relative -mt-24 sm:-mt-32 mb-6">
           {/* 아바타 */}
           <div className="relative inline-block">
-             <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white relative">
+             <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden bg-white dark:bg-slate-900 relative">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
@@ -206,19 +206,19 @@ export default async function PublicProfilePage({ params }: Props) {
 
         {/* 통계 카드 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm text-center">
                 <p className="text-xs font-bold text-gray-500 uppercase">Projects</p>
                 <p className="text-2xl font-black text-gray-900">{projects?.length || 0}</p>
             </div>
-             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+             <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm text-center">
                 <p className="text-xs font-bold text-gray-500 uppercase">Total Likes</p>
                 <p className="text-2xl font-black text-gray-900">{totalLikes.toLocaleString()}</p>
             </div>
-             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+             <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm text-center">
                 <p className="text-xs font-bold text-gray-500 uppercase">Total Views</p>
                 <p className="text-2xl font-black text-gray-900">{totalViews.toLocaleString()}</p>
             </div>
-             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+             <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm text-center">
                 <p className="text-xs font-bold text-gray-500 uppercase">Followers</p>
                 <p className="text-2xl font-black text-gray-900">-</p>
             </div>
@@ -285,13 +285,13 @@ export default async function PublicProfilePage({ params }: Props) {
           </TabsContent>
 
           <TabsContent value="collections" className="mt-8">
-             <div className="py-20 text-center bg-white rounded-xl border border-dashed border-gray-300">
+             <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-gray-300 dark:border-slate-700">
                 <p className="text-gray-400">컬렉션 기능 준비 중입니다.</p>
              </div>
           </TabsContent>
           
           <TabsContent value="about" className="mt-8">
-             <div className="bg-white p-8 rounded-xl border border-gray-200">
+             <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-gray-200 dark:border-slate-800">
                 <h3 className="text-lg font-bold mb-4">소개</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {profile.bio || "등록된 소개가 없습니다."}

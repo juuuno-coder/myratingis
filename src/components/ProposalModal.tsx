@@ -125,21 +125,21 @@ export function ProposalModal({
                 placeholder="제목 (예: 프로젝트 공동 작업 문의)"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="h-12 rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-200"
+                className="h-12 rounded-xl border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-700 focus:ring-slate-200"
                 required
               />
               <Textarea
                 placeholder="제안 내용을 상세히 입력해주세요..."
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-200 transition-all resize-none p-4"
+                className="min-h-[160px] rounded-2xl border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-700 focus:ring-slate-200 transition-all resize-none p-4"
                 required
               />
               <Input
                 placeholder="답변을 받을 연락처 (이메일 등)"
                 value={formData.contact}
                 onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                className="h-12 rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-200"
+                className="h-12 rounded-xl border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-700 focus:ring-slate-200"
                 required
               />
             </div>
