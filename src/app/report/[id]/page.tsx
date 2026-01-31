@@ -108,8 +108,13 @@ export default function ReportPage() {
         if (projectData.title?.includes("와요") && (projectData.views || 0) < 135) {
             try {
                 // Async update
-                updateDoc(projectRef, { views: 135 });
+                updateDoc(projectRef, { 
+                    views: 135,
+                    views_count: 135,
+                    view_count: 135
+                });
                 projectData.views = 135; 
+                projectData.views_count = 135;
             } catch(e) { console.warn("Failed to update view count", e); }
         }
         // ----------------------------------------------------------------

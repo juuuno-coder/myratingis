@@ -196,6 +196,16 @@ function ViewerContent() {
         }
         // ----------------------------------
 
+        // --- View Count Correction (Only for '와요' project, Min 135) ---
+        if (data.title?.includes("와요") && (data.views || 0) < 135) {
+             try {
+                updateDoc(docRef, { views: 135, views_count: 135, view_count: 135 });
+                data.views = 135;
+                data.views_count = 135;
+             } catch(e) {}
+        }
+        // ----------------------------------------------------------------
+
         setProject({ ...data, custom_data: parsedCustom || {} });
       } catch (e) {
         console.error("Failed to load project", e);
