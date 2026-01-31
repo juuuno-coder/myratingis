@@ -359,9 +359,15 @@ export default function MyPage() {
         } else if (activeTab === 'comments') {
           // 'Participated Audits' (Evaluations) fetched from Firebase
           try {
-              const evalQuery = query(collection(db, "evaluations"), where("user_uid", "==", userId), orderBy("createdAt", "desc"));
+              // Removed orderBy to avoid missing index error. Sorting client-side.
+              const evalQuery = query(collection(db, "evaluations"), where("user_uid", "==", userId));
               const evalSnap = await getDocs(evalQuery);
-              const evaluations = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+              const evaluations = evalSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+                  .sort((a: any, b: any) => {
+                      const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (new Date(a.createdAt).getTime() || 0);
+                      const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (new Date(b.createdAt).getTime() || 0);
+                      return timeB - timeA;
+                  });
 
               if (evaluations.length > 0) {
                   // Get Unique Project IDs
