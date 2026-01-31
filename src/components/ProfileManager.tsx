@@ -25,6 +25,11 @@ import {
 import { GENRE_CATEGORIES_WITH_ICONS, FIELD_CATEGORIES_WITH_ICONS } from "@/lib/ui-constants";
 import { FontAwesomeIcon } from "@/components/FaIcon";
 
+// Firebase Imports
+import { db, auth } from "@/lib/firebase/client"; 
+import { doc, updateDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
+
 interface ProfileManagerProps {
   user: any; 
   onUpdate: () => void;
@@ -164,7 +169,6 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
     try {
       const updateData = {
         nickname: formData.nickname,
-        // bio: formData.bio, // Removed
         gender: formData.gender,
         age_group: formData.age_group,
         occupation: formData.occupation,
@@ -175,34 +179,41 @@ export function ProfileManager({ user, onUpdate }: ProfileManagerProps) {
           instagram: formData.instagram,
         },
         is_public: isPublic,
-        interests: interests,
-        expertise: expertise,
+        interests: interests.genres, // Save as array directly
+        expertise: expertise.fields, // Save as array directly
+        updatedAt: new Date(),
+        // Also save legacy fields if needed, or flat fields
+        expertFields: expertise.fields // Backup field
       };
 
-      // profiles 테이블 업데이트
-      const { id, ...dataToSave } = updateData as any;
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update(dataToSave)
-        .eq('id', user.id);
-
-      // users 테이블이 존재할 수 있으므로 시도 (있는 경우에만)
+      // 1. Update Firestore (Primary DB)
+      // Check if we need to set merge: true, but updateDoc is update-only
+      const userRef = doc(db, "users", user.id);
+      
       try {
-        await supabase.from('users').update({ 
-            nickname: formData.nickname,
-            // username: formData.username // Removed from update
-        }).eq('id', user.id);
-      } catch (e) {}
+          await updateDoc(userRef, updateData);
+      } catch (firestoreErr) {
+          console.error("Firestore update failed:", firestoreErr);
+          throw new Error("프로필 저장 중 오류가 발생했습니다. (DB)");
+      }
 
-      if (profileError) throw profileError;
-
-      // Auth Metadata 업데이트
-      await supabase.auth.updateUser({
-          data: { 
-              nickname: formData.nickname,
-              full_name: formData.nickname 
+      // 2. Update Firebase Auth Profile (DisplayName)
+      if (auth.currentUser) {
+          try {
+              await updateProfile(auth.currentUser, {
+                  displayName: formData.nickname
+              });
+          } catch (authErr) {
+              console.warn("Auth profile update failed:", authErr);
+              // Not critical
           }
-      });
+      }
+
+      // Legacy: Attempt Supabase update but ignore errors (since ID mismatch is expected)
+      try {
+        const { id, ...dataToSave } = updateData as any;
+        await supabase.from('profiles').update(dataToSave).eq('id', user.id);
+      } catch (e) { /* Ignore Supabase errors */ }
 
       toast.success("설정이 저장되었습니다!");
       onUpdate();
