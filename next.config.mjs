@@ -3,7 +3,7 @@ const nextConfig = {
   // 서버 전용 외부 패키지 설정 (Next.js 14 특정 버전 대응)
   experimental: {
     serverComponentsExternalPackages: ['cheerio', 'undici'],
-    optimizePackageImports: ['lucide-react', '@fortawesome/react-fontawesome', 'dayjs'],
+    optimizePackageImports: ['lucide-react', '@fortawesome/react-fontawesome', 'dayjs', 'recharts', 'framer-motion'],
   },
 
   // 이미지 최적화 설정
