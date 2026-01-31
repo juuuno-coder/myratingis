@@ -39,7 +39,14 @@ import { useAuth } from "@/lib/auth/AuthContext";
 const ALL_LABELS: Record<string, string> = {};
 [...GENRE_CATEGORIES, ...FIELD_CATEGORIES].forEach(c => {
     ALL_LABELS[c.id] = c.label;
+    ALL_LABELS[c.id] = c.label;
 });
+
+const VOTE_LABEL_MAP: Record<string, string> = {
+    'launch': '당장 계약하시죠! 탐나는 결과물',
+    'invest': '좋긴 한데... 한 끗이 아쉽네요',
+    'reboot': '기획부터 다시! 싹 갈아엎읍시다',
+};
 
 export default function ReportPage() {
   const params = useParams();
@@ -185,12 +192,19 @@ export default function ReportPage() {
                 fetchedRatings = fetchedRatings.map((r: any) => {
                     const latestUser = r.user_uid ? userMap[r.user_uid] : null;
                     if (latestUser) {
+                        // Handle expertise (Array or Object)
+                        let safeExpertise = latestUser.expertise || latestUser.expertFields || r.expertise || [];
+                        if (safeExpertise && !Array.isArray(safeExpertise) && typeof safeExpertise === 'object') {
+                             // If stored as { 'marketing': true, ... }
+                             safeExpertise = Object.keys(safeExpertise).filter(k => safeExpertise[k]);
+                        }
+                        if (!Array.isArray(safeExpertise)) safeExpertise = [];
+
                         return {
                             ...r,
                             user_nickname: latestUser.nickname || latestUser.displayName || r.user_nickname,
-                            user_job: latestUser.job || latestUser.occupation || (Array.isArray(latestUser.expertise) && latestUser.expertise.length > 0 ? latestUser.expertise[0] : (r.user_job || r.occupation)),
-                            // Ensure expertise is array
-                            expertise: Array.isArray(latestUser.expertise) ? latestUser.expertise : (Array.isArray(r.expertise) ? r.expertise : []),
+                            user_job: latestUser.job || latestUser.occupation || (safeExpertise.length > 0 ? safeExpertise[0] : (r.user_job || r.occupation)),
+                            expertise: safeExpertise,
                             occupation: latestUser.occupation || r.occupation,
                             age_group: latestUser.age_group || r.age_group,
                             gender: latestUser.gender || r.gender,
@@ -778,7 +792,7 @@ export default function ReportPage() {
                                            </span>
                                            {r.vote_type && (
                                                <span className="text-[11px] font-bold text-white/50 pl-3 border-l border-white/10 line-clamp-1">
-                                                   {reportStats?.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || r.vote_type}
+                                                   {reportStats?.stickerOptions?.find((o: any) => o.id === r.vote_type || o.label === r.vote_type)?.label || VOTE_LABEL_MAP[r.vote_type] || r.vote_type}
                                                </span>
                                            )}
                                       </div>
