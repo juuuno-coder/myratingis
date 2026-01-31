@@ -97,6 +97,13 @@ export default function ReportPage() {
     fetchData();
   }, [projectId]);
 
+  // Share Handler
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    toast.success("리포트 링크가 복사되었습니다!");
+  };
+
   const reportStats = useMemo(() => {
     if (!project) return null;
 
@@ -190,16 +197,16 @@ export default function ReportPage() {
     const totalSum = radarData.reduce((acc: number, curr: any) => acc + curr.value, 0);
     const overallAvg = radarData.length > 0 ? (totalSum / radarData.length).toFixed(1) : "0.0";
 
-    // Calculate Distributions
+    // Calculate Distributions (Updated to use user_job)
     const expertiseDistribution: Record<string, number> = {};
     const occupationDistribution: Record<string, number> = {};
 
     ratings.forEach(r => {
-        if (r.expertise && Array.isArray(r.expertise)) {
-            r.expertise.forEach((e: string) => { expertiseDistribution[e] = (expertiseDistribution[e] || 0) + 1; });
-        }
-        if (r.occupation) {
-            occupationDistribution[r.occupation] = (occupationDistribution[r.occupation] || 0) + 1;
+        const job = r.user_job || r.occupation || '미설정';
+        expertiseDistribution[job] = (expertiseDistribution[job] || 0) + 1;
+        
+        if (r.user_job) {
+             occupationDistribution[r.user_job] = (occupationDistribution[r.user_job] || 0) + 1;
         }
     });
 
@@ -214,14 +221,7 @@ export default function ReportPage() {
     };
   }, [project, ratings]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6" />
-          <p className="font-black text-xl animate-pulse tracking-widest uppercase text-white/40">Analyzing Results...</p>
-      </div>
-    );
-  }
+  // ... loading check ...
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-pretendard">
@@ -229,7 +229,7 @@ export default function ReportPage() {
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-24 space-y-20">
          {/* Hero Title */}
-         <section className="text-center space-y-6">
+         <section className="text-center space-y-6 relative">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
                <div className="px-4 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                   <ChefHat size={14} /> Evaluation Final Report
@@ -238,9 +238,14 @@ export default function ReportPage() {
             <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-4xl md:text-7xl font-black tracking-tighter">
                {project?.title} <span className="text-white/20">평가 결과</span>
             </motion.h1>
-            <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg text-white/40 max-w-2xl mx-auto font-medium">
-               누적 {reportStats?.participantCount}명의 전문가 시선으로 분석된<br />미슐랭 5성 프로젝트 리포트입니다.
-            </motion.p>
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-col items-center gap-6">
+                <p className="text-lg text-white/40 max-w-2xl mx-auto font-medium">
+                   누적 {reportStats?.participantCount}명의 전문가 시선으로 분석된<br />미슐랭 5성 프로젝트 리포트입니다.
+                </p>
+                <Button onClick={handleShare} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6">
+                    <Share2 size={14} /> 리포트 공유하기
+                </Button>
+            </motion.div>
          </section>
 
          {/* Charts Grid */}
@@ -417,27 +422,22 @@ export default function ReportPage() {
                                                 {r.user_id ? "Pro" : "G"}
                                             </div>
                                             <span className="text-sm font-bold text-white/90">
-                                                {r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트')}
+                                                {r.user_nickname || r.username || (r.user_id ? '익명의 전문가' : '비회원 게스트')}
                                             </span>
                                             {r.age_group && (
                                                 <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
                                                     {r.age_group}
                                                 </span>
                                             )}
-                                            {r.gender && (
-                                                <span className="text-[10px] font-bold text-white/40 px-1.5 py-0.5 bg-white/5 rounded">
-                                                    {r.gender}
-                                                </span>
-                                            )}
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 pl-11">
-                                             {r.occupation ? (
+                                             {r.user_job || r.occupation ? (
                                                 <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-black rounded border border-green-500/20 uppercase tracking-tight">
-                                                    {r.occupation}
+                                                    {r.user_job || r.occupation}
                                                 </span>
                                              ) : (
                                                 <span className="px-2 py-0.5 bg-white/5 text-white/20 text-[9px] font-black rounded border border-white/10 uppercase tracking-tight">
-                                                    직업 미입력
+                                                    -
                                                 </span>
                                              )}
                                         </div>
@@ -449,12 +449,11 @@ export default function ReportPage() {
                                 </td>
                                 <td className="px-8 py-6">
                                     <div className="flex flex-wrap gap-1">
-                                        {r.expertise && r.expertise.length > 0 ? (
-                                            r.expertise.map((exp: string, idx: number) => (
-                                                <span key={idx} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
-                                                    {ALL_LABELS[exp] || exp}
-                                                </span>
-                                            ))
+                                        {/* Use user_job for expertise column as well for consistency */}
+                                        {r.user_job ? (
+                                             <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-black rounded border border-blue-500/20">
+                                                 {ALL_LABELS[r.user_job] || r.user_job}
+                                             </span>
                                         ) : (
                                             <span className="text-white/20 text-[10px]">-</span>
                                         )}
@@ -495,21 +494,22 @@ export default function ReportPage() {
                          <div className="flex items-center justify-between shrink-0">
                              <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-xs text-white/40 border border-white/10 uppercase tracking-tighter shadow-sm">
-                                     {r.username ? r.username.substring(0, 1) : `E${i+1}`}
+                                     {(r.user_nickname || r.username || 'A').substring(0, 1)}
                                 </div>
                                 <div className="flex flex-col">
-                                    <h4 className="text-sm font-black text-white/90">{r.username || 'Anonymous Expert'}</h4>
+                                    <h4 className="text-sm font-black text-white/90">{r.user_nickname || r.username || 'Anonymous Expert'}</h4>
                                     <div className="flex flex-wrap gap-1 mt-1">
-                                        {(r.expertise || []).map((exp: string, idx: number) => (
+                                        {r.user_job && (
+                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-[9px] font-bold text-emerald-400 rounded border border-emerald-500/10 uppercase tracking-tighter">
+                                                {r.user_job}
+                                            </span>
+                                        )}
+                                        {/* Legacy support */}
+                                        {!r.user_job && (r.expertise || []).map((exp: string, idx: number) => (
                                             <span key={idx} className="px-2 py-0.5 bg-white/5 text-[9px] font-bold text-white/40 rounded border border-white/10">
                                                 #{ALL_LABELS[exp] || exp}
                                             </span>
                                         ))}
-                                        {r.occupation && (
-                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-[9px] font-bold text-emerald-400 rounded border border-emerald-500/10 uppercase tracking-tighter">
-                                                {r.occupation}
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
                              </div>

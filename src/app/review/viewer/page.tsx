@@ -231,6 +231,10 @@ function ViewerContent() {
         guest_id: !user ? guestId : null,
         user_uid: user ? user.uid : null,
         user_email: user ? user.email : null,
+        user_nickname: user?.displayName || null,
+        user_photo: user?.photoURL || null,
+        user_job: (user as any)?.custom_data?.job || null,
+        user_bio: (user as any)?.custom_data?.bio || null,
         vote_type: pollSelection,
         createdAt: serverTimestamp()
       };

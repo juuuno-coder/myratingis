@@ -224,7 +224,7 @@ export default function ProjectUploadPage() {
         content_text: summary || title,
         description: summary || title,
         category_id: 1,
-        thumbnail_url: linkPreview?.image || undefined,
+        thumbnail_url: linkPreview?.image || null,
         visibility: visibility,
         audit_deadline: auditDeadline,
         is_growth_requested: true,

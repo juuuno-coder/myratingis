@@ -422,13 +422,11 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                           onClick={() => router.push(`/report/${p.project_id}`)}
                           className="h-14 rounded-2xl bevel-cta bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-green-600/10"
                         >
-                          내 평가 결과 보기
+                          {showCumulative ? "평가 결과 리포트" : "내 평가 결과 보기"}
                         </Button>
                       ) : (
                           <Button 
                           onClick={() => {
-                             // Guest Flow: Simply navigate to viewer. Auth check handled inside Viewer if needed for specific actions,
-                             // but evaluation itself allows guests.
                              router.push(`/review/viewer?projectId=${p.project_id}`);
                           }}
                           className="h-14 rounded-none bevel-cta bg-orange-600 hover:bg-orange-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-600/10"
@@ -437,13 +435,13 @@ export default function ProjectsClient({ initialProjects = [], initialTotal = 0 
                         </Button>
                       )}
                       
-                      {(showCumulative || p.user_id === user?.uid) && (
+                      {((showCumulative && !p.has_rated) || (p.user_id === user?.uid && !p.has_rated)) && (
                          <Button 
                            variant="outline" 
                            onClick={() => router.push(`/report/${p.project_id}`)}
                            className="h-12 rounded-2xl border-chef-border bg-chef-panel text-chef-text opacity-60 hover:opacity-100 font-bold text-[10px] uppercase tracking-widest transition-all"
                          >
-                           전체 평가 통계
+                           {p.user_id === user?.uid ? "내 프로젝트 통계" : "전체 평가 통계"}
                          </Button>
                       )}
 
