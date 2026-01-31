@@ -366,7 +366,39 @@ function ViewerContent() {
         const qs = project.custom_data?.audit_config?.questions || [];
         return <div className="flex flex-col h-full"><div className="text-center mb-8"><h3 className="text-2xl font-black">종합 의견</h3></div><div className="flex-1 space-y-10 overflow-y-auto pb-20">{qs.map((q: string, i: number) => (<div key={i} className="space-y-3"><label className="font-black">Q{i+1}. {q}</label><textarea value={customAnswers[q] || ""} onChange={e => setCustomAnswers({ ...customAnswers, [q]: e.target.value })} className="w-full h-32 bg-chef-panel rounded-2xl p-5" /></div>))}</div></div>;
     }
-    if (st === 'summary') return <div className="flex flex-col items-center justify-center text-center space-y-8 h-full"><CheckCircle2 size={48} className="text-orange-600" /><h3 className="text-4xl font-black uppercase italic">{project.title}</h3><Button onClick={() => router.push('/projects')}>다른 프로젝트 둘러보기</Button></div>;
+    if (st === 'summary') return (
+        <div className="flex flex-col items-center justify-center text-center h-full px-6 animate-in fade-in zoom-in duration-500">
+            <div className="mb-8 relative">
+                <div className="absolute inset-0 bg-orange-500 blur-2xl opacity-20 rounded-full" />
+                <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-2xl rotate-3 transform transition-transform hover:rotate-6">
+                    <CheckCircle2 size={48} className="text-white drop-shadow-md" />
+                </div>
+            </div>
+            
+            <h3 className="text-3xl md:text-4xl font-black text-chef-text mb-4 italic tracking-tight">평가 제출 완료!</h3>
+            <p className="text-chef-text/60 font-medium text-sm md:text-base mb-12 max-w-sm leading-relaxed break-keep">
+                소중한 시간을 내어주셔서 감사합니다.<br/>
+                셰프님의 날카로운 통찰력은 창작자가 더 나은 결과물을 만드는 데 결정적인 역할을 할 것입니다.
+            </p>
+    
+            <div className="flex flex-col w-full max-w-xs gap-3">
+                <Button 
+                    onClick={() => router.push(`/report/${projectId}`)} 
+                    className="h-14 bg-chef-text text-chef-bg hover:bg-chef-text/90 font-black rounded-xl text-lg shadow-xl"
+                >
+                    {project.custom_data?.result_visibility === 'public' ? "전체 결과 리포트 보기" : "내 평가 결과 보기"}
+                </Button>
+                
+                <Button 
+                    variant="outline"
+                    onClick={() => router.push('/')} 
+                    className="h-14 border-2 border-chef-border bg-transparent hover:bg-chef-panel text-chef-text font-bold rounded-xl transition-all"
+                >
+                    다른 프로젝트 평가하기
+                </Button>
+            </div>
+        </div>
+    );
     return null;
   };
 
