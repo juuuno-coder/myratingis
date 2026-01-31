@@ -28,6 +28,8 @@ import { MyRatingIsHeader } from '@/components/MyRatingIsHeader';
 // Remove unused constants if not used elsewhere, or keep them.
 import { GENRE_CATEGORIES, FIELD_CATEGORIES } from '@/lib/constants';
 
+import { useAuth } from "@/lib/auth/AuthContext";
+
 // Pre-map labels for fast lookup
 const ALL_LABELS: Record<string, string> = {};
 [...GENRE_CATEGORIES, ...FIELD_CATEGORIES].forEach(c => {
@@ -37,11 +39,14 @@ const ALL_LABELS: Record<string, string> = {};
 export default function ReportPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth(); // Auth Info
   const projectId = params.id as string;
 
   const [project, setProject] = useState<any>(null);
   const [ratings, setRatings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ... (useEffect fetchData same as before) ...
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +65,7 @@ export default function ReportPage() {
 
         const projectData = projectSnap.data();
         
-        // Safe Parse custom_data (if it's a string, though in Firestore it should be object)
+        // Safe Parse custom_data
         if (typeof projectData.custom_data === 'string') {
             try { projectData.custom_data = JSON.parse(projectData.custom_data); } 
             catch (e) { console.error("Failed to parse custom_data", e); projectData.custom_data = {}; }
@@ -77,8 +82,8 @@ export default function ReportPage() {
             return {
                 ...data,
                 id: d.id,
-                created_at: data.createdAt?.toDate ? data.createdAt.toDate() : (new Date(data.createdAt) || new Date()), // Handle Timestamp
-                user_id: data.user_uid, // Map for backward compatibility
+                created_at: data.createdAt?.toDate ? data.createdAt.toDate() : (new Date(data.createdAt) || new Date()),
+                user_id: data.user_uid,
                 score: data.score
             };
         });
@@ -145,6 +150,33 @@ export default function ReportPage() {
   const reportStats = useMemo(() => {
     if (!project) return null;
 
+    // --- Access Control Logic ---
+    const isOwner = user?.uid === project.user_id;
+    const isPublic = project.visibility === 'public';
+    // Check if current user has participated
+    // Note: Guest users might have 'guest_id' in localStorage but here we mainly check user_uid for now or implicit guest access?
+    // For strict control:
+    const myRating = ratings.find(r => r.user_uid === user?.uid); 
+    // If guest logic is needed needed, we'd need to check localstorage guest_id too, but let's assume auth for now or basic access.
+    
+    // Determine which ratings to show
+    let targetRatings = ratings;
+    let accessDenied = false;
+    let isPersonalView = false;
+
+    if (!isPublic && !isOwner) {
+        if (myRating) {
+            // Evaluator viewing Private Project -> Show ONLY their rating
+            targetRatings = [myRating];
+            isPersonalView = true;
+        } else {
+            // Unauthorized (Private, Not Owner, Not Evaluated)
+            accessDenied = true;
+        }
+    }
+
+    if (accessDenied) return { accessDenied: true };
+
     const auditConfig = project.custom_data?.audit_config;
     // Default 6 categories fallback
     const categories = auditConfig?.categories || [
@@ -158,7 +190,7 @@ export default function ReportPage() {
 
     // Client-side Calculation with Robust Fallback
     const radarData = categories.map((cat: any, index: number) => {
-      const sum = ratings.reduce((acc, curr) => {
+      const sum = targetRatings.reduce((acc, curr) => {
           let val = 0;
           // 1. Try exact match (scores.score_1)
           if (curr.scores?.[cat.id] !== undefined) val = curr.scores[cat.id];
@@ -176,7 +208,7 @@ export default function ReportPage() {
           return acc + val;
       }, 0);
 
-      const avg = ratings.length > 0 ? (sum / ratings.length).toFixed(1) : 0;
+      const avg = targetRatings.length > 0 ? (sum / targetRatings.length).toFixed(1) : 0;
       return {
         subject: cat.label,
         value: Number(avg),
@@ -200,7 +232,7 @@ export default function ReportPage() {
         'bad': 'poll_3'
     };
 
-    ratings.forEach(r => {
+    targetRatings.forEach(r => {
       if (r.vote_type) {
         const v = r.vote_type;
         const normalized = NORMALIZE_VOTE[v] || v;
@@ -239,7 +271,7 @@ export default function ReportPage() {
     const expertiseDistribution: Record<string, number> = {};
     const occupationDistribution: Record<string, number> = {};
 
-    ratings.forEach(r => {
+    targetRatings.forEach(r => {
         const job = r.user_job || r.occupation || '미설정';
         expertiseDistribution[job] = (expertiseDistribution[job] || 0) + 1;
         
@@ -252,14 +284,39 @@ export default function ReportPage() {
       radarData, 
       barData, 
       overallAvg, 
-      participantCount: ratings.length,
+      participantCount: targetRatings.length,
+      totalParticipantCount: ratings.length,
       categories,
       expertiseDistribution,
-      occupationDistribution
+      occupationDistribution,
+      accessDenied,
+      isPersonalView
     };
-  }, [project, ratings]);
+  }, [project, ratings, user]);
 
-  // ... loading check ...
+  if (loading) return <div className="h-screen bg-[#050505] flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-white rounded-full animate-spin" /></div>;
+  if (!project) return null;
+
+  if (reportStats?.accessDenied) {
+      return (
+          <div className="min-h-screen bg-[#050505] text-white font-pretendard flex flex-col">
+              <MyRatingIsHeader />
+              <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-6 text-center">
+                  <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                      <Rocket className="w-8 h-8 text-white/20" /> {/* Should be Lock icon really, using Rocket as placeholder or import Lock */}
+                  </div>
+                  <h1 className="text-3xl font-black">비공개 리포트입니다</h1>
+                  <p className="text-white/40 max-w-sm leading-relaxed">
+                      이 프로젝트의 평가 결과는 비공개로 설정되어 있습니다.<br/>
+                      프로젝트 소유자이거나, 평가에 참여한 경우에만<br/>본인의 결과를 확인할 수 있습니다.
+                  </p>
+                  <Button onClick={() => router.push(`/review/viewer?projectId=${projectId}`)} className="h-14 px-8 rounded-2xl bg-orange-600 hover:bg-orange-700 font-bold text-white uppercase tracking-widest mt-4">
+                      평가 참여하기
+                  </Button>
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-pretendard">
@@ -270,15 +327,20 @@ export default function ReportPage() {
          <section className="text-center space-y-6 relative">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-center">
                <div className="px-4 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                  <ChefHat size={14} /> Evaluation Final Report
+                   <ChefHat size={14} /> 
+                   {reportStats?.isPersonalView ? "Personal Evaluation Report" : "Evaluation Final Report"}
                </div>
             </motion.div>
             <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-4xl md:text-7xl font-black tracking-tighter">
                {project?.title} <span className="text-white/20">평가 결과</span>
             </motion.h1>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-col items-center gap-6">
-                <p className="text-lg text-white/40 max-w-2xl mx-auto font-medium">
-                   누적 {reportStats?.participantCount}명의 전문가 시선으로 분석된<br />미슐랭 5성 프로젝트 리포트입니다.
+                <p className="text-lg text-white/40 max-w-2xl mx-auto font-medium break-keep">
+                   {reportStats?.isPersonalView ? (
+                       <>당신이 남긴 평가 기록입니다.<br/>비공개 프로젝트이므로 본인의 결과만 표시됩니다.</>
+                   ) : (
+                       <>누적 {reportStats?.totalParticipantCount}명의 전문가 시선으로 분석된<br/>미슐랭 5성 프로젝트 리포트입니다.</>
+                   )}
                 </p>
                 <Button onClick={handleShare} variant="outline" className="rounded-full border-white/10 hover:bg-white/10 text-white/60 hover:text-white gap-2 h-10 px-6">
                     <Share2 size={14} /> 리포트 공유하기
