@@ -31,7 +31,7 @@ function InteractivePreview() {
    return (
       <div className="max-w-5xl mx-auto my-32 px-6">
          <div className="text-center mb-16 space-y-4">
-            <span className="px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-black uppercase tracking-widest inline-block">Interactive Preview</span>
+            <span className="px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-black uppercase tracking-widest inline-block">체험하기</span>
             <h2 className="text-3xl md:text-5xl font-black text-chef-text tracking-tighter italic uppercase">
                피드백 도구 <span className="text-orange-500">미리보기</span>
             </h2>
@@ -73,7 +73,7 @@ function InteractivePreview() {
                      <div className="w-full bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-slate-800">
                         <MichelinRating projectId="demo" isDemo={true} />
                      </div>
-                     <p className="text-center text-xs text-chef-text opacity-40 font-mono text-[10px] tracking-widest uppercase">* Preview Mode: Data will not be saved</p>
+                     <p className="text-center text-xs text-chef-text opacity-40 font-mono text-[10px] tracking-widest uppercase">* 체험 모드: 데이터는 저장되지 않습니다 (Demo)</p>
                   </div>
                )}
                {activeTab === 'poll' && (
@@ -86,7 +86,7 @@ function InteractivePreview() {
                         />
                      </div>
                      <div className="text-center bg-orange-50 dark:bg-orange-900/10 p-6 rounded-2xl border border-orange-100 dark:border-orange-900/30">
-                        <p className="font-black text-orange-900 dark:text-orange-400 mb-2 uppercase text-xs tracking-widest">💡 Insight Analysis</p>
+                        <p className="font-black text-orange-900 dark:text-orange-400 mb-2 uppercase text-xs tracking-widest">💡 인사이트 분석 (Insight Analysis)</p>
                         <p className="text-sm text-chef-text opacity-70 leading-relaxed font-medium">
                            "당장 쓸게요!"가 압도적으로 많습니다.<br/>
                            <span className="text-orange-600 dark:text-orange-400 font-bold underline decoration-2 underline-offset-2">출시(Launch)</span>를 최우선으로 고려하세요.
@@ -101,7 +101,7 @@ function InteractivePreview() {
                         <div className="mb-8 w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto text-3xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
                            💌
                         </div>
-                        <h3 className="text-2xl font-black text-chef-text mb-3 italic uppercase tracking-tight">Comprehensive Evaluation</h3>
+                        <h3 className="text-2xl font-black text-chef-text mb-3 italic uppercase tracking-tight">종합 평가 의견</h3>
                         <p className="text-chef-text opacity-50 mb-8 text-sm leading-relaxed">
                            단순한 별점을 넘어선,<br/>
                            전문가의 시선이 담긴 <span className="font-bold text-orange-600 dark:text-orange-400">심도 있는 종합 평가</span>를 작성합니다.
@@ -111,7 +111,7 @@ function InteractivePreview() {
                            <input disabled placeholder="한 줄 총평 (Demo)" className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 font-medium" />
                            <textarea disabled placeholder="상세 평가 의견을 작성해주세요..." rows={3} className="w-full px-4 py-4 rounded-xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-sm cursor-not-allowed opacity-60 resize-none font-medium" />
                            <Button onClick={() => toast.success("[데모] 평가가 제출되었습니다!")} className="w-full h-14 rounded-xl bg-chef-text text-chef-bg font-black uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
-                               Submit Evaluation
+                               평가 제출하기
                            </Button>
                         </div>
                      </div>
@@ -130,7 +130,7 @@ export default function FeaturesPage() {
     {
       id: "expert-audit",
       icon: Star,
-      title: "Expert Audit Report",
+      title: "전문가 검증 리포트",
       tag: "Professional Grade",
       desc: "전문가의 시각으로 프로젝트를 정밀 분석합니다. 기획력, 독창성, 심미성 등 6가지 핵심 지표를 통해 당신의 작업물이 가진 진정한 가치를 정량화하여 제공합니다.",
       color: "text-orange-500",
@@ -139,7 +139,7 @@ export default function FeaturesPage() {
     {
       id: "guest-flow",
       icon: ChefHat,
-      title: "Seamless Guest Flow",
+      title: "장벽 없는 비회원 평가",
       tag: "Zero Barrier",
       desc: "평가 참여의 허들을 완전히 제거했습니다. 링크를 받은 누구나 가입 절차 없이 즉시 평가를 시작할 수 있으며, 고유의 식별 기술을 통해 중복 참여를 방지합니다.",
       color: "text-blue-500",
@@ -148,7 +148,7 @@ export default function FeaturesPage() {
     {
       id: "data-merging",
       icon: Fingerprint,
-      title: "Smart Data Merging",
+      title: "스마트 데이터 통합",
       tag: "Continuity",
       desc: "비회원 시절의 모든 활동 데이터는 소중히 보관됩니다. 추후 가입하거나 로그인하는 즉시, 과거의 평가 기록들이 새 계정으로 자동 통합되어 나만의 인사이트 자산이 됩니다.",
       color: "text-emerald-500",
@@ -157,7 +157,7 @@ export default function FeaturesPage() {
     {
       id: "sticker-poll",
       icon: Target,
-      title: "Interactive Sticker Poll",
+      title: "인터랙티브 스티커 판정",
       tag: "Real Reaction",
       desc: "단순한 별점을 넘어선 직관적인 반응 수집 도구입니다. 커스텀 스티커를 통해 프로젝트에 대한 시장의 즉각적이고 리얼한 반응을 한눈에 확인할 수 있습니다.",
       color: "text-indigo-500",
@@ -187,7 +187,7 @@ export default function FeaturesPage() {
                    transition={{ delay: 0.1 }}
                    className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 dark:text-white tracking-tighter italic uppercase leading-[0.9]"
                 >
-                  Rating <br/> <span className="text-orange-500">Redefined</span>
+                  평가의 기준을 <br/> <span className="text-orange-500">다시 쓰다</span>
                 </motion.h1>
 
                 <motion.p 
@@ -230,8 +230,8 @@ export default function FeaturesPage() {
                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                  
                  <div className="absolute bottom-8 left-8 text-white">
-                    <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Featured Audit</p>
-                    <p className="text-3xl font-black italic">Next Gen Design</p>
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">추천 프로젝트</p>
+                    <p className="text-3xl font-black italic">차세대 디자인</p>
                  </div>
               </motion.div>
            </div>
@@ -241,7 +241,7 @@ export default function FeaturesPage() {
         <div className="bg-gray-50 dark:bg-slate-900/50 py-32 border-y border-gray-100 dark:border-slate-800/50">
            <div className="max-w-7xl mx-auto px-6">
               <div className="mb-20 space-y-4">
-                 <h2 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] italic">Full Feature Set</h2>
+                 <h2 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] italic">핵심 기능</h2>
                  <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tighter italic uppercase">혁신적인 기능으로 <br/> 가치를 증명합니다</p>
               </div>
 
@@ -261,7 +261,7 @@ export default function FeaturesPage() {
                       <div className="space-y-4">
                          <div className="space-y-1">
                             <span className="text-[10px] font-black text-orange-500 opacity-80 uppercase tracking-widest">{f.tag}</span>
-                            <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase italic">{f.title}</h3>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase italic break-keep">{f.title}</h3>
                          </div>
                          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
                             {f.desc}
@@ -280,7 +280,7 @@ export default function FeaturesPage() {
         <div className="max-w-4xl mx-auto px-6 mt-40">
            <div className="text-center space-y-10">
               <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 dark:text-white tracking-tighter italic uppercase leading-[0.9]">
-                Start Proving <br/> Your <span className="text-orange-500">Value</span> Today
+                지금 당신의 <br/> <span className="text-orange-500">가치</span>를 증명하세요
               </h2>
               <p className="text-xl text-gray-500 dark:text-gray-400 font-medium max-w-xl mx-auto">
                 더 이상 수동적인 업로드에 그치지 마세요. 
